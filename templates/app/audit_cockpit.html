@@ -1,0 +1,1014 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ audit.audit_number }} - {{ audit.title }} | Cockpit de Auditoria (360°) | RGN Farma System{% endblock %}
+
+{% block page_header %}
+<div class="page-header" id="section-0">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">{{ audit.audit_number }} - {{ audit.title }}</h5>
+        </div>
+        <ul class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Início</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:module' module.slug %}">{{ module.label }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:resource_list' module.slug resource.slug %}">{{ resource.label }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:resource_detail' module.slug resource.slug audit.pk %}">Detalhe</a></li>
+            <li class="breadcrumb-item">Cockpit da Auditoria 360°</li>
+        </ul>
+    </div>
+    <div class="page-header-right ms-auto">
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'app:resource_detail' module.slug resource.slug audit.pk %}" class="btn btn-light d-inline-flex align-items-center gap-2">
+                <i class="feather-arrow-left" aria-hidden="true"></i>
+                <span>Voltar ao plano</span>
+            </a>
+            {% if can_manage_audit %}
+                <a href="{% url 'app:resource_edit' module.slug resource.slug audit.pk %}" class="btn btn-primary d-inline-flex align-items-center gap-2">
+                    <i class="feather-edit" aria-hidden="true"></i>
+                    <span>Editar</span>
+                </a>
+            {% endif %}
+            {% if available_audit_actions %}
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle d-inline-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="feather-settings" aria-hidden="true"></i>
+                        <span>Ações</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        {% for action in available_audit_actions %}
+                            <li>
+                                <a class="dropdown-item" href="{% url 'app:resource_action' module.slug resource.slug audit.pk action.action_name %}">
+                                    {{ action.label }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Cabeçalho Executivo da Auditoria da Qualidade (Audits 360°) -->
+    <div class="col-12 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
+                            <span class="badge bg-secondary font-monospace">{{ audit.audit_number }}</span>
+                            <span class="badge bg-light text-dark border">{{ audit.get_audit_type_display }}</span>
+                            <span class="badge bg-dark font-monospace">{{ audit.program.program_number }}</span>
+                            {% if audit.status == 'closed' %}
+                                <span class="badge bg-soft-success text-success border border-success">
+                                    <i class="feather-check-circle me-1"></i>Encerrada
+                                </span>
+                            {% elif audit.status == 'reporting' %}
+                                <span class="badge bg-soft-warning text-warning border border-warning">
+                                    <i class="feather-file-text me-1"></i>Em relatório
+                                </span>
+                            {% elif audit.status == 'in_progress' %}
+                                <span class="badge bg-soft-primary text-primary border border-primary">
+                                    <i class="feather-activity me-1"></i>Em execução
+                                </span>
+                            {% elif audit.status == 'planned' %}
+                                <span class="badge bg-soft-info text-info border border-info">
+                                    <i class="feather-calendar me-1"></i>Planejada
+                                </span>
+                            {% elif audit.status == 'draft' %}
+                                <span class="badge bg-soft-secondary text-secondary border">
+                                    <i class="feather-edit-3 me-1"></i>Rascunho
+                                </span>
+                            {% elif audit.status == 'cancelled' %}
+                                <span class="badge bg-soft-danger text-danger border border-danger">
+                                    <i class="feather-slash me-1"></i>Cancelada
+                                </span>
+                            {% else %}
+                                <span class="badge bg-light text-dark border">{{ audit.get_status_display }}</span>
+                            {% endif %}
+
+                            {% if findings_critical > 0 %}
+                                <span class="badge bg-danger text-white">
+                                    <i class="feather-alert-octagon me-1"></i>{{ findings_critical }} Achado Crítico
+                                </span>
+                            {% endif %}
+                        </div>
+                        <h3 class="fw-bold mb-1">{{ audit.title }}</h3>
+                        <p class="text-muted mb-0">
+                            <i class="feather-user-check me-1"></i>Auditor líder: <strong>{% if audit.lead_auditor.get_full_name %}{{ audit.lead_auditor.get_full_name }}{% else %}{{ audit.lead_auditor.username|default:"Não informado" }}{% endif %}</strong>
+                            <span class="mx-2">•</span>
+                            <i class="feather-target me-1"></i>Auditado: <strong>{{ audit.auditee_name }}</strong>
+                            {% if audit.supplier %}
+                                <span class="mx-2">•</span>
+                                <i class="feather-truck me-1"></i>Parceiro: <span class="badge bg-light text-dark border">{{ audit.supplier.code }} - {{ audit.supplier.trade_name|default:audit.supplier.legal_name }}</span>
+                            {% endif %}
+                            <span class="mx-2">•</span>
+                            <i class="feather-map-pin me-1"></i>Área: <strong>{{ audit.area_ref.name|default:audit.area }}</strong>
+                        </p>
+                    </div>
+                    <div class="d-flex flex-column align-items-lg-end gap-1">
+                        <span class="fs-12 text-muted">Veredito Regulatório de Auditoria:</span>
+                        <span class="badge {{ regulatory_verdict_badge }} px-3 py-2 fs-13">
+                            <i class="feather-shield me-1"></i>{{ regulatory_verdict }}
+                        </span>
+                        <span class="fs-11 text-muted">{{ gates_passed_count }} de 5 gates de prontidão atendidos</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de Resumo e KPIs Executivos -->
+    <div class="col-12 mb-4">
+        <div class="row g-3">
+            <div class="col-sm-6 col-xl">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="avatar-text avatar-lg bg-soft-primary text-primary rounded">
+                            <i class="feather-check-circle fs-3"></i>
+                        </div>
+                        <div>
+                            <span class="text-muted fs-12 text-uppercase fw-semibold d-block">Ciclo da Auditoria</span>
+                            <h4 class="mb-0 fw-bold">{{ audit.get_status_display }}</h4>
+                            <span class="text-muted fs-11">{{ audit.get_audit_type_display }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="avatar-text avatar-lg {% if compliance_rate >= 80 %}bg-soft-success text-success{% else %}bg-soft-warning text-warning{% endif %} rounded">
+                            <i class="feather-pie-chart fs-3"></i>
+                        </div>
+                        <div>
+                            <span class="text-muted fs-12 text-uppercase fw-semibold d-block">Conformidade Global</span>
+                            <h4 class="mb-0 fw-bold {% if compliance_rate >= 80 %}text-success{% else %}text-warning{% endif %}">
+                                {{ compliance_rate|floatformat:1 }}%
+                            </h4>
+                            <span class="text-muted fs-11">{{ checklist_conform }} de {{ checklist_total }} itens conformes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="avatar-text avatar-lg bg-soft-info text-info rounded">
+                            <i class="feather-check-square fs-3"></i>
+                        </div>
+                        <div>
+                            <span class="text-muted fs-12 text-uppercase fw-semibold d-block">Itens do Checklist</span>
+                            <h4 class="mb-0 fw-bold">{{ checklist_evaluated }}/{{ checklist_total }}</h4>
+                            <span class="text-muted fs-11">{% if checklist_pending > 0 %}{{ checklist_pending }} pendentes{% else %}100% avaliado{% endif %}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="avatar-text avatar-lg {% if findings_critical > 0 or findings_major > 0 %}bg-soft-danger text-danger{% else %}bg-soft-secondary text-secondary{% endif %} rounded">
+                            <i class="feather-alert-triangle fs-3"></i>
+                        </div>
+                        <div>
+                            <span class="text-muted fs-12 text-uppercase fw-semibold d-block">Achados & Apontamentos</span>
+                            <h4 class="mb-0 fw-bold {% if findings_critical > 0 or findings_major > 0 %}text-danger{% endif %}">
+                                {{ findings_total }}
+                            </h4>
+                            <span class="text-muted fs-11">{{ findings_critical }} críticos, {{ findings_major }} maiores</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="avatar-text avatar-lg {% if actions_completion_rate >= 80 %}bg-soft-success text-success{% else %}bg-soft-primary text-primary{% endif %} rounded">
+                            <i class="feather-activity fs-3"></i>
+                        </div>
+                        <div>
+                            <span class="text-muted fs-12 text-uppercase fw-semibold d-block">Planos de Ação (CAPA)</span>
+                            <h4 class="mb-0 fw-bold">{{ actions_completion_rate|floatformat:1 }}%</h4>
+                            <span class="text-muted fs-11">{{ actions_completed }} de {{ actions_total }} ações concluídas</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navegação em Abas do Cockpit de Auditoria -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom p-0">
+                <ul class="nav nav-tabs card-header-tabs m-0 px-3 pt-3 flex-wrap" id="auditCockpitTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active d-inline-flex align-items-center gap-2 py-3" id="tab-scope-btn" data-bs-toggle="tab" data-bs-target="#tab-scope" type="button" role="tab" aria-controls="tab-scope" aria-selected="true">
+                            <i class="feather-calendar" aria-hidden="true"></i>
+                            <span>Escopo, Cronograma & Equipe Auditora</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link d-inline-flex align-items-center gap-2 py-3" id="tab-checklist-btn" data-bs-toggle="tab" data-bs-target="#tab-checklist" type="button" role="tab" aria-controls="tab-checklist" aria-selected="false">
+                            <i class="feather-check-square" aria-hidden="true"></i>
+                            <span>Checklist de Verificação BPF / ISO 22716</span>
+                            {% if checklist_total %}
+                                <span class="badge bg-soft-info text-info ms-1">{{ checklist_total }}</span>
+                            {% endif %}
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link d-inline-flex align-items-center gap-2 py-3" id="tab-findings-btn" data-bs-toggle="tab" data-bs-target="#tab-findings" type="button" role="tab" aria-controls="tab-findings" aria-selected="false">
+                            <i class="feather-alert-triangle" aria-hidden="true"></i>
+                            <span>Constatações, Evidências & Não-Conformidades</span>
+                            {% if findings_total %}
+                                <span class="badge {% if findings_critical > 0 or findings_major > 0 %}bg-danger text-white{% else %}bg-soft-warning text-warning{% endif %} ms-1">{{ findings_total }}</span>
+                            {% endif %}
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link d-inline-flex align-items-center gap-2 py-3" id="tab-actions-btn" data-bs-toggle="tab" data-bs-target="#tab-actions" type="button" role="tab" aria-controls="tab-actions" aria-selected="false">
+                            <i class="feather-activity" aria-hidden="true"></i>
+                            <span>Planos de Ação, CAPAs & Vínculos Transversais</span>
+                            {% if actions_total %}
+                                <span class="badge bg-soft-primary text-primary ms-1">{{ actions_total }}</span>
+                            {% endif %}
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link d-inline-flex align-items-center gap-2 py-3" id="tab-report-btn" data-bs-toggle="tab" data-bs-target="#tab-report" type="button" role="tab" aria-controls="tab-report" aria-selected="false">
+                            <i class="feather-file-text" aria-hidden="true"></i>
+                            <span>Relatório Final, Conclusão & Gates de Prontidão</span>
+                            <span class="badge bg-soft-secondary text-secondary ms-1">5 Gates</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card-body p-4">
+                <div class="tab-content" id="auditCockpitTabsContent">
+
+                    <!-- ABA 1: Escopo, Cronograma & Equipe Auditora -->
+                    <div class="tab-pane fade show active" id="tab-scope" role="tabpanel" aria-labelledby="tab-scope-btn">
+                        {% if can_view_scope %}
+                            <div class="row g-4">
+                                <div class="col-lg-6">
+                                    <div class="card border shadow-none h-100">
+                                        <div class="card-header bg-light py-2 px-3">
+                                            <h6 class="mb-0 fw-bold fs-13 text-uppercase text-muted">
+                                                <i class="feather-info me-1"></i>Ficha de Planejamento e Equipe Auditora
+                                            </h6>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <div class="table-responsive">
+                                                <table class="table table-sm table-borderless mb-0">
+                                                    <tbody>
+                                                        <tr class="border-bottom">
+                                                            <th class="ps-3 py-2 text-muted fw-semibold text-nowrap" style="width: 35%;">Número da auditoria</th>
+                                                            <td class="pe-3 py-2 font-monospace fw-bold">{{ audit.audit_number }}</td>
+                                                        </tr>
+                                                        <tr class="border-bottom">
+                                                            <th class="ps-3 py-2 text-muted fw-semibold text-nowrap">Programa anual</th>
+                                                            <td class="pe-3 py-2 font-monospace">{{ audit.program.program_number }} ({{ audit.program.year }})</td>
+                                                        </tr>
+                                                        <tr class="border-bottom">
+                                                            <th class="ps-3 py-2 text-muted fw-semibold text-nowrap">Tipo de auditoria</th>
+                                                            <td class="pe-3 py-2">{{ audit.get_audit_type_display }}</td>
+                                                        </tr>
+                                                        <tr class="border-bottom">
+                                                            <th class="ps-3 py-2 text-muted fw-semibold text-nowrap">Status do ciclo</th>
+                                                            <td class="pe-3 py-2">{{ audit.get_status_display }}</td>
+                                                        </tr>
+                                                        <tr class="border-bottom">
+                                                            <th class="ps-3 py-2 text-muted fw-semibold text-nowrap">Auditor líder</th>
+                                                            <td class="pe-3 py-2">
+                                                                {% if audit.lead_auditor.get_full_name %}{{ audit.lead_auditor.get_full_name }}{% else %}{{ audit.lead_auditor.username|default:"Não informado" }}{% endif %}
+                                                            </td>
+                                                        </tr>
+                                                        <tr class="border-bottom">
+                                                            <th class="ps-3 py-2 text-muted fw-semibold text-nowrap">Auditado</th>
+                                                            <td class="pe-3 py-2 fw-semibold">{{ audit.auditee_name }}</td>
+                                                        </tr>
+                                                        {% if audit.supplier %}
+                                                            <tr class="border-bottom">
+                                                                <th class="ps-3 py-2 text-muted fw-semibold text-nowrap">Parceiro vinculado</th>
+                                                                <td class="pe-3 py-2">{{ audit.supplier.code }} - {{ audit.supplier.trade_name|default:audit.supplier.legal_name }}</td>
+                                                            </tr>
+                                                        {% endif %}
+                                                        <tr class="border-bottom">
+                                                            <th class="ps-3 py-2 text-muted fw-semibold text-nowrap">Área auditada</th>
+                                                            <td class="pe-3 py-2">{{ audit.area_ref.name|default:audit.area }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th class="ps-3 py-2 text-muted fw-semibold text-nowrap">Localidade / Endereço</th>
+                                                            <td class="pe-3 py-2 fs-13">{{ formatted_address }}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <div class="card border shadow-none h-100">
+                                        <div class="card-header bg-light py-2 px-3">
+                                            <h6 class="mb-0 fw-bold fs-13 text-uppercase text-muted">
+                                                <i class="feather-clock me-1"></i>Cronograma Planejado vs Real & Atores
+                                            </h6>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <div class="table-responsive">
+                                                <table class="table table-sm table-borderless mb-0">
+                                                    <tbody>
+                                                        <tr class="border-bottom">
+                                                            <th class="ps-3 py-2 text-muted fw-semibold text-nowrap" style="width: 35%;">Início planejado</th>
+                                                            <td class="pe-3 py-2">{{ audit.scheduled_start|date:"d/m/Y H:i" }}</td>
+                                                        </tr>
+                                                        <tr class="border-bottom">
+                                                            <th class="ps-3 py-2 text-muted fw-semibold text-nowrap">Fim planejado</th>
+                                                            <td class="pe-3 py-2">{{ audit.scheduled_end|date:"d/m/Y H:i" }}</td>
+                                                        </tr>
+                                                        <tr class="border-bottom">
+                                                            <th class="ps-3 py-2 text-muted fw-semibold text-nowrap">Início real</th>
+                                                            <td class="pe-3 py-2">
+                                                                {% if audit.actual_start %}
+                                                                    {{ audit.actual_start|date:"d/m/Y H:i" }}
+                                                                    {% if audit.started_by %}
+                                                                        <span class="text-muted fs-11 d-block">por {% if audit.started_by.get_full_name %}{{ audit.started_by.get_full_name }}{% else %}{{ audit.started_by.username }}{% endif %}</span>
+                                                                    {% endif %}
+                                                                {% else %}
+                                                                    <span class="text-muted">Não iniciado</span>
+                                                                {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                        <tr class="border-bottom">
+                                                            <th class="ps-3 py-2 text-muted fw-semibold text-nowrap">Fim real</th>
+                                                            <td class="pe-3 py-2">
+                                                                {% if audit.actual_end %}
+                                                                    {{ audit.actual_end|date:"d/m/Y H:i" }}
+                                                                    {% if audit.completed_by %}
+                                                                        <span class="text-muted fs-11 d-block">por {% if audit.completed_by.get_full_name %}{{ audit.completed_by.get_full_name }}{% else %}{{ audit.completed_by.username }}{% endif %}</span>
+                                                                    {% endif %}
+                                                                {% else %}
+                                                                    <span class="text-muted">-</span>
+                                                                {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                        <tr class="border-bottom">
+                                                            <th class="ps-3 py-2 text-muted fw-semibold text-nowrap">Submetida por</th>
+                                                            <td class="pe-3 py-2">
+                                                                {% if audit.submitted_by %}
+                                                                    {% if audit.submitted_by.get_full_name %}{{ audit.submitted_by.get_full_name }}{% else %}{{ audit.submitted_by.username }}{% endif %}
+                                                                    <span class="text-muted fs-11 d-block">{{ audit.submitted_at|date:"d/m/Y H:i" }}</span>
+                                                                {% else %}
+                                                                    <span class="text-muted">-</span>
+                                                                {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                        {% if audit.closed_by %}
+                                                            <tr>
+                                                                <th class="ps-3 py-2 text-success fw-semibold text-nowrap">Encerrada por</th>
+                                                                <td class="pe-3 py-2">
+                                                                    {% if audit.closed_by.get_full_name %}{{ audit.closed_by.get_full_name }}{% else %}{{ audit.closed_by.username }}{% endif %}
+                                                                    <span class="text-muted fs-11 d-block">{{ audit.closed_at|date:"d/m/Y H:i" }}</span>
+                                                                </td>
+                                                            </tr>
+                                                        {% endif %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Escopo Detalhado da Auditoria -->
+                                <div class="col-12">
+                                    <div class="card border shadow-none">
+                                        <div class="card-header bg-light py-2 px-3">
+                                            <h6 class="mb-0 fw-bold fs-13 text-uppercase text-muted">
+                                                <i class="feather-crosshair me-1"></i>Escopo da Auditoria
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="mb-0 text-dark">{{ audit.scope|linebreaksbr }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Critérios Normativos Aplicáveis -->
+                                <div class="col-12">
+                                    <div class="card border shadow-none">
+                                        <div class="card-header bg-light py-2 px-3">
+                                            <h6 class="mb-0 fw-bold fs-13 text-uppercase text-muted">
+                                                <i class="feather-book me-1"></i>Critérios Normativos e Regulatórios
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="mb-0 text-dark">{{ audit.criteria|linebreaksbr }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Agenda e Roteiro de Trabalho -->
+                                {% if audit.agenda %}
+                                    <div class="col-12">
+                                        <div class="card border shadow-none">
+                                            <div class="card-header bg-light py-2 px-3">
+                                                <h6 class="mb-0 fw-bold fs-13 text-uppercase text-muted">
+                                                    <i class="feather-list me-1"></i>Agenda e Horários de Trabalho
+                                                </h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <p class="mb-0 text-dark">{{ audit.agenda|linebreaksbr }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning border mb-0">
+                                <i class="feather-alert-triangle me-2"></i>Você não possui permissão para visualizar o escopo da auditoria.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- ABA 2: Checklist de Verificação BPF / ISO 22716 -->
+                    <div class="tab-pane fade" id="tab-checklist" role="tabpanel" aria-labelledby="tab-checklist-btn">
+                        {% if can_view_checklist %}
+                            <div class="row g-3 mb-4">
+                                <div class="col-sm-6 col-md-3">
+                                    <div class="p-3 bg-light rounded border text-center">
+                                        <span class="text-muted fs-12 text-uppercase d-block">Total de Itens</span>
+                                        <h3 class="mb-0 fw-bold">{{ checklist_total }}</h3>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-md-3">
+                                    <div class="p-3 bg-light rounded border text-center">
+                                        <span class="text-muted fs-12 text-uppercase d-block">Conformes</span>
+                                        <h3 class="mb-0 fw-bold text-success">{{ checklist_conform }}</h3>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-md-3">
+                                    <div class="p-3 bg-light rounded border text-center">
+                                        <span class="text-muted fs-12 text-uppercase d-block">Não Conformes</span>
+                                        <h3 class="mb-0 fw-bold text-danger">{{ checklist_non_conform }}</h3>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-md-3">
+                                    <div class="p-3 bg-light rounded border text-center">
+                                        <span class="text-muted fs-12 text-uppercase d-block">Não Aplicáveis / Pendentes</span>
+                                        <h3 class="mb-0 fw-bold text-muted">{{ checklist_na }} / {{ checklist_pending }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div>
+                                    <h6 class="fw-bold mb-1">Checklist de Auditoria Sanitária e Boas Práticas (BPF)</h6>
+                                    <p class="text-muted fs-13 mb-0">Verificação item a item com registro de conformidade e evidências objetivas.</p>
+                                </div>
+                                <span class="badge bg-primary px-3 py-2">{{ compliance_rate|floatformat:1 }}% de conformidade</span>
+                            </div>
+
+                            {% if checklist_items %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle border mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Seção</th>
+                                                <th>Pergunta / Requisito</th>
+                                                <th>Referência</th>
+                                                <th class="text-center">Obrigatório</th>
+                                                <th class="text-center">Status</th>
+                                                <th>Resposta / Evidência</th>
+                                                <th>Avaliador</th>
+                                                <th>Data</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in checklist_items %}
+                                                <tr>
+                                                    <td class="fw-semibold text-nowrap">{{ item.section }}</td>
+                                                    <td>{{ item.question }}</td>
+                                                    <td><span class="badge bg-light text-dark border">{{ item.requirement_reference }}</span></td>
+                                                    <td class="text-center">
+                                                        {% if item.required %}
+                                                            <span class="badge bg-soft-primary text-primary">Sim</span>
+                                                        {% else %}
+                                                            <span class="text-muted">Não</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="text-center">
+                                                        {% if item.status == 'conform' %}
+                                                            <span class="badge bg-soft-success text-success">
+                                                                <i class="feather-check-circle me-1"></i>Conforme
+                                                            </span>
+                                                        {% elif item.status == 'non_conform' %}
+                                                            <span class="badge bg-soft-danger text-danger">
+                                                                <i class="feather-x-circle me-1"></i>Não conforme
+                                                            </span>
+                                                        {% elif item.status == 'not_applicable' %}
+                                                            <span class="badge bg-soft-secondary text-secondary">Não aplicável</span>
+                                                        {% else %}
+                                                            <span class="badge bg-soft-warning text-warning">Não avaliado</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="fs-13">{{ item.answer_text|default:"-" }}</td>
+                                                    <td class="fs-13">
+                                                        {% if item.answered_by %}
+                                                            {% if item.answered_by.get_full_name %}{{ item.answered_by.get_full_name }}{% else %}{{ item.answered_by.username }}{% endif %}
+                                                        {% else %}
+                                                            <span class="text-muted">-</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="text-nowrap fs-13">{{ item.answered_at|date:"d/m/Y H:i"|default:"-" }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info border mb-0">
+                                    <i class="feather-info me-2"></i>Nenhum item de checklist foi registrado para esta auditoria.
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="alert alert-warning border mb-0">
+                                <i class="feather-alert-triangle me-2"></i>Você não possui permissão para visualizar o checklist de auditoria.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- ABA 3: Constatações, Evidências & Não-Conformidades -->
+                    <div class="tab-pane fade" id="tab-findings" role="tabpanel" aria-labelledby="tab-findings-btn">
+                        {% if can_view_findings %}
+                            <div class="row g-4">
+                                <!-- Tabela de Achados e Apontamentos -->
+                                <div class="col-12">
+                                    <div class="card border shadow-none">
+                                        <div class="card-header bg-light py-2 px-3 d-flex align-items-center justify-content-between">
+                                            <h6 class="mb-0 fw-bold fs-13 text-uppercase text-muted">
+                                                <i class="feather-alert-triangle me-1"></i>Achados de Auditoria & Não-Conformidades
+                                            </h6>
+                                            <span class="badge bg-primary">{{ findings_total }} apontamentos registrados</span>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            {% if findings %}
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover align-middle mb-0">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>Título</th>
+                                                                <th>Classificação</th>
+                                                                <th>Criticidade</th>
+                                                                <th>Item checklist</th>
+                                                                <th>Responsável</th>
+                                                                <th>Prazo</th>
+                                                                <th>Status</th>
+                                                                <th class="text-center">Evidências</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for f in findings %}
+                                                                <tr>
+                                                                    <td class="fw-semibold">
+                                                                        <div class="d-flex flex-column">
+                                                                            <span>{{ f.title }}</span>
+                                                                            <span class="text-muted fs-11">{{ f.description|truncatewords:15 }}</span>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <span class="badge bg-light text-dark border">{{ f.get_classification_display }}</span>
+                                                                    </td>
+                                                                    <td>
+                                                                        {% if f.criticality == 'critical' %}
+                                                                            <span class="badge bg-danger text-white">Crítica</span>
+                                                                        {% elif f.criticality == 'major' %}
+                                                                            <span class="badge bg-warning text-dark">Maior</span>
+                                                                        {% else %}
+                                                                            <span class="badge bg-info text-dark">Menor</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td class="fs-13">
+                                                                        {% if f.checklist_item %}
+                                                                            {{ f.checklist_item.section }}
+                                                                        {% else %}
+                                                                            <span class="text-muted">-</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td class="fs-13">
+                                                                        {% if f.responsible.get_full_name %}{{ f.responsible.get_full_name }}{% else %}{{ f.responsible.username|default:"Não informado" }}{% endif %}
+                                                                    </td>
+                                                                    <td>{{ f.due_date|date:"d/m/Y" }}</td>
+                                                                    <td>
+                                                                        {% if f.status == 'closed' %}
+                                                                            <span class="badge bg-soft-success text-success">Encerrado</span>
+                                                                        {% elif f.status == 'in_action' %}
+                                                                            <span class="badge bg-soft-primary text-primary">Em ação</span>
+                                                                        {% elif f.status == 'cancelled' %}
+                                                                            <span class="badge bg-soft-dark text-muted">Cancelado</span>
+                                                                        {% else %}
+                                                                            <span class="badge bg-soft-warning text-warning">Aberto</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td class="text-center">
+                                                                        <span class="badge bg-light text-dark border font-monospace">{{ f.evidences.count }}</span>
+                                                                    </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            {% else %}
+                                                <div class="p-4 text-center text-muted">
+                                                    <i class="feather-check-circle fs-1 d-block mb-2 text-success"></i>
+                                                    <p class="mb-0">Nenhum apontamento ou não-conformidade registrado nesta auditoria.</p>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Evidências Documentais ALCOA+ -->
+                                <div class="col-12">
+                                    <div class="card border shadow-none">
+                                        <div class="card-header bg-light py-2 px-3 d-flex align-items-center justify-content-between">
+                                            <h6 class="mb-0 fw-bold fs-13 text-uppercase text-muted">
+                                                <i class="feather-paperclip me-1"></i>Evidências Objetivas Anexadas (ALCOA+)
+                                            </h6>
+                                            <span class="badge bg-secondary">{{ evidences_total }} evidências</span>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            {% if evidences %}
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover align-middle mb-0">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>Título</th>
+                                                                <th>Achado associado</th>
+                                                                <th>Referência do arquivo</th>
+                                                                <th>Hash de integridade</th>
+                                                                <th>Enviado por</th>
+                                                                <th>Data</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for ev in evidences %}
+                                                                <tr>
+                                                                    <td class="fw-semibold">
+                                                                        <i class="feather-file me-1 text-primary"></i>{{ ev.title }}
+                                                                    </td>
+                                                                    <td>
+                                                                        {% if ev.finding %}
+                                                                            <span class="badge bg-light text-dark border">{{ ev.finding.title|truncatewords:8 }}</span>
+                                                                        {% else %}
+                                                                            <span class="text-muted">Geral da auditoria</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td><span class="font-monospace fs-12">{{ ev.file_reference }}</span></td>
+                                                                    <td>
+                                                                        <code class="font-monospace fs-11 text-muted" title="{{ ev.content_hash }}">{{ ev.content_hash|truncatechars:18 }}</code>
+                                                                    </td>
+                                                                    <td>
+                                                                        {% if ev.uploaded_by %}
+                                                                            {% if ev.uploaded_by.get_full_name %}{{ ev.uploaded_by.get_full_name }}{% else %}{{ ev.uploaded_by.username }}{% endif %}
+                                                                        {% else %}
+                                                                            <span class="text-muted">-</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>{{ ev.created_at|date:"d/m/Y H:i" }}</td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            {% else %}
+                                                <div class="p-3 text-muted">Nenhuma evidência documental anexada.</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning border mb-0">
+                                <i class="feather-alert-triangle me-2"></i>Você não possui permissão para visualizar achados e evidências de auditoria.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- ABA 4: Planos de Ação, CAPAs & Vínculos Transversais -->
+                    <div class="tab-pane fade" id="tab-actions" role="tabpanel" aria-labelledby="tab-actions-btn">
+                        {% if can_view_actions %}
+                            <div class="row g-4">
+                                <!-- Ações de Follow-up -->
+                                <div class="col-12">
+                                    <div class="card border shadow-none">
+                                        <div class="card-header bg-light py-2 px-3 d-flex align-items-center justify-content-between">
+                                            <h6 class="mb-0 fw-bold fs-13 text-uppercase text-muted">
+                                                <i class="feather-activity me-1"></i>Ações de Follow-up & Correções
+                                            </h6>
+                                            <span class="badge bg-primary">{{ actions_completed }} de {{ actions_total }} concluídas</span>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            {% if actions %}
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover align-middle mb-0">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>Ação</th>
+                                                                <th>Achado de origem</th>
+                                                                <th>Responsável</th>
+                                                                <th>Prazo</th>
+                                                                <th class="text-center">Obrigatória</th>
+                                                                <th>Status</th>
+                                                                <th>Evidência de conclusão</th>
+                                                                <th>Concluída em</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for act in actions %}
+                                                                <tr>
+                                                                    <td class="fw-semibold">
+                                                                        <div class="d-flex flex-column">
+                                                                            <span class="fw-bold fs-13 d-block text-dark">{{ act.title }}</span>
+                                                                            <span class="text-muted fs-11">{{ act.description|truncatewords:10 }}</span>
+                                                                            {% if act.completion_notes %}
+                                                                                <span class="text-success fs-11 mt-1"><i class="feather-check me-1"></i>{{ act.completion_notes|truncatewords:10 }}</span>
+                                                                            {% endif %}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td><span class="badge bg-light text-dark border">{{ act.finding.title|truncatewords:6 }}</span></td>
+                                                                    <td class="fs-13">
+                                                                        {% if act.responsible.get_full_name %}{{ act.responsible.get_full_name }}{% else %}{{ act.responsible.username|default:"Não informado" }}{% endif %}
+                                                                    </td>
+                                                                    <td>{{ act.due_date|date:"d/m/Y" }}</td>
+                                                                    <td class="text-center">
+                                                                        {% if act.mandatory %}
+                                                                            <span class="badge bg-soft-danger text-danger">Sim</span>
+                                                                        {% else %}
+                                                                            <span class="text-muted">Não</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        {% if act.status == 'completed' %}
+                                                                            <span class="badge bg-soft-success text-success">
+                                                                                <i class="feather-check-circle me-1"></i>Concluída
+                                                                            </span>
+                                                                        {% elif act.status == 'in_progress' %}
+                                                                            <span class="badge bg-soft-primary text-primary">Em andamento</span>
+                                                                        {% elif act.status == 'cancelled' %}
+                                                                            <span class="badge bg-soft-dark text-muted">Cancelada</span>
+                                                                        {% else %}
+                                                                            <span class="badge bg-soft-warning text-warning">Pendente</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td class="fs-13">
+                                                                        {% if act.evidence_reference %}
+                                                                            <span class="d-block">{{ act.evidence_reference }}</span>
+                                                                            {% if act.content_hash %}
+                                                                                <code class="font-monospace fs-10 text-muted">{{ act.content_hash|truncatechars:16 }}</code>
+                                                                            {% endif %}
+                                                                        {% else %}
+                                                                            <span class="text-muted">-</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>{{ act.completed_at|date:"d/m/Y"|default:"-" }}</td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            {% else %}
+                                                <div class="p-3 text-muted">Nenhuma ação de follow-up registrada.</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Vínculos Transversais da Qualidade (CAPA, Desvios, Documentos) -->
+                                <div class="col-12">
+                                    <div class="card border shadow-none">
+                                        <div class="card-header bg-light py-2 px-3">
+                                            <h6 class="mb-0 fw-bold fs-13 text-uppercase text-muted">
+                                                <i class="feather-link me-1"></i>Vínculos Transversais de Qualidade (CAPA, Desvios & Governança)
+                                            </h6>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            {% if finding_links %}
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover align-middle mb-0">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>Achado</th>
+                                                                <th>Tipo de vínculo</th>
+                                                                <th>Registro relacionado</th>
+                                                                <th>Referência</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for lk in finding_links %}
+                                                                <tr>
+                                                                    <td class="fw-semibold">{{ lk.finding.title }}</td>
+                                                                    <td><span class="badge bg-primary">{{ lk.get_link_type_display }}</span></td>
+                                                                    <td>
+                                                                        {% if lk.capa %}
+                                                                            <span class="fw-bold font-monospace">{{ lk.capa.capa_number }}</span> - {{ lk.capa.title }}
+                                                                        {% elif lk.deviation_event %}
+                                                                            <span class="fw-bold font-monospace">{{ lk.deviation_event.event_number }}</span> - {{ lk.deviation_event.title }}
+                                                                        {% elif lk.change_control %}
+                                                                            <span class="fw-bold font-monospace">{{ lk.change_control.control_number }}</span> - {{ lk.change_control.title }}
+                                                                        {% elif lk.document %}
+                                                                            <span class="fw-bold font-monospace">{{ lk.document.code }} v{{ lk.document.version }}</span> - {{ lk.document.title }}
+                                                                        {% elif lk.supplier %}
+                                                                            <span class="fw-bold">{{ lk.supplier.code }}</span> - {{ lk.supplier.trade_name }}
+                                                                        {% else %}
+                                                                            <span class="text-muted">-</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td class="font-monospace fs-12">{{ lk.reference_code|default:"-" }}</td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            {% else %}
+                                                <div class="p-3 text-muted">Nenhum vínculo transversal registrado para os achados.</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning border mb-0">
+                                <i class="feather-alert-triangle me-2"></i>Você não possui permissão para visualizar planos de ação e vínculos CAPA.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- ABA 5: Relatório Final, Conclusão & Gates de Prontidão -->
+                    <div class="tab-pane fade" id="tab-report" role="tabpanel" aria-labelledby="tab-report-btn">
+                        {% if can_view_report %}
+                            <div class="row g-4">
+                                <!-- Scorecard dos 5 Gates de Prontidão de Auditoria -->
+                                <div class="col-12">
+                                    <div class="card border shadow-none">
+                                        <div class="card-header bg-light py-2 px-3 d-flex align-items-center justify-content-between">
+                                            <h6 class="mb-0 fw-bold fs-13 text-uppercase text-muted">
+                                                <i class="feather-shield me-1"></i>Scorecard de Prontidão e Governança da Auditoria (Audit Gates)
+                                            </h6>
+                                            <span class="badge {{ regulatory_verdict_badge }} px-3 py-1 font-monospace">
+                                                {{ gates_passed_count }}/5 Gates Concluídos
+                                            </span>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row g-3">
+                                                <div class="col-md">
+                                                    <div class="p-3 rounded border {% if gate1_passed %}bg-soft-success border-success{% else %}bg-light{% endif %}">
+                                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                                            <i class="feather-{% if gate1_passed %}check-circle text-success{% else %}x-circle text-danger{% endif %} fs-4"></i>
+                                                            <span class="fw-bold fs-13">Gate 1: Planejamento & Escopo</span>
+                                                        </div>
+                                                        <span class="text-muted fs-11">Programa, escopo e auditor definidos</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md">
+                                                    <div class="p-3 rounded border {% if gate2_passed %}bg-soft-success border-success{% else %}bg-light{% endif %}">
+                                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                                            <i class="feather-{% if gate2_passed %}check-circle text-success{% else %}x-circle text-danger{% endif %} fs-4"></i>
+                                                            <span class="fw-bold fs-13">Gate 2: Execução do Checklist</span>
+                                                        </div>
+                                                        <span class="text-muted fs-11">100% dos itens obrigatórios avaliados</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md">
+                                                    <div class="p-3 rounded border {% if gate3_passed %}bg-soft-success border-success{% else %}bg-light{% endif %}">
+                                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                                            <i class="feather-{% if gate3_passed %}check-circle text-success{% else %}x-circle text-danger{% endif %} fs-4"></i>
+                                                            <span class="fw-bold fs-13">Gate 3: Evidenciação ALCOA+</span>
+                                                        </div>
+                                                        <span class="text-muted fs-11">Achados com evidências e hash</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md">
+                                                    <div class="p-3 rounded border {% if gate4_passed %}bg-soft-success border-success{% else %}bg-light{% endif %}">
+                                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                                            <i class="feather-{% if gate4_passed %}check-circle text-success{% else %}x-circle text-danger{% endif %} fs-4"></i>
+                                                            <span class="fw-bold fs-13">Gate 4: Planos de Ação & CAPA</span>
+                                                        </div>
+                                                        <span class="text-muted fs-11">Ações obrigatórias concluídas</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md">
+                                                    <div class="p-3 rounded border {% if gate5_passed %}bg-soft-success border-success{% else %}bg-light{% endif %}">
+                                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                                            <i class="feather-{% if gate5_passed %}check-circle text-success{% else %}x-circle text-danger{% endif %} fs-4"></i>
+                                                            <span class="fw-bold fs-13">Gate 5: Relatório & Conclusão</span>
+                                                        </div>
+                                                        <span class="text-muted fs-11">Relatório emitido formalmente</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Painel do Relatório Formal de Auditoria -->
+                                {% if report %}
+                                    <div class="col-12">
+                                        <div class="card border shadow-none">
+                                            <div class="card-header bg-light py-2 px-3 d-flex align-items-center justify-content-between">
+                                                <h6 class="mb-0 fw-bold fs-13 text-uppercase text-muted">
+                                                    <i class="feather-file-text me-1"></i>Relatório Formal de Auditoria da Qualidade
+                                                </h6>
+                                                <span class="badge {% if report.status == 'issued' %}bg-success{% else %}bg-warning text-dark{% endif %} font-monospace">
+                                                    {{ report.get_status_display }}
+                                                </span>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row g-3 mb-3">
+                                                    <div class="col-md-3">
+                                                        <span class="text-muted fs-12 d-block">Emitido por:</span>
+                                                        <strong>{% if report.issued_by %}{% if report.issued_by.get_full_name %}{{ report.issued_by.get_full_name }}{% else %}{{ report.issued_by.username }}{% endif %}{% else %}-{% endif %}</strong>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <span class="text-muted fs-12 d-block">Data de emissão:</span>
+                                                        <strong>{{ report.issued_at|date:"d/m/Y H:i"|default:"Pendente" }}</strong>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <span class="text-muted fs-12 d-block">Índice de conformidade:</span>
+                                                        <strong class="text-success">{{ report.compliance_rate }}%</strong>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <span class="text-muted fs-12 d-block">Achados totais:</span>
+                                                        <strong>{{ report.total_findings }}</strong>
+                                                    </div>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <h6 class="fw-bold fs-13 text-uppercase text-muted mb-1">Sumário Executivo:</h6>
+                                                    <div class="p-3 bg-light rounded border text-dark">{{ report.executive_summary|linebreaksbr }}</div>
+                                                </div>
+
+                                                <div>
+                                                    <h6 class="fw-bold fs-13 text-uppercase text-muted mb-1">Conclusão da Auditoria:</h6>
+                                                    <div class="p-3 bg-light rounded border text-dark">{{ report.conclusion|linebreaksbr }}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="col-12">
+                                        <div class="alert alert-light border text-muted mb-0">
+                                            <i class="feather-info me-1"></i>O relatório formal de auditoria ainda não foi elaborado para este plano.
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                <!-- Resumo de Encerramento se encerrada -->
+                                {% if audit.status == 'closed' %}
+                                    <div class="col-12">
+                                        <div class="card border border-success shadow-none">
+                                            <div class="card-header bg-soft-success py-2 px-3">
+                                                <h6 class="mb-0 fw-bold fs-13 text-uppercase text-success">
+                                                    <i class="feather-check-circle me-1"></i>Resumo de Encerramento Formal
+                                                </h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <p class="mb-1 text-dark">{{ audit.closure_summary|linebreaksbr }}</p>
+                                                <span class="text-muted fs-12">
+                                                    Encerrada por <strong>{% if audit.closed_by.get_full_name %}{{ audit.closed_by.get_full_name }}{% else %}{{ audit.closed_by.username|default:"Não informado" }}{% endif %}</strong> em {{ audit.closed_at|date:"d/m/Y H:i" }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                <!-- Motivo de Cancelamento se cancelada -->
+                                {% if audit.status == 'cancelled' %}
+                                    <div class="col-12">
+                                        <div class="alert alert-danger border mb-0">
+                                            <h6 class="fw-bold text-danger mb-1"><i class="feather-slash me-1"></i>Auditoria Cancelada</h6>
+                                            <p class="mb-0 fs-13">{{ audit.cancel_reason }}</p>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning border mb-0">
+                                <i class="feather-alert-triangle me-2"></i>Você não possui permissão para visualizar o relatório e conclusão da auditoria.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

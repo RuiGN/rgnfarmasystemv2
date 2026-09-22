@@ -88,11 +88,11 @@ O padrão consolida em um único template responsivo:
   - [X] Template com abas: Metadados & Conteúdo do Procedimento (SOP), Matriz de Treinamentos Requeridos por Cargo, Colaboradores Treinados & Provas de Eficácia, Histórico de Revisões & Assinaturas, Trilha de Auditoria
   - [X] Testes automatizados e documentação
 
-- [ ] **Sprint 8: Cockpit de Auditorias da Qualidade e Planos de Ação (Audits 360°)**
-  - [ ] Mapeamento de auditorias internas e externas (`Audit`, `AuditItem`, `AuditEvidence`, `QualityEvent`, `CapaRecord`)
-  - [ ] Criação da view `AuditCockpitView`
-  - [ ] Template com abas: Escopo, Cronograma & Equipe Auditora, Checklist de Verificação BPF / ISO 22716, Constatações, Evidências & Não-Conformidades, Planos de Ação & CAPAs Vinculados, Relatório Final & Conclusão
-  - [ ] Testes automatizados e documentação
+- [X] **Sprint 8: Cockpit de Auditorias da Qualidade e Planos de Ação (Audits 360°)**
+  - [X] Mapeamento de auditorias internas e externas (`Audit`, `AuditItem`, `AuditEvidence`, `QualityEvent`, `CapaRecord`)
+  - [X] Criação da view `AuditCockpitView`
+  - [X] Template com abas: Escopo, Cronograma & Equipe Auditora, Checklist de Verificação BPF / ISO 22716, Constatações, Evidências & Não-Conformidades, Planos de Ação & CAPAs Vinculados, Relatório Final & Conclusão
+  - [X] Testes automatizados e documentação
 
 ---
 

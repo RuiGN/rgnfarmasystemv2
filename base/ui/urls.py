@@ -1,5 +1,6 @@
 from django.urls import path
 
+from audits.ui_views import AuditCockpitView
 from base.ui import views
 from base.ui.actions import views as action_views
 from crm.ui_views import SalesOrderCockpitView
@@ -134,6 +135,12 @@ urlpatterns = [
         ControlledDocumentCockpitView.as_view(),
         {'module_slug': 'documents', 'resource_slug': 'controlled-documents'},
         name='controlled_document_cockpit',
+    ),
+    path(
+        'audits/plans/<int:pk>/cockpit/',
+        AuditCockpitView.as_view(),
+        {'module_slug': 'audits', 'resource_slug': 'plans'},
+        name='audit_cockpit',
     ),
     path(
         '<slug:module_slug>/<slug:resource_slug>/<int:pk>/actions/<slug:action_name>/',

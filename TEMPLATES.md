@@ -199,6 +199,16 @@ receber acesso direto.
   5. *Distribuição controlada, vínculos e trilha de auditoria*: Scorecard com veredito regulatório dos 5 Gates de Prontidão Sanitária DMS (Elaboração e Metadados, Ciclo de Aprovação, Vigência Ativa, Matriz de Capacitação, Eficácia e Bloqueios QA), alertas de bloqueios cautelares QA, distribuição de cópias controladas com confirmação formal de leitura pelo destinatário, relacionamentos documentais (referências, substituições, impactos) e trilha de auditoria documental ALCOA+ com registros congelados e justificativas.
   Cada aba aplica segregação de deveres (SoD) no servidor, protegendo o acesso a dados de treinamento, eficácia, aprovações e governança documental de acordo com os perfis de acesso.
 
+- **Cockpit de Auditorias da Qualidade e Planos de Ação (`app:audit_cockpit`):**
+  Disponível no detalhe de `AuditPlan` (`/app/audits/plans/<id>/cockpit/`).
+  Consolida a gestão 360° do ciclo completo de auditorias sanitárias, checklists normativos, achados, planos de ação e governança de encerramento em cinco abas Duralux:
+  1. *Escopo, cronograma e equipe auditora*: Ficha de planejamento e equipe técnica (auditor líder, auditado, parceiro/fornecedor, área, local e endereço normalizado com logradouro, número, complemento, bairro, município e UF), datas e horários planejados e reais, escopo detalhado de auditoria, critérios normativos e regulatórios aplicáveis (RDC ANVISA nº 48/2013 e ABNT NBR ISO 22716), agenda e roteiro de trabalho.
+  2. *Checklist de verificação BPF / ISO 22716*: Indicadores de conformidade global do checklist, status de cada item (conforme, não conforme, não aplicável, não avaliado), referências normativas e regulatórias, respostas e evidências coletadas, auditor responsável pela avaliação e data e hora do preenchimento.
+  3. *Constatações, evidências e não-conformidades*: Quadro completo de achados classificados (não conformidade, observação, oportunidade de melhoria, conformidade) e estratificados por criticidade (crítica, maior, menor), prazos, responsáveis, vínculo direto com o item do checklist e galeria de evidências documentais anexadas com hash criptográfico ALCOA+.
+  4. *Planos de ação, CAPAs e vínculos transversais*: Ações de follow-up com status, prazos, flags de obrigatoriedade e exigência de evidência, observações de conclusão, referências e hashes de comprovação, além de vínculos transversais rastreados (registros CAPA, desvios e eventos de qualidade, controles de mudança, documentos controlados e fornecedores).
+  5. *Relatório final, conclusão e gates de prontidão*: Scorecard de prontidão e governança sanitária com avaliação dos 5 Gates de Auditoria (Gate 1: Planejamento e Escopo; Gate 2: Execução do Checklist; Gate 3: Evidenciação ALCOA+; Gate 4: Planos de Ação e CAPA; Gate 5: Relatório e Conclusão), veredito regulatório formal, sumário executivo e parecer conclusivo do relatório emitido, indicadores consolidados de conformidade e resumo de encerramento formal assinado.
+  Cada aba aplica segregação de deveres (SoD) no servidor, protegendo o acesso a checklists, apontamentos, evidências, ações e relatórios conforme as permissões de cada usuário.
+
 ## Regras
 
 - Menus usam permissões `view` dos models.

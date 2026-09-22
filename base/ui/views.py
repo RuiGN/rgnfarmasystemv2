@@ -1294,6 +1294,11 @@ class ResourceDetailView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
             and resource.slug == 'controlled-documents'
             and self.request.user.has_perm('documents.view_controlleddocument')
         )
+        context['can_view_audit_cockpit'] = (
+            self.get_module().slug == 'audits'
+            and resource.slug == 'plans'
+            and self.request.user.has_perm('audits.view_auditplan')
+        )
         return context
 
 

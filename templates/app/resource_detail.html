@@ -73,6 +73,9 @@
                 {% if module.slug == 'documents' and resource.slug == 'controlled-documents' and can_view_controlled_document_cockpit %}
                     <a href="{% url 'app:controlled_document_cockpit' object.pk %}" class="btn btn-primary d-inline-flex align-items-center gap-2"><i class="feather-book-open" aria-hidden="true"></i>Cockpit do documento (DMS)</a>
                 {% endif %}
+                {% if module.slug == 'audits' and resource.slug == 'plans' and can_view_audit_cockpit %}
+                    <a href="{% url 'app:audit_cockpit' object.pk %}" class="btn btn-primary d-inline-flex align-items-center gap-2"><i class="feather-check-square" aria-hidden="true"></i>Cockpit da auditoria (360°)</a>
+                {% endif %}
                 {% if resource.has_document_viewer %}
                     <a href="{% url 'app:resource_viewer' module.slug resource.slug object.pk %}" class="btn btn-dark d-inline-flex align-items-center gap-2"><i class="feather-book-open" aria-hidden="true"></i>Visualizar documento</a>
                 {% endif %}
