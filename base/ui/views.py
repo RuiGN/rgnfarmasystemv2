@@ -1246,6 +1246,11 @@ class ResourceDetailView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
         context['can_print_labels'] = isinstance(obj, StockLot) and self.request.user.has_perm(
             'inventory.view_stocklot'
         )
+        context['can_view_formula_cockpit'] = (
+            self.get_module().slug == 'formulations'
+            and resource.slug == 'formulas'
+            and self.request.user.has_perm('formulations.view_masterformula')
+        )
         return context
 
 

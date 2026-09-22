@@ -2,7 +2,7 @@ from django.urls import path
 
 from base.ui import views
 from base.ui.actions import views as action_views
-from formulations.ui_views import MasterFormulaReuseView
+from formulations.ui_views import MasterFormulaCockpitView, MasterFormulaReuseView
 
 
 app_name = 'app'
@@ -73,6 +73,12 @@ urlpatterns = [
         MasterFormulaReuseView.as_view(),
         {'module_slug': 'formulations', 'resource_slug': 'formulas'},
         name='master_formula_reuse',
+    ),
+    path(
+        'formulations/formulas/<int:pk>/cockpit/',
+        MasterFormulaCockpitView.as_view(),
+        {'module_slug': 'formulations', 'resource_slug': 'formulas'},
+        name='master_formula_cockpit',
     ),
     path(
         '<slug:module_slug>/<slug:resource_slug>/<int:pk>/actions/<slug:action_name>/',

@@ -117,6 +117,17 @@ permissionado. Assim, a ausência de um link autorizado implica também ausênci
 do comando correspondente; as views continuam sendo a fronteira defensiva ao
 receber acesso direto.
 
+### Cockpits operacionais especializados
+
+- **Ciclo de Abastecimento da Fórmula (`app:master_formula_cockpit`):**
+  Disponível no detalhe de `MasterFormula` (`/app/formulations/formulas/<id>/cockpit/`).
+  Consolida a visão operacional do ciclo de vida em quatro abas Duralux:
+  1. *Formulação e BOM*: Matérias-primas, quantidades e perdas previstas.
+  2. *Orçamentos e Cotações*: RFQs e propostas de fornecedores para os insumos.
+  3. *Pedidos de Compra*: Ordens de compra emitidas para atender a fórmula.
+  4. *Recebimento e Lotes*: Entradas físicas e fiscais com status de qualidade e lote.
+  Cada aba verifica permissões granulares no servidor e mantém o sincronismo de navegação via hash da URL.
+
 ## Regras
 
 - Menus usam permissões `view` dos models.

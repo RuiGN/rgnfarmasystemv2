@@ -1,0 +1,369 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ formula.product.description }} | Ciclo de abastecimento | RGN Farma System{% endblock %}
+
+{% block page_header %}
+<div class="page-header" id="section-0">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h1 class="h5 m-b-10">Ciclo de abastecimento</h1>
+        </div>
+        <ul class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:module' 'formulations' %}">{{ module.label }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:resource_detail' 'formulations' 'formulas' formula.pk %}">{{ formula.code }} v{{ formula.version }}</a></li>
+            <li class="breadcrumb-item active">Ciclo de abastecimento</li>
+        </ul>
+    </div>
+    <div class="page-header-right ms-auto d-flex align-items-center gap-2">
+        <a class="btn btn-light" href="{% url 'app:resource_detail' 'formulations' 'formulas' formula.pk %}">
+            <i class="feather-arrow-left me-1" aria-hidden="true"></i> Voltar à fórmula
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card stretch stretch-full mb-4">
+    <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <span class="text-muted text-uppercase fs-11 fw-semibold">Fórmula mestra</span>
+                <h2 class="h4 mb-1">{{ formula.code }} v{{ formula.version }} — {{ formula.product.description }}</h2>
+                <p class="text-muted mb-0">
+                    Lote padrão: <strong>{{ formula.batch_size|floatformat:4 }} {{ formula.batch_unit.symbol }}</strong>
+                    {% if formula.effective_from %}
+                        · Vigência: {{ formula.effective_from|date:'d/m/Y' }}{% if formula.effective_to %} até {{ formula.effective_to|date:'d/m/Y' }}{% endif %}
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <span class="badge bg-soft-primary text-primary fs-12 px-3 py-2">{{ formula.get_status_display }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card stretch stretch-full">
+    <div class="card-header p-0 border-bottom">
+        <ul class="nav nav-tabs card-header-tabs m-0 px-3" id="procurementFlowTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button 
+                    class="nav-link active d-flex align-items-center gap-2 py-3 px-4" 
+                    id="tab-formula-btn" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#tab-formula-pane" 
+                    type="button" 
+                    role="tab"
+                    aria-controls="tab-formula-pane" 
+                    aria-selected="true">
+                    <i class="feather-flask text-primary fs-16" aria-hidden="true"></i>
+                    <span class="fw-semibold">1. Formulação e BOM</span>
+                    <span class="badge bg-soft-primary text-primary rounded-pill fs-11 ms-1">
+                        {{ components|length }}
+                    </span>
+                </button>
+            </li>
+
+            <li class="nav-item" role="presentation">
+                <button 
+                    class="nav-link d-flex align-items-center gap-2 py-3 px-4" 
+                    id="tab-quotations-btn" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#tab-quotations-pane" 
+                    type="button" 
+                    role="tab"
+                    aria-controls="tab-quotations-pane" 
+                    aria-selected="false">
+                    <i class="feather-dollar-sign text-warning fs-16" aria-hidden="true"></i>
+                    <span class="fw-semibold">2. Orçamentos e cotações</span>
+                    {% if active_rfqs_count %}
+                        <span class="badge bg-soft-warning text-warning rounded-pill fs-11 ms-1">{{ active_rfqs_count }}</span>
+                    {% endif %}
+                </button>
+            </li>
+
+            <li class="nav-item" role="presentation">
+                <button 
+                    class="nav-link d-flex align-items-center gap-2 py-3 px-4" 
+                    id="tab-orders-btn" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#tab-orders-pane" 
+                    type="button" 
+                    role="tab"
+                    aria-controls="tab-orders-pane" 
+                    aria-selected="false">
+                    <i class="feather-shopping-cart text-info fs-16" aria-hidden="true"></i>
+                    <span class="fw-semibold">3. Pedidos de compra</span>
+                    {% if open_orders_count %}
+                        <span class="badge bg-soft-info text-info rounded-pill fs-11 ms-1">{{ open_orders_count }}</span>
+                    {% endif %}
+                </button>
+            </li>
+
+            <li class="nav-item" role="presentation">
+                <button 
+                    class="nav-link d-flex align-items-center gap-2 py-3 px-4" 
+                    id="tab-receipts-btn" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#tab-receipts-pane" 
+                    type="button" 
+                    role="tab"
+                    aria-controls="tab-receipts-pane" 
+                    aria-selected="false">
+                    <i class="feather-truck text-success fs-16" aria-hidden="true"></i>
+                    <span class="fw-semibold">4. Recebimento e lotes</span>
+                    {% if pending_receipts_count %}
+                        <span class="badge bg-soft-success text-success rounded-pill fs-11 ms-1">{{ pending_receipts_count }}</span>
+                    {% endif %}
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="card-body p-4">
+        <div class="tab-content" id="procurementFlowContent">
+            <!-- Painel 1: Formulação e Componentes -->
+            <div class="tab-pane fade show active" id="tab-formula-pane" role="tabpanel" aria-labelledby="tab-formula-btn">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h6 fw-bold mb-0">Componentes da fórmula mestra (BOM)</h2>
+                    {% if can_change %}
+                        <a href="{% url 'app:resource_edit' 'formulations' 'formulas' formula.pk %}" class="btn btn-sm btn-light-brand">
+                            <i class="feather-edit-2 me-1" aria-hidden="true"></i>Editar componentes
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="table-responsive border rounded">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 70px;">Linha</th>
+                                <th>Código</th>
+                                <th>Insumo / Matéria-prima</th>
+                                <th>Função</th>
+                                <th>Quantidade</th>
+                                <th>Perda prevista</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for comp in components %}
+                            <tr>
+                                <td><span class="text-muted">{{ comp.line_number }}</span></td>
+                                <td class="fw-bold">{{ comp.material.code }}</td>
+                                <td>{{ comp.material.description }}</td>
+                                <td><span class="badge bg-soft-secondary text-secondary">{{ comp.get_role_display }}</span></td>
+                                <td>{{ comp.quantity|floatformat:4 }} {{ comp.unit.symbol }}</td>
+                                <td>{{ comp.expected_loss_percent|floatformat:2 }}%</td>
+                                <td>
+                                    {% if perms.procurement.add_quotationrequest %}
+                                        <a href="{% url 'app:resource_create' 'procurement' 'rfqs' %}" 
+                                           class="btn btn-xs btn-outline-primary" title="Cotar este insumo">
+                                            <i class="feather-tag me-1" aria-hidden="true"></i>Cotar
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">Nenhum componente cadastrado nesta fórmula.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Painel 2: Orçamentos e Cotações (RFQs) -->
+            <div class="tab-pane fade" id="tab-quotations-pane" role="tabpanel" aria-labelledby="tab-quotations-btn">
+                {% if can_view_rfqs %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h6 fw-bold mb-0">Cotações e propostas de fornecedores</h2>
+                        {% if perms.procurement.add_quotationrequest %}
+                            <a href="{% url 'app:resource_create' 'procurement' 'rfqs' %}" class="btn btn-sm btn-primary">
+                                <i class="feather-plus me-1" aria-hidden="true"></i>Nova cotação (RFQ)
+                            </a>
+                        {% endif %}
+                    </div>
+                    <div class="table-responsive border rounded">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Cotação</th>
+                                    <th>Fornecedor</th>
+                                    <th>Qtd. cotada</th>
+                                    <th>Preço unitário</th>
+                                    <th>Valor total</th>
+                                    <th>Prazo (dias)</th>
+                                    <th>Validade</th>
+                                    <th>Status</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for quote in quotations %}
+                                <tr>
+                                    <td class="fw-bold">{{ quote.rfq.rfq_number }}</td>
+                                    <td>{{ quote.supplier.trade_name|default:quote.supplier.legal_name }}</td>
+                                    <td>{{ quote.quoted_quantity|floatformat:4 }}</td>
+                                    <td class="text-success fw-bold">{{ quote.currency }} {{ quote.unit_price|floatformat:4 }}</td>
+                                    <td>{{ quote.currency }} {{ quote.total_amount|floatformat:2 }}</td>
+                                    <td>{{ quote.lead_time_days }} dias</td>
+                                    <td>{{ quote.valid_until|date:'d/m/Y'|default:'—' }}</td>
+                                    <td><span class="badge bg-soft-info text-info">{{ quote.get_status_display }}</span></td>
+                                    <td>
+                                        <a href="{% url 'app:resource_detail' 'procurement' 'rfqs' quote.rfq.pk %}" class="btn btn-xs btn-light">
+                                            Ver cotação
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="9" class="text-center py-4 text-muted">Nenhuma cotação de fornecedor encontrada para os insumos desta fórmula.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-secondary mb-0" role="status">
+                        Você não possui permissão para visualizar cotações e orçamentos.
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Painel 3: Pedidos de Compra -->
+            <div class="tab-pane fade" id="tab-orders-pane" role="tabpanel" aria-labelledby="tab-orders-btn">
+                {% if can_view_orders %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h6 fw-bold mb-0">Pedidos de compra dos insumos</h2>
+                        {% if perms.procurement.add_purchaseorder %}
+                            <a href="{% url 'app:resource_create' 'procurement' 'orders' %}" class="btn btn-sm btn-primary">
+                                <i class="feather-plus me-1" aria-hidden="true"></i>Novo pedido de compra
+                            </a>
+                        {% endif %}
+                    </div>
+                    <div class="table-responsive border rounded">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Pedido</th>
+                                    <th>Fornecedor</th>
+                                    <th>Emissão</th>
+                                    <th>Entrega prevista</th>
+                                    <th>Valor total</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in purchase_orders %}
+                                <tr>
+                                    <td class="fw-bold">{{ order.order_number }}</td>
+                                    <td>{{ order.supplier.trade_name|default:order.supplier.legal_name }}</td>
+                                    <td>{{ order.issue_date|date:'d/m/Y' }}</td>
+                                    <td>{{ order.expected_delivery_date|date:'d/m/Y'|default:'—' }}</td>
+                                    <td>R$ {{ order.total_amount|floatformat:2 }}</td>
+                                    <td><span class="badge bg-soft-primary text-primary">{{ order.get_status_display }}</span></td>
+                                    <td>
+                                        <a href="{% url 'app:resource_detail' 'procurement' 'orders' order.pk %}" class="btn btn-xs btn-light">
+                                            Detalhes
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">Nenhum pedido de compra encontrado para os insumos desta fórmula.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-secondary mb-0" role="status">
+                        Você não possui permissão para visualizar pedidos de compra.
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Painel 4: Recebimento e Lotes -->
+            <div class="tab-pane fade" id="tab-receipts-pane" role="tabpanel" aria-labelledby="tab-receipts-btn">
+                {% if can_view_receipts %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h6 fw-bold mb-0">Recebimentos físicos e fiscais</h2>
+                        {% if perms.procurement.add_purchasereceipt %}
+                            <a href="{% url 'app:resource_create' 'procurement' 'receipts' %}" class="btn btn-sm btn-success">
+                                <i class="feather-check-circle me-1" aria-hidden="true"></i>Registrar recebimento
+                            </a>
+                        {% endif %}
+                    </div>
+                    <div class="table-responsive border rounded">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Recebimento</th>
+                                    <th>Pedido</th>
+                                    <th>Documento fiscal</th>
+                                    <th>Status</th>
+                                    <th>Qualidade</th>
+                                    <th>Entrada em estoque</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for receipt in receipts %}
+                                <tr>
+                                    <td class="fw-bold">{{ receipt.receipt_number }}</td>
+                                    <td>{{ receipt.order.order_number }}</td>
+                                    <td>{{ receipt.fiscal_document_number|default:'—' }}</td>
+                                    <td><span class="badge bg-soft-dark text-dark">{{ receipt.get_status_display }}</span></td>
+                                    <td><span class="badge bg-soft-warning text-warning">{{ receipt.get_quality_status_display }}</span></td>
+                                    <td><span class="badge bg-soft-info text-info">{{ receipt.get_stock_entry_status_display }}</span></td>
+                                    <td>
+                                        <a href="{% url 'app:resource_detail' 'procurement' 'receipts' receipt.pk %}" class="btn btn-xs btn-light">
+                                            Conferir
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">Nenhum recebimento registrado para os insumos desta fórmula.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-secondary mb-0" role="status">
+                        Você não possui permissão para visualizar recebimentos de compra.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const hash = window.location.hash;
+    if (hash) {
+        const triggerEl = document.querySelector(`button[data-bs-target="${hash}"]`);
+        if (triggerEl) {
+            bootstrap.Tab.getOrCreateInstance(triggerEl).show();
+        }
+    }
+    
+    const tabButtons = document.querySelectorAll('button[data-bs-toggle="tab"]');
+    tabButtons.forEach(btn => {
+        btn.addEventListener('shown.bs.tab', function (e) {
+            const targetHash = e.target.getAttribute('data-bs-target');
+            history.replaceState(null, null, targetHash);
+        });
+    });
+});
+</script>
+{% endblock %}
