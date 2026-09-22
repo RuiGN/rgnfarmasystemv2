@@ -139,6 +139,16 @@ receber acesso direto.
   6. *Rendimento e custos*: Entradas de produto acabado em quarentena, conciliação teórica vs. real e apropriação de custos de produção.
   Cada aba aplica segregação de deveres (SoD) no servidor, protegendo dados restritos de qualidade e custos contra acessos não autorizados.
 
+- **Cockpit de Liberação de Lote e Dossiê QA (`app:qa_lot_release_cockpit` / `app:stock_lot_dossier`):**
+  Disponível no detalhe de `LotRelease` (`/app/qa/lot-releases/<id>/cockpit/`) e no detalhe de `StockLot` (`/app/inventory/lots/<id>/dossier/`).
+  Consolida a liberação sanitária e a revisão de batch record em cinco abas Duralux:
+  1. *Lote, saldos e genealogia*: Metadados do lote, validade, alertas de expiração, endereçamento físico e saldos detalhados, rastreabilidade montante (insumos consumidos) e jusante (lotes derivados).
+  2. *Controle de qualidade e laudos*: Amostras laboratoriais, ensaios físico-químicos e microbiológicos com status de conformidade (OOS/OOT) e Certificados de Análise (CoA) emitidos.
+  3. *Revisão do batch record*: Prontuário de revisão QA, percentual de conclusão e checklist normativo de BPF com referências documentais de evidência e conclusão de itens.
+  4. *Bloqueios e desvios*: Bloqueios sanitários ativos (Quality Blocks) e eventos de não-conformidade/desvios da batelada com alertas preventivos de risco.
+  5. *Decisão e liberação (ALCOA+)*: Matriz de prontidão regulatória sanitária com validação automática de pré-requisitos, parecer técnico registrado com trilha de auditoria e botões diretos de transição de estado (`approve`, `block`, `reject`, `unblock`).
+  Cada aba aplica segregação de deveres (SoD) com avisos contextuais para permissões não concedidas.
+
 ## Regras
 
 - Menus usam permissões `view` dos models.

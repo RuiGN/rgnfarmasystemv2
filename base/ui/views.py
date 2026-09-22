@@ -1256,6 +1256,19 @@ class ResourceDetailView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
             and resource.slug == 'orders'
             and self.request.user.has_perm('production.view_productionorder')
         )
+        context['can_view_lot_release_cockpit'] = (
+            self.get_module().slug == 'qa'
+            and resource.slug == 'lot-releases'
+            and self.request.user.has_perm('qa.view_lotrelease')
+        )
+        context['can_view_stock_lot_dossier'] = (
+            self.get_module().slug == 'inventory'
+            and resource.slug == 'lots'
+            and (
+                self.request.user.has_perm('qa.view_lotrelease')
+                or self.request.user.has_perm('inventory.view_stocklot')
+            )
+        )
         return context
 
 

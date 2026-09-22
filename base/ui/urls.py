@@ -4,6 +4,7 @@ from base.ui import views
 from base.ui.actions import views as action_views
 from formulations.ui_views import MasterFormulaCockpitView, MasterFormulaReuseView
 from production.ui_views import ProductionOrderCockpitView
+from qa.ui_views import LotReleaseCockpitView, StockLotDossierView
 
 
 app_name = 'app'
@@ -86,6 +87,18 @@ urlpatterns = [
         ProductionOrderCockpitView.as_view(),
         {'module_slug': 'production', 'resource_slug': 'orders'},
         name='production_order_cockpit',
+    ),
+    path(
+        'qa/lot-releases/<int:pk>/cockpit/',
+        LotReleaseCockpitView.as_view(),
+        {'module_slug': 'qa', 'resource_slug': 'lot-releases'},
+        name='qa_lot_release_cockpit',
+    ),
+    path(
+        'inventory/lots/<int:pk>/dossier/',
+        StockLotDossierView.as_view(),
+        {'module_slug': 'inventory', 'resource_slug': 'lots'},
+        name='stock_lot_dossier',
     ),
     path(
         '<slug:module_slug>/<slug:resource_slug>/<int:pk>/actions/<slug:action_name>/',

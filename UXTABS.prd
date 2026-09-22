@@ -50,13 +50,13 @@ O padrão consolida em um único template responsivo:
   - [X] Revisão de conformidade de templates (pt-BR, sem moji-bake, sem regressões)
   - [X] Atualização de documentação em `TEMPLATES.md` e marcação da sprint
 
-- [ ] **Sprint 2: Cockpit de Liberação de Lote e Dossiê QA (Batch Record Review & Release)**
-  - [ ] Especificação e mapeamento (`StockLot`, `LotRelease`, `StockLotGenealogy`, `QualityAnalysis`, `BatchRecordChecklistItem`, `QualityBlock`)
-  - [ ] Criação da view `LotReleaseCockpitView` / `StockLotDossierView`
-  - [ ] Registro de rotas de navegação do Dossiê do Lote
-  - [ ] Template com abas: Genealogia & Rastreabilidade, Laudos CQ (Físico-Químico e Micro), Checklist Batch Record QA, Bloqueios & Desvios, Decisão de Liberação (ALCOA+)
-  - [ ] Integração com ações de liberação e rejeição sanitária
-  - [ ] Testes automatizados e documentação
+- [X] **Sprint 2: Cockpit de Liberação de Lote e Dossiê QA (Batch Record Review & Release)**
+  - [X] Especificação e mapeamento (`StockLot`, `LotRelease`, `StockLotGenealogy`, `QualityAnalysis`, `BatchRecordChecklistItem`, `QualityBlock`)
+  - [X] Criação da view `LotReleaseCockpitView` / `StockLotDossierView`
+  - [X] Registro de rotas de navegação do Dossiê do Lote
+  - [X] Template com abas: Genealogia & Rastreabilidade, Laudos CQ (Físico-Químico e Micro), Checklist Batch Record QA, Bloqueios & Desvios, Decisão de Liberação (ALCOA+)
+  - [X] Integração com ações de liberação e rejeição sanitária
+  - [X] Testes automatizados e documentação
 
 - [ ] **Sprint 3: Cockpit Integrado de Não-Conformidade, Investigação e CAPA (Quality Event 360°)**
   - [ ] Mapeamento transversal de qualidade (`QualityEvent`, `DeviationEvidence`, `DeviationInvestigation`, `DeviationImpactAssessment`, `DeviationApproval`, `CapaRecord`, `CapaAction`, `EffectivenessCheck`)
