@@ -2,6 +2,7 @@ from django.urls import path
 
 from base.ui import views
 from base.ui.actions import views as action_views
+from deviations.ui_views import QualityEventCockpitView
 from formulations.ui_views import MasterFormulaCockpitView, MasterFormulaReuseView
 from production.ui_views import ProductionOrderCockpitView
 from qa.ui_views import LotReleaseCockpitView, StockLotDossierView
@@ -99,6 +100,12 @@ urlpatterns = [
         StockLotDossierView.as_view(),
         {'module_slug': 'inventory', 'resource_slug': 'lots'},
         name='stock_lot_dossier',
+    ),
+    path(
+        'deviations/events/<int:pk>/cockpit/',
+        QualityEventCockpitView.as_view(),
+        {'module_slug': 'deviations', 'resource_slug': 'events'},
+        name='quality_event_cockpit',
     ),
     path(
         '<slug:module_slug>/<slug:resource_slug>/<int:pk>/actions/<slug:action_name>/',

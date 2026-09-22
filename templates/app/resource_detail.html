@@ -58,6 +58,9 @@
                 {% if module.slug == 'inventory' and resource.slug == 'lots' and can_view_stock_lot_dossier %}
                     <a href="{% url 'app:stock_lot_dossier' object.pk %}" class="btn btn-info d-inline-flex align-items-center gap-2"><i class="feather-shield" aria-hidden="true"></i>Dossiê QA / Liberação</a>
                 {% endif %}
+                {% if module.slug == 'deviations' and resource.slug == 'events' and can_view_quality_event_cockpit %}
+                    <a href="{% url 'app:quality_event_cockpit' object.pk %}" class="btn btn-danger d-inline-flex align-items-center gap-2"><i class="feather-alert-triangle" aria-hidden="true"></i>Cockpit do evento / CAPA</a>
+                {% endif %}
                 {% if resource.has_document_viewer %}
                     <a href="{% url 'app:resource_viewer' module.slug resource.slug object.pk %}" class="btn btn-dark d-inline-flex align-items-center gap-2"><i class="feather-book-open" aria-hidden="true"></i>Visualizar documento</a>
                 {% endif %}

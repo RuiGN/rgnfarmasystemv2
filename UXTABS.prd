@@ -58,11 +58,11 @@ O padrão consolida em um único template responsivo:
   - [X] Integração com ações de liberação e rejeição sanitária
   - [X] Testes automatizados e documentação
 
-- [ ] **Sprint 3: Cockpit Integrado de Não-Conformidade, Investigação e CAPA (Quality Event 360°)**
-  - [ ] Mapeamento transversal de qualidade (`QualityEvent`, `DeviationEvidence`, `DeviationInvestigation`, `DeviationImpactAssessment`, `DeviationApproval`, `CapaRecord`, `CapaAction`, `EffectivenessCheck`)
-  - [ ] Criação da view `QualityEventCockpitView`
-  - [ ] Template com abas: Notificação & Contenção Imediata, Investigação Causa Raiz (Ishikawa/5 Porquês), Avaliação de Impacto Regulatório, Planos de Ação CAPA, Verificação de Eficácia & Fechamento
-  - [ ] Testes automatizados e documentação
+- [X] **Sprint 3: Cockpit Integrado de Não-Conformidade, Investigação e CAPA (Quality Event 360°)**
+  - [X] Mapeamento transversal de qualidade (`QualityEvent`, `DeviationEvidence`, `DeviationInvestigation`, `DeviationImpactAssessment`, `DeviationApproval`, `CapaRecord`, `CapaAction`, `EffectivenessCheck`)
+  - [X] Criação da view `QualityEventCockpitView`
+  - [X] Template com abas: Notificação & Contenção Imediata, Investigação Causa Raiz (Ishikawa/5 Porquês), Avaliação de Impacto Regulatório, Planos de Ação CAPA, Verificação de Eficácia & Fechamento
+  - [X] Testes automatizados e documentação
 
 - [ ] **Sprint 4: Cockpit Comercial Order-to-Cash (Pedido de Venda 360°)**
   - [ ] Mapeamento comercial, fiscal, estoque e financeiro (`SalesOrder`, `SalesOrderItem`, `CustomerProfile`, `StockBalance`, `FiscalDocument`, `FinancialTitle`, `FinancialSettlement`)

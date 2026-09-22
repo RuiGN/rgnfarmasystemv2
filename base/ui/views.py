@@ -1269,6 +1269,11 @@ class ResourceDetailView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
                 or self.request.user.has_perm('inventory.view_stocklot')
             )
         )
+        context['can_view_quality_event_cockpit'] = (
+            self.get_module().slug == 'deviations'
+            and resource.slug == 'events'
+            and self.request.user.has_perm('deviations.view_qualityevent')
+        )
         return context
 
 

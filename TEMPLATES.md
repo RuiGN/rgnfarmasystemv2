@@ -149,6 +149,16 @@ receber acesso direto.
   5. *Decisão e liberação (ALCOA+)*: Matriz de prontidão regulatória sanitária com validação automática de pré-requisitos, parecer técnico registrado com trilha de auditoria e botões diretos de transição de estado (`approve`, `block`, `reject`, `unblock`).
   Cada aba aplica segregação de deveres (SoD) com avisos contextuais para permissões não concedidas.
 
+- **Cockpit de Gestão de Desvio, Investigação e CAPA (`app:quality_event_cockpit`):**
+  Disponível no detalhe de `QualityEvent` (`/app/deviations/events/<id>/cockpit/`).
+  Consolida a gestão 360° de ocorrências, metodologia de causa raiz e ações corretivas em cinco abas Duralux:
+  1. *Notificação e contenção*: Descrição detalhada da ocorrência, severidade, criticidade, quarentena/bloqueio do lote envolvido com link direto para o dossiê do lote, evidências documentais com hash ALCOA+ e vínculos transversais.
+  2. *Investigação e causa raiz*: Metodologia técnica Ishikawa e 5 Porquês, apuração de causas imediatas e fundamentais, conclusões de impacto e conclusão técnica com fluxo direto de encerramento de investigação.
+  3. *Avaliação de impacto*: Matriz regulatória nos 8 eixos de conformidade sanitária (Qualidade do produto, Segurança sanitária, Eficácia cosmética, Assuntos regulatórios / ANVISA, Consumidor / Paciente, Estoque e quarentena, Custos e perdas, Prazo operacional) e sumário técnico formalizado.
+  4. *Planos de ação (CAPA)*: Vínculo unificado com planos `CapaRecord`, resumo executivo de progresso percentual, detalhamento de ações corretivas e preventivas com responsáveis, prazos, exigência de evidência e conclusão direta.
+  5. *Aprovações e fechamento*: Workflow de assinaturas multidisciplinares SoD (Garantia da Qualidade, Controle de Qualidade, Produção, Assuntos Regulatórios, Área Responsável), verificações de eficácia dos planos CAPA, checklist regulatório de prontidão (4 gates) e encerramento sanitário formal do evento.
+  Cada aba aplica segregação de deveres (SoD) no servidor, protegendo o acesso de acordo com as permissões atribuídas.
+
 ## Regras
 
 - Menus usam permissões `view` dos models.
