@@ -169,6 +169,16 @@ receber acesso direto.
   5. *Títulos financeiros e baixas*: Contas a receber geradas pelo pedido, histórico de baixas e liquidações financeiras (PIX, boleto, transferência) e régua de prontidão Order-to-Cash (5 Gates).
   Cada aba aplica segregação de deveres (SoD) no servidor, protegendo o acesso a crédito, estoque, documentos fiscais e finanças conforme as permissões do usuário.
 
+- **Cockpit de Cosmetovigilância, Reclamações de Mercado e Recolhimento (`app:market_complaint_cockpit`):**
+  Disponível no detalhe de `MarketComplaint` (`/app/recalls/complaints/<id>/cockpit/`).
+  Consolida a segurança pós-mercado, investigação técnica e gestão sanitária de recall em cinco abas Duralux:
+  1. *Notificação e triagem clínica*: Identificação da ocorrência, canal/fonte notificante, cliente/consumidor, produto, lote fabril vinculado ao dossiê, pedido de venda e NF-e de origem, relato do evento adverso e protocolos de triagem clínica.
+  2. *Amostroteca e investigação analítica*: Amostra de contraprova colhida e retida, ensaios laboratoriais físico-químicos e microbiológicos (CQ), desvios/não-conformidades do lote fabril e parecer técnico da investigação.
+  3. *Devoluções e quarentena*: Devoluções pós-mercado e logística reversa com quantidades solicitadas e recebidas, destinação física (quarentena, destruição, retrabalho), notas de inspeção, saldos em estoque e bloqueios de qualidade ativos (Quality Blocks).
+  4. *Recolhimento e clientes impactados*: Campanhas de recall formal/voluntário, gatilho, data de decisão e prazo-alvo, mapa de clientes/distribuidores impactados pela batelada (rastreabilidade comercial direta), taxa de recuperação percentual e comunicações aos clientes/autoridades com hash ALCOA+.
+  5. *Dossiê regulatório ANVISA e eficácia*: Protocolo de notificação à autoridade sanitária (ANVISA), relatórios de efetividade e rastreabilidade, planos de ação corretiva e preventiva (CAPA) com responsáveis e prazos, além de checklist regulatório sanitário de encerramento.
+  Cada aba aplica segregação de deveres (SoD) no servidor, restringindo a visualização de ensaios analíticos, devoluções, recall, clientes impactados e CAPA conforme as permissões atribuídas.
+
 ## Regras
 
 - Menus usam permissões `view` dos models.

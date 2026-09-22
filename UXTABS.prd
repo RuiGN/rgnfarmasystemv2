@@ -70,11 +70,11 @@ O padrão consolida em um único template responsivo:
   - [X] Template com abas: Dados Comerciais do Pedido, Análise de Crédito & Reserva de Estoque (FEFO), Faturamento NF-e & Impostos, Expedição & Rastreamento Logístico, Títulos Financeiros a Receber
   - [X] Testes automatizados e documentação
 
-- [ ] **Sprint 5: Cockpit de Cosmetovigilância, Reclamações de Mercado e Recolhimento (Recall)**
-  - [ ] Mapeamento de pós-mercado e segurança sanitária (`MarketComplaint`, `ProductReturn`, `RecallCampaign`, `RecallImpactedCustomer`, `RecallCommunication`, `RecallEffectivenessReport`, `QualityAnalysis`)
-  - [ ] Criação da view `MarketComplaintCockpitView`
-  - [ ] Template com abas: Notificação & Triagem Clínica de Cosmetovigilância, Amostroteca & Investigação Laboratorial, Devoluções & Quarentena, Clientes Impactados & Comunicações, Dossiê Regulatório ANVISA & Eficácia
-  - [ ] Testes automatizados e documentação
+- [X] **Sprint 5: Cockpit de Cosmetovigilância, Reclamações de Mercado e Recolhimento (Recall)**
+  - [X] Mapeamento de pós-mercado e segurança sanitária (`MarketComplaint`, `ProductReturn`, `RecallCampaign`, `RecallImpactedCustomer`, `RecallCommunication`, `RecallEffectivenessReport`, `QualityAnalysis`)
+  - [X] Criação da view `MarketComplaintCockpitView`
+  - [X] Template com abas: Notificação & Triagem Clínica de Cosmetovigilância, Amostroteca & Investigação Laboratorial, Devoluções & Quarentena, Clientes Impactados & Comunicações, Dossiê Regulatório ANVISA & Eficácia
+  - [X] Testes automatizados e documentação
 
 - [ ] **Sprint 6: Cockpit de Homologação e Qualificação de Fornecedores (Vendor Lifecycle 360°)**
   - [ ] Mapeamento de parceiros de negócio (`BusinessPartner`, `Audit`, `SupplierQuotation`, `PurchaseOrder`, `PurchaseReceipt`, `QualityEvent`)

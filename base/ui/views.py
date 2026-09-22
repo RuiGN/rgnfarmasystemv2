@@ -1279,6 +1279,11 @@ class ResourceDetailView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
             and resource.slug == 'orders'
             and self.request.user.has_perm('crm.view_salesorder')
         )
+        context['can_view_market_complaint_cockpit'] = (
+            self.get_module().slug == 'recalls'
+            and resource.slug == 'complaints'
+            and self.request.user.has_perm('recalls.view_marketcomplaint')
+        )
         return context
 
 

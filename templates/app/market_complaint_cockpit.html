@@ -1,0 +1,1120 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ complaint.complaint_number }} — Cockpit de Cosmetovigilância e Recolhimento | RGN Farma System{% endblock %}
+
+{% block page_header %}
+<div class="page-header" id="section-0">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h1 class="h5 m-b-10">Cockpit de Cosmetovigilância e Recolhimento (Recall)</h1>
+        </div>
+        <ul class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:module' 'recalls' %}">{{ module.label }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:resource_list' 'recalls' 'complaints' %}">{{ resource.label }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:resource_detail' 'recalls' 'complaints' complaint.pk %}">{{ complaint.complaint_number }}</a></li>
+            <li class="breadcrumb-item active">Cockpit de cosmetovigilância / Recall</li>
+        </ul>
+    </div>
+    <div class="page-header-right ms-auto d-flex align-items-center gap-2">
+        <a class="btn btn-light" href="{% url 'app:resource_detail' 'recalls' 'complaints' complaint.pk %}">
+            <i class="feather-arrow-left me-1" aria-hidden="true"></i> Voltar à reclamação
+        </a>
+        {% if product %}
+            <a class="btn btn-light" href="{% url 'app:resource_detail' 'masters' 'products' product.pk %}">
+                <i class="feather-package me-1" aria-hidden="true"></i> Ficha do produto
+            </a>
+        {% endif %}
+        {% if customer %}
+            <a class="btn btn-light" href="{% url 'app:resource_detail' 'masters' 'partners' customer.pk %}">
+                <i class="feather-user me-1" aria-hidden="true"></i> Ficha do cliente
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Card de Resumo e Identificação Executiva de Cosmetovigilância -->
+<div class="card stretch stretch-full mb-4">
+    <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <span class="text-muted text-uppercase fs-11 fw-semibold">Pós-Mercado e Segurança Sanitária · Cosmetovigilância e Rastreabilidade</span>
+                <h2 class="h4 mb-1">{{ complaint.complaint_number }} — {{ product.code }} {{ product.description }}</h2>
+                <p class="text-muted mb-0">
+                    Notificante / Cliente: <strong>{{ customer.legal_name }}</strong> ({{ customer.document }})
+                    · Recebida em: <strong>{{ complaint.received_at|date:"d/m/Y H:i" }}</strong>
+                    · Tipo: <strong>{{ complaint.get_complaint_type_display }}</strong>
+                    · Origem: <strong>{{ complaint.get_source_display }}</strong>
+                    · Localidade: <strong>{{ location_str }}</strong>
+                    {% if stock_lot %} · Lote fabril: <strong>{{ stock_lot.lot_number }}</strong>{% endif %}
+                    · Responsável: <strong>{% if complaint.responsible.get_full_name %}{{ complaint.responsible.get_full_name }}{% else %}{{ complaint.responsible|default:"Não informado" }}{% endif %}</strong>
+                </p>
+                {% if complaint.cancel_reason %}
+                    <div class="alert alert-danger py-1 px-2 mt-2 mb-0 fs-12 d-inline-block">
+                        <i class="feather-alert-octagon me-1" aria-hidden="true"></i><strong>Motivo do cancelamento:</strong> {{ complaint.cancel_reason }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <!-- Status da Reclamação -->
+                <span class="badge {% if complaint.status == 'closed' %}bg-soft-success text-success{% elif complaint.status == 'cancelled' %}bg-soft-secondary text-secondary{% elif complaint.status == 'investigation' %}bg-soft-primary text-primary{% elif complaint.status == 'pending_regulatory_communication' %}bg-soft-danger text-danger{% else %}bg-soft-warning text-warning{% endif %} fs-12 px-3 py-2">
+                    <i class="feather-activity me-1" aria-hidden="true"></i>{{ complaint.get_status_display }}
+                </span>
+                <!-- Criticidade Sanitária -->
+                <span class="badge {% if complaint.criticality == 'critical' or complaint.criticality == 'high' %}bg-soft-danger text-danger{% elif complaint.criticality == 'medium' %}bg-soft-warning text-warning{% else %}bg-soft-info text-info{% endif %} fs-12 px-3 py-2">
+                    <i class="feather-alert-triangle me-1" aria-hidden="true"></i>Criticidade {{ complaint.get_criticality_display }}
+                </span>
+                <!-- Notificação Regulatória ANVISA -->
+                <span class="badge {% if complaint.regulatory_communication_required and complaint.regulatory_communication_reference %}bg-soft-success text-success{% elif complaint.regulatory_communication_required %}bg-soft-danger text-danger{% else %}bg-soft-secondary text-secondary{% endif %} fs-12 px-3 py-2">
+                    {% if complaint.regulatory_communication_required and complaint.regulatory_communication_reference %}
+                        <i class="feather-check-circle me-1" aria-hidden="true"></i>ANVISA Protocolada
+                    {% elif complaint.regulatory_communication_required %}
+                        <i class="feather-alert-octagon me-1" aria-hidden="true"></i>Notificação ANVISA Obrigatória
+                    {% else %}
+                        <i class="feather-info me-1" aria-hidden="true"></i>Sem Notificação ANVISA
+                    {% endif %}
+                </span>
+                <!-- Campanha de Recall -->
+                <span class="badge {% if main_campaign %}bg-soft-warning text-warning{% else %}bg-soft-secondary text-secondary{% endif %} fs-12 px-3 py-2">
+                    {% if main_campaign %}
+                        <i class="feather-rotate-ccw me-1" aria-hidden="true"></i>Recall: {{ main_campaign.campaign_number }}
+                    {% else %}
+                        <i class="feather-slash me-1" aria-hidden="true"></i>Sem Recall Ativo
+                    {% endif %}
+                </span>
+                <!-- Ações Disponíveis -->
+                {% if available_complaint_actions %}
+                    <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="feather-settings me-1" aria-hidden="true"></i> Ações da reclamação
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            {% for action in available_complaint_actions %}
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'app:resource_action' 'recalls' 'complaints' complaint.pk action.name %}">
+                                        {{ action.label }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Linha de Indicadores Operacionais e Sanitários (KPIs) -->
+        <div class="row g-3">
+            <div class="col-6 col-md-3">
+                <div class="p-3 border rounded bg-light text-center">
+                    <span class="text-muted fs-12 text-uppercase d-block mb-1">Criticidade Sanitária</span>
+                    <span class="h5 mb-0 d-block {% if complaint.criticality == 'critical' or complaint.criticality == 'high' %}text-danger{% elif complaint.criticality == 'medium' %}text-warning{% else %}text-info{% endif %}">
+                        {{ complaint.get_criticality_display }}
+                    </span>
+                    <small class="text-muted fs-11">Classificação de risco cosmético</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-3 border rounded bg-light text-center">
+                    <span class="text-muted fs-12 text-uppercase d-block mb-1">Status de Triagem</span>
+                    <span class="h5 mb-0 d-block text-primary">
+                        {{ complaint.get_status_display }}
+                    </span>
+                    <small class="text-muted fs-11">{% if complaint.triaged_at %}Triada em {{ complaint.triaged_at|date:"d/m/Y" }}{% else %}Aguardando triagem clínica{% endif %}</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-3 border rounded bg-light text-center">
+                    <span class="text-muted fs-12 text-uppercase d-block mb-1">Devoluções Físicas</span>
+                    <span class="h5 mb-0 d-block text-dark">
+                        {{ total_return_quantity_received|floatformat:2 }} / {{ total_return_quantity_requested|floatformat:2 }} {{ product.unit.code|default:"UN" }}
+                    </span>
+                    <small class="text-muted fs-11">{{ returns|length }} devolução(ões) registrada(s)</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-3 border rounded bg-light text-center">
+                    <span class="text-muted fs-12 text-uppercase d-block mb-1">Recuperação de Recall</span>
+                    <span class="h5 mb-0 d-block {% if recovery_rate >= 80 %}text-success{% elif recovery_rate > 0 %}text-warning{% else %}text-muted{% endif %}">
+                        {{ recovery_rate }}%
+                    </span>
+                    <small class="text-muted fs-11">{{ total_returned_by_customers|floatformat:2 }} de {{ total_to_recall|floatformat:2 }} recolhidos</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Abas de Gestão Integrada de Cosmetovigilância e Recolhimento -->
+<div class="card stretch stretch-full">
+    <div class="card-header p-0">
+        <ul class="nav nav-tabs card-header-tabs m-0 px-3" id="complaintCockpitTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tab-triage-tab" data-bs-toggle="tab" data-bs-target="#tab-triage" type="button" role="tab" aria-controls="tab-triage" aria-selected="true">
+                    <i class="feather-alert-circle me-1" aria-hidden="true"></i> 1. Notificação e triagem clínica
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-analysis-tab" data-bs-toggle="tab" data-bs-target="#tab-analysis" type="button" role="tab" aria-controls="tab-analysis" aria-selected="false">
+                    <i class="feather-activity me-1" aria-hidden="true"></i> 2. Amostroteca e investigação analítica
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-returns-tab" data-bs-toggle="tab" data-bs-target="#tab-returns" type="button" role="tab" aria-controls="tab-returns" aria-selected="false">
+                    <i class="feather-corner-up-left me-1" aria-hidden="true"></i> 3. Devoluções e quarentena
+                    {% if returns %}
+                        <span class="badge bg-secondary ms-1">{{ returns|length }}</span>
+                    {% endif %}
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-recall-tab" data-bs-toggle="tab" data-bs-target="#tab-recall" type="button" role="tab" aria-controls="tab-recall" aria-selected="false">
+                    <i class="feather-rotate-ccw me-1" aria-hidden="true"></i> 4. Recolhimento e clientes impactados
+                    {% if campaigns %}
+                        <span class="badge bg-warning ms-1">{{ campaigns|length }}</span>
+                    {% endif %}
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-regulatory-tab" data-bs-toggle="tab" data-bs-target="#tab-regulatory" type="button" role="tab" aria-controls="tab-regulatory" aria-selected="false">
+                    <i class="feather-file-text me-1" aria-hidden="true"></i> 5. Dossiê regulatório ANVISA e eficácia
+                    {% if complaint.regulatory_communication_required %}
+                        <span class="badge {% if complaint.regulatory_communication_reference %}bg-success{% else %}bg-danger{% endif %} ms-1">ANVISA</span>
+                    {% endif %}
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="card-body tab-content" id="complaintCockpitTabsContent">
+        <!-- ========================================== -->
+        <!-- ABA 1: Notificação e Triagem Clínica de Cosmetovigilância -->
+        <!-- ========================================== -->
+        <div class="tab-pane fade show active" id="tab-triage" role="tabpanel" aria-labelledby="tab-triage-tab">
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="card border mb-0">
+                        <div class="card-header bg-light py-2">
+                            <h3 class="h6 mb-0 text-dark"><i class="feather-file-text me-2" aria-hidden="true"></i>Dados Cadastrais da Ocorrência</h3>
+                        </div>
+                        <div class="card-body p-0">
+                            <table class="table table-sm table-striped mb-0">
+                                <tbody>
+                                    <tr>
+                                        <th class="w-35 text-muted px-3 py-2">Número da Notificação</th>
+                                        <td class="px-3 py-2 fw-bold">{{ complaint.complaint_number }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted px-3 py-2">Data e Hora de Recebimento</th>
+                                        <td class="px-3 py-2">{{ complaint.received_at|date:"d/m/Y H:i" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted px-3 py-2">Tipo de Ocorrência</th>
+                                        <td class="px-3 py-2"><span class="badge bg-soft-info text-info">{{ complaint.get_complaint_type_display }}</span></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted px-3 py-2">Canal / Fonte Notificante</th>
+                                        <td class="px-3 py-2">{{ complaint.get_source_display }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted px-3 py-2">Consumidor / Cliente</th>
+                                        <td class="px-3 py-2">
+                                            <strong>{{ customer.legal_name }}</strong>
+                                            {% if customer.trade_name %}<br><small class="text-muted">{{ customer.trade_name }}</small>{% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted px-3 py-2">Localização Sanitária</th>
+                                        <td class="px-3 py-2">{{ location_str }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted px-3 py-2">Produto Objeto da Queixa</th>
+                                        <td class="px-3 py-2">
+                                            <strong>{{ product.code }}</strong> — {{ product.description }}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted px-3 py-2">Lote de Fabricação</th>
+                                        <td class="px-3 py-2">
+                                            {% if stock_lot %}
+                                                <a href="{% url 'app:stock_lot_dossier' stock_lot.pk %}" class="fw-bold text-primary">
+                                                    <i class="feather-shield me-1" aria-hidden="true"></i>{{ stock_lot.lot_number }}
+                                                </a>
+                                                {% if stock_lot.expiration_date %}<span class="text-muted fs-12 ms-1">(Val: {{ stock_lot.expiration_date|date:"d/m/Y" }})</span>{% endif %}
+                                            {% else %}
+                                                <span class="text-muted">Não informado</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted px-3 py-2">Pedido de Venda Comercial</th>
+                                        <td class="px-3 py-2">
+                                            {% if complaint.sales_order %}
+                                                <a href="{% url 'app:sales_order_cockpit' complaint.sales_order.pk %}" class="text-primary">
+                                                    <i class="feather-shopping-cart me-1" aria-hidden="true"></i>{{ complaint.sales_order.order_number }}
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">Não vinculado</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted px-3 py-2">Nota Fiscal de Saída (NF-e)</th>
+                                        <td class="px-3 py-2">
+                                            {% if complaint.fiscal_document %}
+                                                <span class="text-dark">{{ complaint.fiscal_document.document_number }} (Série {{ complaint.fiscal_document.series }})</span>
+                                            {% else %}
+                                                <span class="text-muted">Não vinculada</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted px-3 py-2">Reclamação SAC / CRM</th>
+                                        <td class="px-3 py-2">
+                                            {% if complaint.customer_complaint %}
+                                                <span class="badge bg-soft-secondary text-secondary">{{ complaint.customer_complaint.complaint_number }}</span>
+                                            {% else %}
+                                                <span class="text-muted">Não vinculado</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card border mb-4">
+                        <div class="card-header bg-light py-2">
+                            <h3 class="h6 mb-0 text-dark"><i class="feather-alert-triangle me-2" aria-hidden="true"></i>Relato do Evento Adverso / Descrição Clínica</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0 text-dark fs-13 lh-base" style="white-space: pre-line;">{{ complaint.description }}</p>
+                        </div>
+                    </div>
+
+                    <div class="card border mb-0">
+                        <div class="card-header bg-light py-2">
+                            <h3 class="h6 mb-0 text-dark"><i class="feather-check-square me-2" aria-hidden="true"></i>Triagem Técnica e Protocolos Regulatórios</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                                <div>
+                                    <span class="text-muted fs-12 d-block">Status da Triagem Clínica</span>
+                                    <strong>
+                                        {% if complaint.triaged_at %}
+                                            <span class="text-success"><i class="feather-check-circle me-1" aria-hidden="true"></i>Triagem Realizada</span>
+                                        {% else %}
+                                            <span class="text-warning"><i class="feather-clock me-1" aria-hidden="true"></i>Aguardando Triagem</span>
+                                        {% endif %}
+                                    </strong>
+                                </div>
+                                <div class="text-end">
+                                    <span class="text-muted fs-12 d-block">Triado por</span>
+                                    <span class="text-dark">{% if complaint.triaged_by.get_full_name %}{{ complaint.triaged_by.get_full_name }}{% else %}{{ complaint.triaged_by|default:"Pendente" }}{% endif %}</span>
+                                    {% if complaint.triaged_at %}
+                                        <small class="text-muted d-block fs-11">{{ complaint.triaged_at|date:"d/m/Y H:i" }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                                <div>
+                                    <span class="text-muted fs-12 d-block">Comunicação Regulatória Obrigatória (ANVISA)</span>
+                                    <strong>
+                                        {% if complaint.regulatory_communication_required %}
+                                            <span class="text-danger"><i class="feather-alert-octagon me-1" aria-hidden="true"></i>Sim, exige notificação formal</span>
+                                        {% else %}
+                                            <span class="text-muted"><i class="feather-slash me-1" aria-hidden="true"></i>Não exigida nesta categoria de risco</span>
+                                        {% endif %}
+                                    </strong>
+                                </div>
+                                <div class="text-end">
+                                    {% if complaint.regulatory_communication_required %}
+                                        {% if complaint.regulatory_communication_reference %}
+                                            <span class="badge bg-soft-success text-success">Protocolo: {{ complaint.regulatory_communication_reference }}</span>
+                                        {% else %}
+                                            <span class="badge bg-soft-danger text-danger">Pendente de Notificação</span>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <span class="text-muted fs-12 d-block">Responsável pelo Caso</span>
+                                    <strong>{% if complaint.responsible.get_full_name %}{{ complaint.responsible.get_full_name }}{% else %}{{ complaint.responsible|default:"Não informado" }}{% endif %}</strong>
+                                </div>
+                                <div>
+                                    <span class="text-muted fs-12 d-block">Registrado por</span>
+                                    <span class="text-dark">{% if complaint.reported_by.get_full_name %}{{ complaint.reported_by.get_full_name }}{% else %}{{ complaint.reported_by|default:"Sistema" }}{% endif %}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- ABA 2: Amostroteca e Investigação Analítica -->
+        <!-- ========================================== -->
+        <div class="tab-pane fade" id="tab-analysis" role="tabpanel" aria-labelledby="tab-analysis-tab">
+            {% if not can_view_analysis %}
+                <div class="alert alert-warning py-3">
+                    <i class="feather-lock me-2" aria-hidden="true"></i>
+                    <strong>Acesso restrito:</strong> Você não possui permissão para visualizar amostras e laudos analíticos do controle de qualidade.
+                </div>
+            {% else %}
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <!-- Amostra de Contraprova / Amostroteca -->
+                        <div class="card border mb-4">
+                            <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                                <h3 class="h6 mb-0 text-dark"><i class="feather-archive me-2" aria-hidden="true"></i>Amostra de Contraprova (Amostroteca)</h3>
+                                {% if sample %}
+                                    <span class="badge bg-soft-primary text-primary">{{ sample.sample_number }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="card-body">
+                                {% if sample %}
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6">
+                                            <span class="text-muted fs-12 d-block">Código da Amostra:</span>
+                                            <strong>{{ sample.sample_number }}</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <span class="text-muted fs-12 d-block">Tipo de Amostra:</span>
+                                            <span class="badge bg-light text-dark">{{ sample.get_sample_type_display }}</span>
+                                        </div>
+                                        <div class="col-6">
+                                            <span class="text-muted fs-12 d-block">Quantidade Retida:</span>
+                                            <span>{{ sample.quantity }} {{ sample.unit.code|default:"" }}</span>
+                                        </div>
+                                        <div class="col-6">
+                                            <span class="text-muted fs-12 d-block">Status da Amostra:</span>
+                                            <span class="badge {% if sample.status == 'approved' %}bg-soft-success text-success{% elif sample.status == 'rejected' %}bg-soft-danger text-danger{% else %}bg-soft-warning text-warning{% endif %}">
+                                                {{ sample.get_status_display }}
+                                            </span>
+                                        </div>
+                                        <div class="col-6">
+                                            <span class="text-muted fs-12 d-block">Ponto de Coleta:</span>
+                                            <span>{{ sample.collection_point|default:"Amostroteca CQ" }}</span>
+                                        </div>
+                                        <div class="col-6">
+                                            <span class="text-muted fs-12 d-block">Data da Coleta:</span>
+                                            <span>{{ sample.collected_at|date:"d/m/Y H:i"|default:"Não informada" }}</span>
+                                        </div>
+                                    </div>
+                                    {% if sample.notes %}
+                                        <div class="p-2 bg-light rounded fs-12">
+                                            <strong>Observações da Amostra:</strong> {{ sample.notes }}
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <div class="text-center py-4 text-muted">
+                                        <i class="feather-info fs-24 mb-2 d-block" aria-hidden="true"></i>
+                                        Nenhuma amostra de contraprova vinculada diretamente a este lote ou queixa.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Desvio / Não-Conformidade Associado -->
+                        <div class="card border mb-0">
+                            <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                                <h3 class="h6 mb-0 text-dark"><i class="feather-alert-octagon me-2" aria-hidden="true"></i>Desvio de Qualidade Associado</h3>
+                                {% if deviation %}
+                                    <a href="{% url 'app:quality_event_cockpit' deviation.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2">
+                                        Cockpit do desvio <i class="feather-external-link ms-1" aria-hidden="true"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                            <div class="card-body">
+                                {% if not can_view_deviations %}
+                                    <div class="alert alert-warning py-2 mb-0 fs-12">
+                                        <i class="feather-lock me-1" aria-hidden="true"></i> Sem permissão para visualizar desvios.
+                                    </div>
+                                {% elif deviation %}
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 mb-1 text-dark">{{ deviation.event_number }} — {{ deviation.get_event_type_display }}</h4>
+                                            <span class="text-muted fs-12">Detectado em: {{ deviation.detected_at|date:"d/m/Y H:i" }}</span>
+                                        </div>
+                                        <span class="badge {% if deviation.status == 'closed' %}bg-soft-success text-success{% else %}bg-soft-danger text-danger{% endif %}">
+                                            {{ deviation.get_status_display }}
+                                        </span>
+                                    </div>
+                                    <p class="fs-12 text-muted mb-2">{{ deviation.description|truncatewords:40 }}</p>
+                                    <div class="d-flex gap-2">
+                                        <span class="badge bg-light text-dark fs-11">Severidade: {{ deviation.get_severity_display }}</span>
+                                        <span class="badge bg-light text-dark fs-11">Criticidade: {{ deviation.get_criticality_display }}</span>
+                                    </div>
+                                {% else %}
+                                    <div class="text-center py-4 text-muted">
+                                        <i class="feather-check-circle fs-24 mb-2 d-block text-success" aria-hidden="true"></i>
+                                        Nenhum evento de desvio registrado para o lote fabril deste produto.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <!-- Ensaios Analíticos da Contraprova -->
+                        <div class="card border mb-4">
+                            <div class="card-header bg-light py-2">
+                                <h3 class="h6 mb-0 text-dark"><i class="feather-activity me-2" aria-hidden="true"></i>Ensaios Analíticos Laboratoriais (CQ)</h3>
+                            </div>
+                            <div class="card-body p-0">
+                                {% if sample_results %}
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-hover align-middle mb-0">
+                                            <thead class="table-light fs-12">
+                                                <tr>
+                                                    <th>Parâmetro</th>
+                                                    <th>Resultado</th>
+                                                    <th>Unidade</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="fs-12">
+                                                {% for res in sample_results %}
+                                                    <tr>
+                                                        <td class="fw-semibold">{{ res.parameter }}</td>
+                                                        <td>
+                                                            {% if res.numeric_result is not None %}
+                                                                {{ res.numeric_result }}
+                                                            {% else %}
+                                                                {{ res.text_result|default:"-" }}
+                                                            {% endif %}
+                                                        </td>
+                                                        <td>{{ res.unit|default:"-" }}</td>
+                                                        <td>
+                                                            <span class="badge {% if res.result_status == 'conforming' or res.result_status == 'approved' %}bg-soft-success text-success{% elif res.result_status == 'non_conforming' or res.result_status == 'rejected' %}bg-soft-danger text-danger{% else %}bg-soft-warning text-warning{% endif %}">
+                                                                {{ res.result_status|default:"Em análise" }}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <div class="text-center py-4 text-muted">
+                                        <i class="feather-info fs-24 mb-2 d-block" aria-hidden="true"></i>
+                                        Nenhum resultado analítico de contraprova registrado para esta amostra.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Resumo da Investigação Técnica -->
+                        <div class="card border mb-0">
+                            <div class="card-header bg-light py-2">
+                                <h3 class="h6 mb-0 text-dark"><i class="feather-search me-2" aria-hidden="true"></i>Parecer e Resumo da Investigação Técnica</h3>
+                            </div>
+                            <div class="card-body">
+                                {% if complaint.investigation_summary %}
+                                    <div class="d-flex justify-content-between text-muted fs-12 mb-2 pb-1 border-bottom">
+                                        <span>Iniciada por: <strong>{% if complaint.investigation_started_by.get_full_name %}{{ complaint.investigation_started_by.get_full_name }}{% else %}{{ complaint.investigation_started_by|default:"Não informado" }}{% endif %}</strong></span>
+                                        <span>Data: <strong>{{ complaint.investigation_started_at|date:"d/m/Y H:i" }}</strong></span>
+                                    </div>
+                                    <p class="mb-0 fs-13 lh-base text-dark" style="white-space: pre-line;">{{ complaint.investigation_summary }}</p>
+                                {% else %}
+                                    <div class="text-center py-4 text-muted">
+                                        <i class="feather-clock fs-24 mb-2 d-block" aria-hidden="true"></i>
+                                        Investigação técnica ainda não iniciada ou sem resumo formal documentado.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- ========================================== -->
+        <!-- ABA 3: Devoluções e Quarentena -->
+        <!-- ========================================== -->
+        <div class="tab-pane fade" id="tab-returns" role="tabpanel" aria-labelledby="tab-returns-tab">
+            {% if not can_view_returns %}
+                <div class="alert alert-warning py-3">
+                    <i class="feather-lock me-2" aria-hidden="true"></i>
+                    <strong>Acesso restrito:</strong> Você não possui permissão para visualizar devoluções de produto pós-mercado.
+                </div>
+            {% else %}
+                <!-- Tabela de Devoluções Registradas -->
+                <div class="card border mb-4">
+                    <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                        <h3 class="h6 mb-0 text-dark"><i class="feather-corner-up-left me-2" aria-hidden="true"></i>Devoluções Pós-Mercado e Logística Reversa</h3>
+                        <span class="badge bg-secondary">{{ returns|length }} registro(s)</span>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if returns %}
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light fs-12">
+                                        <tr>
+                                            <th>Devolução</th>
+                                            <th>Tipo</th>
+                                            <th>Cliente</th>
+                                            <th class="text-end">Solicitada</th>
+                                            <th class="text-end">Recebida</th>
+                                            <th>Destinação</th>
+                                            <th>Status</th>
+                                            <th class="text-end">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="fs-12">
+                                        {% for ret in returns %}
+                                            <tr>
+                                                <td class="fw-bold text-dark">{{ ret.return_number }}</td>
+                                                <td><span class="badge bg-light text-dark">{{ ret.get_return_type_display }}</span></td>
+                                                <td>{{ ret.customer.legal_name }}</td>
+                                                <td class="text-end fw-semibold">{{ ret.quantity|floatformat:2 }} {{ ret.unit.code }}</td>
+                                                <td class="text-end fw-semibold text-primary">{{ ret.received_quantity|floatformat:2 }} {{ ret.unit.code }}</td>
+                                                <td>
+                                                    {% if ret.disposition %}
+                                                        <span class="badge {% if ret.disposition == 'destroy' %}bg-soft-danger text-danger{% elif ret.disposition == 'quarantine' %}bg-soft-warning text-warning{% else %}bg-soft-info text-info{% endif %}">
+                                                            {{ ret.get_disposition_display }}
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="text-muted">A definir</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <span class="badge {% if ret.status == 'closed' %}bg-soft-success text-success{% elif ret.status == 'inspected' %}bg-soft-info text-info{% elif ret.status == 'received' %}bg-soft-primary text-primary{% elif ret.status == 'cancelled' %}bg-soft-secondary text-secondary{% else %}bg-soft-warning text-warning{% endif %}">
+                                                        {{ ret.get_status_display }}
+                                                    </span>
+                                                </td>
+                                                <td class="text-end">
+                                                    <a href="{% url 'app:resource_detail' 'recalls' 'returns' ret.pk %}" class="btn btn-sm btn-light py-0 px-2" title="Visualizar devolução">
+                                                        <i class="feather-eye" aria-hidden="true"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% if ret.inspection_notes %}
+                                                <tr class="bg-light fs-11">
+                                                    <td colspan="8" class="px-3 py-1">
+                                                        <strong>Notas de Inspeção:</strong> {{ ret.inspection_notes }}
+                                                        {% if ret.inspected_by %} · Inspecionado por: {% if ret.inspected_by.get_full_name %}{{ ret.inspected_by.get_full_name }}{% else %}{{ ret.inspected_by }}{% endif %} em {{ ret.inspected_at|date:"d/m/Y H:i" }}{% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4 text-muted">
+                                <i class="feather-corner-up-left fs-24 mb-2 d-block" aria-hidden="true"></i>
+                                Nenhuma devolução física ou solicitação de retorno registrada para esta reclamação.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Estoque Físico e Bloqueios Sanitários (WMS / Quarentena) -->
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="card border mb-0">
+                            <div class="card-header bg-light py-2">
+                                <h3 class="h6 mb-0 text-dark"><i class="feather-box me-2" aria-hidden="true"></i>Saldos em Estoque do Lote Fabril</h3>
+                            </div>
+                            <div class="card-body p-0">
+                                {% if not can_view_inventory %}
+                                    <div class="alert alert-warning py-2 m-3 fs-12">
+                                        <i class="feather-lock me-1" aria-hidden="true"></i> Sem permissão para visualizar saldos de estoque.
+                                    </div>
+                                {% elif quarantine_balances %}
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-striped align-middle mb-0 fs-12">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Depósito</th>
+                                                    <th>Localização</th>
+                                                    <th>Status CQ</th>
+                                                    <th class="text-end">Quantidade</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for bal in quarantine_balances %}
+                                                    <tr>
+                                                        <td>{{ bal.warehouse.code }} — {{ bal.warehouse.description }}</td>
+                                                        <td>{{ bal.location.code|default:"Geral" }}</td>
+                                                        <td>
+                                                            <span class="badge {% if bal.quality_status == 'released' %}bg-soft-success text-success{% elif bal.quality_status == 'quarantine' %}bg-soft-warning text-warning{% elif bal.quality_status == 'rejected' %}bg-soft-danger text-danger{% else %}bg-soft-secondary text-secondary{% endif %}">
+                                                                {{ bal.get_quality_status_display }}
+                                                            </span>
+                                                        </td>
+                                                        <td class="text-end fw-bold">{{ bal.quantity|floatformat:2 }} {{ bal.unit.code }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <div class="text-center py-4 text-muted">
+                                        <i class="feather-info fs-24 mb-2 d-block" aria-hidden="true"></i>
+                                        Nenhum saldo remanescente em estoque para o lote informado.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="card border mb-0">
+                            <div class="card-header bg-light py-2">
+                                <h3 class="h6 mb-0 text-dark"><i class="feather-shield me-2" aria-hidden="true"></i>Bloqueios de Qualidade (Quarentena do Lote)</h3>
+                            </div>
+                            <div class="card-body p-0">
+                                {% if not can_view_inventory %}
+                                    <div class="alert alert-warning py-2 m-3 fs-12">
+                                        <i class="feather-lock me-1" aria-hidden="true"></i> Sem permissão para visualizar bloqueios sanitários.
+                                    </div>
+                                {% elif quality_blocks %}
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-striped align-middle mb-0 fs-12">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Bloqueio</th>
+                                                    <th>Motivo</th>
+                                                    <th>Status</th>
+                                                    <th>Data</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for blk in quality_blocks %}
+                                                    <tr>
+                                                        <td class="fw-bold">{{ blk.block_number }}</td>
+                                                        <td>{{ blk.reason|truncatewords:8 }}</td>
+                                                        <td>
+                                                            <span class="badge {% if blk.status == 'blocked' %}bg-soft-danger text-danger{% elif blk.status == 'unblocked' %}bg-soft-success text-success{% else %}bg-soft-secondary text-secondary{% endif %}">
+                                                                {{ blk.get_status_display }}
+                                                            </span>
+                                                        </td>
+                                                        <td>{{ blk.blocked_at|date:"d/m/Y" }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <div class="text-center py-4 text-muted">
+                                        <i class="feather-check-circle fs-24 mb-2 d-block text-success" aria-hidden="true"></i>
+                                        Nenhum bloqueio sanitário formal ativo para este lote.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- ========================================== -->
+        <!-- ABA 4: Recolhimento e Clientes Impactados -->
+        <!-- ========================================== -->
+        <div class="tab-pane fade" id="tab-recall" role="tabpanel" aria-labelledby="tab-recall-tab">
+            {% if not can_view_recalls %}
+                <div class="alert alert-warning py-3">
+                    <i class="feather-lock me-2" aria-hidden="true"></i>
+                    <strong>Acesso restrito:</strong> Você não possui permissão para visualizar campanhas de recall e recolhimento de mercado.
+                </div>
+            {% else %}
+                {% if main_campaign %}
+                    <!-- Dados da Campanha de Recall -->
+                    <div class="card border mb-4">
+                        <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                            <h3 class="h6 mb-0 text-dark"><i class="feather-rotate-ccw me-2" aria-hidden="true"></i>Campanha de Recolhimento: {{ main_campaign.campaign_number }}</h3>
+                            <span class="badge {% if main_campaign.status == 'closed' %}bg-soft-success text-success{% elif main_campaign.status == 'in_execution' %}bg-soft-warning text-warning{% elif main_campaign.status == 'approved' %}bg-soft-primary text-primary{% else %}bg-soft-secondary text-secondary{% endif %}">
+                                {{ main_campaign.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-3">
+                                    <span class="text-muted fs-12 d-block">Tipo de Campanha:</span>
+                                    <strong>{{ main_campaign.get_campaign_type_display }}</strong>
+                                </div>
+                                <div class="col-md-3">
+                                    <span class="text-muted fs-12 d-block">Gatilho Disparador:</span>
+                                    <span>{{ main_campaign.get_trigger_display }}</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <span class="text-muted fs-12 d-block">Data da Decisão:</span>
+                                    <span>{{ main_campaign.decision_date|date:"d/m/Y" }}</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <span class="text-muted fs-12 d-block">Prazo Alvo:</span>
+                                    <span>{{ main_campaign.target_completion_date|date:"d/m/Y" }}</span>
+                                </div>
+                            </div>
+                            <div class="p-3 bg-light rounded fs-13">
+                                <strong>Motivo da Convocação do Recolhimento:</strong> {{ main_campaign.reason }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Clientes Impactados e Rastreabilidade Comercial -->
+                    <div class="card border mb-4">
+                        <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                            <h3 class="h6 mb-0 text-dark"><i class="feather-users me-2" aria-hidden="true"></i>Clientes e Distribuidores Impactados (Rastreabilidade de Distribuição)</h3>
+                            <span class="badge bg-secondary">{{ total_impacted }} cliente(s) mapeado(s)</span>
+                        </div>
+                        <div class="card-body p-0">
+                            {% if not can_view_impacted_customers %}
+                                <div class="alert alert-warning py-2 m-3 fs-12">
+                                    <i class="feather-lock me-1" aria-hidden="true"></i> Sem permissão para visualizar lista de clientes impactados.
+                                </div>
+                            {% elif impacted_customers %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0 fs-12">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Cliente / Destinatário</th>
+                                                <th>Pedido</th>
+                                                <th>NF-e</th>
+                                                <th class="text-end">Distribuída</th>
+                                                <th class="text-end">A Recolher</th>
+                                                <th class="text-end">Retornada</th>
+                                                <th>Status da Resposta</th>
+                                                <th>Contato</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for imp in impacted_customers %}
+                                                <tr>
+                                                    <td class="fw-bold text-dark">{{ imp.customer.legal_name }}</td>
+                                                    <td>
+                                                        {% if imp.sales_order %}
+                                                            <a href="{% url 'app:sales_order_cockpit' imp.sales_order.pk %}" class="text-primary">{{ imp.sales_order.order_number }}</a>
+                                                        {% else %}
+                                                            <span class="text-muted">-</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ imp.fiscal_document.document_number|default:"-" }}</td>
+                                                    <td class="text-end">{{ imp.quantity_distributed|floatformat:2 }}</td>
+                                                    <td class="text-end fw-semibold text-danger">{{ imp.quantity_recalled|floatformat:2 }}</td>
+                                                    <td class="text-end fw-semibold text-success">{{ imp.quantity_returned|floatformat:2 }}</td>
+                                                    <td>
+                                                        <span class="badge {% if imp.response_status == 'returned' %}bg-soft-success text-success{% elif imp.response_status == 'acknowledged' %}bg-soft-primary text-primary{% elif imp.response_status == 'contacted' %}bg-soft-info text-info{% elif imp.response_status == 'lost' %}bg-soft-danger text-danger{% else %}bg-soft-warning text-warning{% endif %}">
+                                                            {{ imp.get_response_status_display }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        {% if imp.contact_name %}{{ imp.contact_name }}{% endif %}
+                                                        {% if imp.contact_email %}<small class="text-muted d-block">{{ imp.contact_email }}</small>{% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                        <tfoot class="table-light fw-bold">
+                                            <tr>
+                                                <td colspan="3">Totais Mapeados:</td>
+                                                <td class="text-end">{{ total_distributed|floatformat:2 }}</td>
+                                                <td class="text-end text-danger">{{ total_to_recall|floatformat:2 }}</td>
+                                                <td class="text-end text-success">{{ total_returned_by_customers|floatformat:2 }}</td>
+                                                <td colspan="2">Eficácia: {{ recovery_rate }}%</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4 text-muted">
+                                    <i class="feather-users fs-24 mb-2 d-block" aria-hidden="true"></i>
+                                    Nenhum cliente cadastrado no mapa de impacto desta campanha.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Comunicações aos Clientes e Autoridades -->
+                    <div class="card border mb-0">
+                        <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                            <h3 class="h6 mb-0 text-dark"><i class="feather-mail me-2" aria-hidden="true"></i>Comunicações aos Clientes e Autoridades Sanitárias</h3>
+                            <span class="badge bg-secondary">{{ communications|length }} comunicação(ões)</span>
+                        </div>
+                        <div class="card-body p-0">
+                            {% if not can_view_communications %}
+                                <div class="alert alert-warning py-2 m-3 fs-12">
+                                    <i class="feather-lock me-1" aria-hidden="true"></i> Sem permissão para visualizar comunicações de recall.
+                                </div>
+                            {% elif communications %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped align-middle mb-0 fs-12">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Canal</th>
+                                                <th>Destinatário</th>
+                                                <th>Assunto</th>
+                                                <th>Enviada em</th>
+                                                <th>Status</th>
+                                                <th>Integridade (Hash)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for comm in communications %}
+                                                <tr>
+                                                    <td><span class="badge bg-light text-dark">{{ comm.get_channel_display }}</span></td>
+                                                    <td>{{ comm.impacted_customer.customer.legal_name|default:"Autoridade Sanitária / Geral" }}</td>
+                                                    <td class="fw-semibold">{{ comm.subject }}</td>
+                                                    <td>{{ comm.sent_at|date:"d/m/Y H:i"|default:"Pendente" }}</td>
+                                                    <td>
+                                                        <span class="badge {% if comm.status == 'acknowledged' %}bg-soft-success text-success{% elif comm.status == 'sent' %}bg-soft-primary text-primary{% else %}bg-soft-warning text-warning{% endif %}">
+                                                            {{ comm.get_status_display }}
+                                                        </span>
+                                                    </td>
+                                                    <td><code class="fs-11 text-muted">{{ comm.content_hash|truncatechars:16 }}</code></td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4 text-muted">
+                                    <i class="feather-mail fs-24 mb-2 d-block" aria-hidden="true"></i>
+                                    Nenhuma comunicação formal registrada para esta campanha.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="feather-rotate-ccw fs-36 mb-3 d-block text-secondary" aria-hidden="true"></i>
+                        <h4 class="h6 text-dark mb-1">Nenhuma Campanha de Recolhimento Convocada</h4>
+                        <p class="fs-13 mb-0">Esta queixa pós-mercado até o momento não exigiu a abertura de campanha de recall formal ou voluntário para o lote em questão.</p>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        <!-- ========================================== -->
+        <!-- ABA 5: Dossiê Regulatório ANVISA e Eficácia -->
+        <!-- ========================================== -->
+        <div class="tab-pane fade" id="tab-regulatory" role="tabpanel" aria-labelledby="tab-regulatory-tab">
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <!-- Comunicação Regulatória ANVISA -->
+                    <div class="card border mb-4">
+                        <div class="card-header bg-light py-2">
+                            <h3 class="h6 mb-0 text-dark"><i class="feather-shield me-2" aria-hidden="true"></i>Comunicação Regulatória à Autoridade Sanitária (ANVISA)</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <span class="text-muted fs-12 d-block">Exigência Legal de Notificação ANVISA:</span>
+                                <strong>
+                                    {% if complaint.regulatory_communication_required %}
+                                        <span class="text-danger"><i class="feather-alert-octagon me-1" aria-hidden="true"></i>Sim — Notificação Sanitária Obrigatória</span>
+                                    {% else %}
+                                        <span class="text-success"><i class="feather-check me-1" aria-hidden="true"></i>Dispensada — Sem critério de notificação imediata</span>
+                                    {% endif %}
+                                </strong>
+                            </div>
+                            <div class="mb-3">
+                                <span class="text-muted fs-12 d-block">Número de Protocolo / Referência ANVISA:</span>
+                                {% if complaint.regulatory_communication_reference %}
+                                    <span class="badge bg-soft-success text-success fs-13 py-1 px-2">
+                                        <i class="feather-check-circle me-1" aria-hidden="true"></i>{{ complaint.regulatory_communication_reference }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-soft-warning text-warning fs-12 py-1 px-2">
+                                        <i class="feather-clock me-1" aria-hidden="true"></i>Aguardando Protocolo
+                                    </span>
+                                {% endif %}
+                            </div>
+                            {% if complaint.regulatory_communicated_by %}
+                                <div class="d-flex justify-content-between text-muted fs-12 pt-2 border-top">
+                                    <span>Comunicado por: <strong>{% if complaint.regulatory_communicated_by.get_full_name %}{{ complaint.regulatory_communicated_by.get_full_name }}{% else %}{{ complaint.regulatory_communicated_by|default:"Não informado" }}{% endif %}</strong></span>
+                                    <span>Data do envio: <strong>{{ complaint.regulatory_communicated_at|date:"d/m/Y H:i" }}</strong></span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Plano de Ação CAPA Vinculado -->
+                    <div class="card border mb-0">
+                        <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                            <h3 class="h6 mb-0 text-dark"><i class="feather-tool me-2" aria-hidden="true"></i>Ação Corretiva e Preventiva (CAPA)</h3>
+                            {% if capa %}
+                                <span class="badge {% if capa.status == 'closed' %}bg-soft-success text-success{% else %}bg-soft-primary text-primary{% endif %}">
+                                    {{ capa.get_status_display }}
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            {% if not can_view_capa %}
+                                <div class="alert alert-warning py-2 mb-0 fs-12">
+                                    <i class="feather-lock me-1" aria-hidden="true"></i> Sem permissão para visualizar registros CAPA.
+                                </div>
+                            {% elif capa %}
+                                <h4 class="h6 mb-1 text-dark">{{ capa.capa_number }} — {{ capa.title }}</h4>
+                                <p class="fs-12 text-muted mb-2">Causa Raiz: {{ capa.root_cause|default:"Em investigação"|truncatewords:20 }}</p>
+                                {% if capa_actions %}
+                                    <div class="table-responsive mt-3">
+                                        <table class="table table-sm table-striped align-middle mb-0 fs-11">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Ação</th>
+                                                    <th>Tipo</th>
+                                                    <th>Responsável</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for act in capa_actions %}
+                                                    <tr>
+                                                        <td>{{ act.title }}</td>
+                                                        <td>{{ act.get_action_type_display }}</td>
+                                                        <td>{% if act.responsible.get_full_name %}{{ act.responsible.get_full_name }}{% else %}{{ act.responsible|default:"Não informado" }}{% endif %}</td>
+                                                        <td>
+                                                            <span class="badge {% if act.status == 'completed' %}bg-soft-success text-success{% else %}bg-soft-warning text-warning{% endif %}">
+                                                                {{ act.get_status_display }}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="text-center py-4 text-muted">
+                                    <i class="feather-info fs-24 mb-2 d-block" aria-hidden="true"></i>
+                                    Nenhum plano CAPA associado formalmente a esta queixa técnica.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <!-- Relatórios de Efetividade e Rastreabilidade ANVISA -->
+                    <div class="card border mb-4">
+                        <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                            <h3 class="h6 mb-0 text-dark"><i class="feather-bar-chart-2 me-2" aria-hidden="true"></i>Relatório de Efetividade do Recolhimento</h3>
+                            <span class="badge bg-secondary">{{ effectiveness_reports|length }} relatório(s)</span>
+                        </div>
+                        <div class="card-body p-0">
+                            {% if not can_view_effectiveness %}
+                                <div class="alert alert-warning py-2 m-3 fs-12">
+                                    <i class="feather-lock me-1" aria-hidden="true"></i> Sem permissão para visualizar relatórios de efetividade.
+                                </div>
+                            {% elif effectiveness_reports %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped align-middle mb-0 fs-12">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Título</th>
+                                                <th>Tipo</th>
+                                                <th class="text-center">Efetividade</th>
+                                                <th>Status</th>
+                                                <th>Data</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for rep in effectiveness_reports %}
+                                                <tr>
+                                                    <td class="fw-semibold">{{ rep.title }}</td>
+                                                    <td>{{ rep.get_report_type_display }}</td>
+                                                    <td class="text-center fw-bold text-success">{{ rep.effectiveness_rate }}%</td>
+                                                    <td>
+                                                        <span class="badge {% if rep.status == 'generated' %}bg-soft-success text-success{% else %}bg-soft-warning text-warning{% endif %}">
+                                                            {{ rep.get_status_display }}
+                                                        </span>
+                                                    </td>
+                                                    <td>{{ rep.generated_at|date:"d/m/Y"|default:"-" }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4 text-muted">
+                                    <i class="feather-file-text fs-24 mb-2 d-block" aria-hidden="true"></i>
+                                    Nenhum relatório formal de efetividade emitido até o momento.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Checklist Sanitário e Conclusão de Cosmetovigilância -->
+                    <div class="card border mb-0">
+                        <div class="card-header bg-light py-2">
+                            <h3 class="h6 mb-0 text-dark"><i class="feather-check-circle me-2" aria-hidden="true"></i>Checklist Regulatório de Encerramento (Cosmetovigilância)</h3>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush mb-3 fs-12">
+                                <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
+                                    <span>1. Notificação clínica e triagem concluída</span>
+                                    {% if has_triage %}
+                                        <span class="badge bg-success"><i class="feather-check me-1" aria-hidden="true"></i>Concluído</span>
+                                    {% else %}
+                                        <span class="badge bg-warning"><i class="feather-clock me-1" aria-hidden="true"></i>Pendente</span>
+                                    {% endif %}
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
+                                    <span>2. Investigação técnica de causa-raiz documentada</span>
+                                    {% if has_investigation %}
+                                        <span class="badge bg-success"><i class="feather-check me-1" aria-hidden="true"></i>Concluído</span>
+                                    {% else %}
+                                        <span class="badge bg-warning"><i class="feather-clock me-1" aria-hidden="true"></i>Pendente</span>
+                                    {% endif %}
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
+                                    <span>3. Comunicação à autoridade regulatória (ANVISA)</span>
+                                    {% if has_regulatory_communication %}
+                                        <span class="badge bg-success"><i class="feather-check me-1" aria-hidden="true"></i>Concluído</span>
+                                    {% else %}
+                                        <span class="badge bg-danger"><i class="feather-alert-triangle me-1" aria-hidden="true"></i>Obrigatório</span>
+                                    {% endif %}
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
+                                    <span>4. Devoluções físicas inspecionadas e destinadas</span>
+                                    {% if has_returns_processed %}
+                                        <span class="badge bg-success"><i class="feather-check me-1" aria-hidden="true"></i>Concluído</span>
+                                    {% else %}
+                                        <span class="badge bg-warning"><i class="feather-clock me-1" aria-hidden="true"></i>Pendente</span>
+                                    {% endif %}
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
+                                    <span>5. Relatório de efetividade e rastreabilidade</span>
+                                    {% if has_recall_effectiveness %}
+                                        <span class="badge bg-success"><i class="feather-check me-1" aria-hidden="true"></i>Concluído</span>
+                                    {% else %}
+                                        <span class="badge bg-warning"><i class="feather-clock me-1" aria-hidden="true"></i>Pendente</span>
+                                    {% endif %}
+                                </li>
+                            </ul>
+
+                            {% if complaint.closure_summary %}
+                                <div class="p-3 bg-light rounded fs-13 mb-0">
+                                    <div class="d-flex justify-content-between text-muted fs-12 mb-2 pb-1 border-bottom">
+                                        <span>Encerrada por: <strong>{% if complaint.closed_by.get_full_name %}{{ complaint.closed_by.get_full_name }}{% else %}{{ complaint.closed_by|default:"Não informado" }}{% endif %}</strong></span>
+                                        <span>Data: <strong>{{ complaint.closed_at|date:"d/m/Y H:i" }}</strong></span>
+                                    </div>
+                                    <strong>Parecer Final de Encerramento:</strong>
+                                    <p class="mb-0 mt-1 text-dark" style="white-space: pre-line;">{{ complaint.closure_summary }}</p>
+                                </div>
+                            {% else %}
+                                <div class="alert {% if all_regulatory_checks_ok %}alert-success{% else %}alert-warning{% endif %} py-2 mb-0 fs-12">
+                                    {% if all_regulatory_checks_ok %}
+                                        <i class="feather-check-circle me-1" aria-hidden="true"></i> Todos os requisitos regulatórios foram atendidos. O caso está pronto para encerramento.
+                                    {% else %}
+                                        <i class="feather-info me-1" aria-hidden="true"></i> Existem pendências no checklist sanitário antes do encerramento final da queixa.
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
