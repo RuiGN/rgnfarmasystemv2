@@ -179,6 +179,16 @@ receber acesso direto.
   5. *Dossiê regulatório ANVISA e eficácia*: Protocolo de notificação à autoridade sanitária (ANVISA), relatórios de efetividade e rastreabilidade, planos de ação corretiva e preventiva (CAPA) com responsáveis e prazos, além de checklist regulatório sanitário de encerramento.
   Cada aba aplica segregação de deveres (SoD) no servidor, restringindo a visualização de ensaios analíticos, devoluções, recall, clientes impactados e CAPA conforme as permissões atribuídas.
 
+- **Cockpit de Homologação e Qualificação de Fornecedores (`app:supplier_cockpit`):**
+  Disponível no detalhe de `BusinessPartner` (`/app/masters/partners/<id>/cockpit/`).
+  Consolida a governança do ciclo de vida de fornecedores, conformidade regulatória e desempenho de abastecimento em cinco abas Duralux:
+  1. *Dados cadastrais e licenças sanitárias (AFE/VISA)*: Identificação cadastral completa, dados fiscais (CNPJ/IE), endereço normalizado (UF, Cidade e CEP), licenças sanitárias e autorizações de funcionamento vigentes (AFE ANVISA), histórico de bloqueios cautelares da Garantia da Qualidade (QA) e restrições ativas de compras.
+  2. *Auditorias de fornecedor BPF*: Programas e planos de auditoria técnica (BPF / ISO 22716), relatórios emitidos com índice percentual de conformidade, apontamentos de auditoria (findings) categorizados por criticidade (crítico, maior, menor), prazos, responsáveis e vínculos de achados.
+  3. *Histórico de entregas e OOS no recebimento*: Pedidos de compra e recebimentos físicos de insumos com chave NF-e, laudos do Controle de Qualidade (CQ), amostras analíticas de entrada, taxa de aceitação de lotes (IQF) e investigações laboratoriais de resultados fora de especificação (OOS/OOT).
+  4. *Matérias-primas homologadas*: Matérias-primas, embalagens e excipientes associados ao fornecedor com exigência de qualificação sanitária prévia, histórico de quantidades recebidas e aceitas, última entrega, bloqueios por item e propostas comerciais / cotações de fornecedor (RFQs).
+  5. *Scorecard e status de qualificação*: Parecer geral regulatório e sanitário (Apto para fornecimento, Qualificação vencida, Fornecimento bloqueado), indicadores consolidados de fornecimento e checklist formal dos 5 Gates de Qualificação Sanitária ANVISA/BPF.
+  Cada aba aplica segregação de deveres (SoD) no servidor, restringindo a visualização de auditorias, compras/recebimentos, ensaios de CQ e matérias-primas conforme as permissões de cada perfil.
+
 ## Regras
 
 - Menus usam permissões `view` dos models.

@@ -76,11 +76,11 @@ O padrão consolida em um único template responsivo:
   - [X] Template com abas: Notificação & Triagem Clínica de Cosmetovigilância, Amostroteca & Investigação Laboratorial, Devoluções & Quarentena, Clientes Impactados & Comunicações, Dossiê Regulatório ANVISA & Eficácia
   - [X] Testes automatizados e documentação
 
-- [ ] **Sprint 6: Cockpit de Homologação e Qualificação de Fornecedores (Vendor Lifecycle 360°)**
-  - [ ] Mapeamento de parceiros de negócio (`BusinessPartner`, `Audit`, `SupplierQuotation`, `PurchaseOrder`, `PurchaseReceipt`, `QualityEvent`)
-  - [ ] Criação da view `SupplierCockpitView`
-  - [ ] Template com abas: Dados Cadastrais & Licenças Sanitárias (AFE/VISA), Auditorias de Fornecedor BPF, Histórico de Entregas & OOS no Recebimento, Matérias-Primas Homologadas, Scorecard & Status de Qualificação
-  - [ ] Testes automatizados e documentação
+- [X] **Sprint 6: Cockpit de Homologação e Qualificação de Fornecedores (Vendor Lifecycle 360°)**
+  - [X] Mapeamento de parceiros de negócio (`BusinessPartner`, `Audit`, `SupplierQuotation`, `PurchaseOrder`, `PurchaseReceipt`, `QualityEvent`)
+  - [X] Criação da view `SupplierCockpitView`
+  - [X] Template com abas: Dados Cadastrais & Licenças Sanitárias (AFE/VISA), Auditorias de Fornecedor BPF, Histórico de Entregas & OOS no Recebimento, Matérias-Primas Homologadas, Scorecard & Status de Qualificação
+  - [X] Testes automatizados e documentação
 
 - [ ] **Sprint 7: Cockpit de Gestão de Documentos Controlados e Treinamentos (DMS & Capacitação)**
   - [ ] Mapeamento de governança e capacitação (`ControlledDocument`, `TrainingRequirement`, `TrainingRecord`, `QAReview`, `GovernanceAuditLog`)

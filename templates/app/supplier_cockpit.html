@@ -1,0 +1,1385 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ partner.legal_name }} | Cockpit do Fornecedor (360°) | RGN Farma System{% endblock %}
+
+{% block page_header %}
+<div class="page-header" id="section-0">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">{{ partner.code }} - {{ partner.legal_name }}</h5>
+        </div>
+        <ul class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Início</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:module' module.slug %}">{{ module.label }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:resource_list' module.slug resource.slug %}">{{ resource.label }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:resource_detail' module.slug resource.slug partner.pk %}">Detalhe</a></li>
+            <li class="breadcrumb-item">Cockpit do Fornecedor 360°</li>
+        </ul>
+    </div>
+    <div class="page-header-right ms-auto">
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'app:resource_detail' module.slug resource.slug partner.pk %}" class="btn btn-light d-inline-flex align-items-center gap-2">
+                <i class="feather-arrow-left" aria-hidden="true"></i>
+                <span>Voltar ao cadastro</span>
+            </a>
+            {% if can_manage_partner %}
+                <a href="{% url 'app:resource_edit' module.slug resource.slug partner.pk %}" class="btn btn-primary d-inline-flex align-items-center gap-2">
+                    <i class="feather-edit" aria-hidden="true"></i>
+                    <span>Editar fornecedor</span>
+                </a>
+            {% endif %}
+            {% if available_partner_actions %}
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle d-inline-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="feather-settings" aria-hidden="true"></i>
+                        <span>Ações</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        {% for action in available_partner_actions %}
+                            <li>
+                                <a class="dropdown-item" href="{% url 'app:resource_action' module.slug resource.slug partner.pk action.name %}">
+                                    {{ action.label }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Cabeçalho Executivo do Fornecedor / Ciclo de Vida 360° -->
+    <div class="col-12 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
+                            <span class="badge bg-secondary font-monospace">{{ partner.code }}</span>
+                            <span class="badge bg-light text-dark border">{{ partner.get_partner_type_display }}</span>
+                            {% if partner.qualification_status == 'qualified' %}
+                                <span class="badge bg-soft-success text-success border border-success">
+                                    <i class="feather-check-circle me-1"></i>Qualificado
+                                </span>
+                            {% elif partner.qualification_status == 'draft' %}
+                                <span class="badge bg-soft-secondary text-secondary border">
+                                    <i class="feather-edit-3 me-1"></i>Rascunho
+                                </span>
+                            {% elif partner.qualification_status == 'not_qualified' %}
+                                <span class="badge bg-soft-warning text-warning border border-warning">
+                                    <i class="feather-alert-circle me-1"></i>Não qualificado
+                                </span>
+                            {% elif partner.qualification_status == 'expired' %}
+                                <span class="badge bg-soft-warning text-warning border border-warning">
+                                    <i class="feather-clock me-1"></i>Vencido
+                                </span>
+                            {% elif partner.qualification_status == 'blocked' %}
+                                <span class="badge bg-soft-danger text-danger border border-danger">
+                                    <i class="feather-slash me-1"></i>Bloqueado
+                                </span>
+                            {% else %}
+                                <span class="badge bg-light text-dark border">{{ partner.get_qualification_status_display }}</span>
+                            {% endif %}
+
+                            {% if partner.is_operationally_available %}
+                                <span class="badge bg-soft-success text-success border border-success">
+                                    <i class="feather-shield me-1"></i>Operacionalmente disponível
+                                </span>
+                            {% else %}
+                                <span class="badge bg-soft-danger text-danger border border-danger">
+                                    <i class="feather-slash me-1"></i>Indisponível / Restrito
+                                </span>
+                            {% endif %}
+
+                            {% if has_active_block %}
+                                <span class="badge bg-danger text-white">
+                                    <i class="feather-alert-triangle me-1"></i>Restrição / Bloqueio Ativo
+                                </span>
+                            {% else %}
+                                <span class="badge bg-soft-success text-success border border-success">
+                                    <i class="feather-shield me-1"></i>Sem bloqueios sanitários
+                                </span>
+                            {% endif %}
+                        </div>
+                        <h4 class="mb-1 text-dark fw-bold">{{ partner.legal_name }}</h4>
+                        {% if partner.trade_name %}
+                            <p class="text-muted mb-1 fs-6">Nome fantasia: <strong>{{ partner.trade_name }}</strong></p>
+                        {% endif %}
+                        <div class="d-flex align-items-center gap-3 text-muted flex-wrap fs-13">
+                            {% if partner.document %}
+                                <span><i class="feather-file-text me-1"></i>CNPJ/Documento: <strong>{{ partner.document }}</strong></span>
+                            {% endif %}
+                            {% if partner.email %}
+                                <span><i class="feather-mail me-1"></i>{{ partner.email }}</span>
+                            {% endif %}
+                            {% if partner.phone %}
+                                <span><i class="feather-phone me-1"></i>{{ partner.phone }}</span>
+                            {% endif %}
+                            <span><i class="feather-map-pin me-1"></i>{{ formatted_address }}</span>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap text-lg-end">
+                        <div class="p-3 bg-light rounded text-center min-w-140">
+                            <span class="d-block text-muted fs-12 text-uppercase fw-semibold">Status Geral</span>
+                            <span class="fs-15 fw-bold {{ partner.is_qualification_valid|yesno:'text-success,text-danger' }}">
+                                {{ partner.get_qualification_status_display }}
+                            </span>
+                        </div>
+                        <div class="p-3 bg-light rounded text-center min-w-140">
+                            <span class="d-block text-muted fs-12 text-uppercase fw-semibold">Validade BPF</span>
+                            <span class="fs-15 fw-bold {% if is_expired %}text-danger{% else %}text-dark{% endif %}">
+                                {% if partner.qualification_valid_until %}
+                                    {{ partner.qualification_valid_until|date:"d/m/Y" }}
+                                {% else %}
+                                    Indeterminada
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicadores de Desempenho / KPIs Operacionais -->
+    <div class="col-12 mb-4">
+        <div class="row g-3">
+            <div class="col-sm-6 col-xl">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="avatar-text avatar-lg bg-soft-primary text-primary rounded">
+                            <i class="feather-award fs-3"></i>
+                        </div>
+                        <div>
+                            <span class="text-muted fs-12 text-uppercase fw-semibold d-block">Índice IQF / Aceite</span>
+                            <h4 class="mb-0 fw-bold">{{ receipt_acceptance_rate }}%</h4>
+                            <span class="text-muted fs-11">{{ approved_receipts_count }} de {{ total_receipts_count }} recebimentos</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="avatar-text avatar-lg bg-soft-info text-info rounded">
+                            <i class="feather-clipboard fs-3"></i>
+                        </div>
+                        <div>
+                            <span class="text-muted fs-12 text-uppercase fw-semibold d-block">Auditorias BPF</span>
+                            <h4 class="mb-0 fw-bold">
+                                {% if avg_audit_compliance_pct %}
+                                    {{ avg_audit_compliance_pct }}%
+                                {% else %}
+                                    {{ total_audits_count }}
+                                {% endif %}
+                            </h4>
+                            <span class="text-muted fs-11">
+                                {% if avg_audit_compliance_pct %}
+                                    Conformidade média
+                                {% else %}
+                                    Total de auditorias
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="avatar-text avatar-lg bg-soft-success text-success rounded">
+                            <i class="feather-shopping-cart fs-3"></i>
+                        </div>
+                        <div>
+                            <span class="text-muted fs-12 text-uppercase fw-semibold d-block">Pedidos & Entregas</span>
+                            <h4 class="mb-0 fw-bold">{{ total_orders_count }}</h4>
+                            <span class="text-muted fs-11">{{ total_receipts_count }} entregas recebidas</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="avatar-text avatar-lg bg-soft-warning text-warning rounded">
+                            <i class="feather-layers fs-3"></i>
+                        </div>
+                        <div>
+                            <span class="text-muted fs-12 text-uppercase fw-semibold d-block">Itens Fornecidos</span>
+                            <h4 class="mb-0 fw-bold">{{ homologated_products|length }}</h4>
+                            <span class="text-muted fs-11">Matérias-primas / insumos</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="avatar-text avatar-lg {% if has_active_block %}bg-soft-danger text-danger{% else %}bg-soft-secondary text-secondary{% endif %} rounded">
+                            <i class="feather-shield fs-3"></i>
+                        </div>
+                        <div>
+                            <span class="text-muted fs-12 text-uppercase fw-semibold d-block">Bloqueios & Desvios</span>
+                            <h4 class="mb-0 fw-bold {% if has_active_block %}text-danger{% endif %}">
+                                {{ active_qa_blocks.count|add:active_supplier_event_blocks.count }}
+                            </h4>
+                            <span class="text-muted fs-11">{{ total_oos_count }} OOS / {{ total_deviations_count }} desvios</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navegação em Abas do Cockpit -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom p-0">
+                <ul class="nav nav-tabs card-header-tabs m-0 px-3 pt-3 flex-wrap" id="supplierCockpitTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active d-inline-flex align-items-center gap-2 py-3" id="tab-cadastral-btn" data-bs-toggle="tab" data-bs-target="#tab-cadastral" type="button" role="tab" aria-controls="tab-cadastral" aria-selected="true">
+                            <i class="feather-file-text" aria-hidden="true"></i>
+                            <span>Dados Cadastrais & Licenças Sanitárias (AFE/VISA)</span>
+                            {% if license_events %}
+                                <span class="badge bg-soft-primary text-primary ms-1">{{ license_events.count }}</span>
+                            {% endif %}
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link d-inline-flex align-items-center gap-2 py-3" id="tab-audits-btn" data-bs-toggle="tab" data-bs-target="#tab-audits" type="button" role="tab" aria-controls="tab-audits" aria-selected="false">
+                            <i class="feather-check-square" aria-hidden="true"></i>
+                            <span>Auditorias de Fornecedor BPF</span>
+                            {% if total_audits_count %}
+                                <span class="badge bg-soft-info text-info ms-1">{{ total_audits_count }}</span>
+                            {% endif %}
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link d-inline-flex align-items-center gap-2 py-3" id="tab-deliveries-btn" data-bs-toggle="tab" data-bs-target="#tab-deliveries" type="button" role="tab" aria-controls="tab-deliveries" aria-selected="false">
+                            <i class="feather-truck" aria-hidden="true"></i>
+                            <span>Histórico de Entregas & OOS no Recebimento</span>
+                            {% if total_receipts_count %}
+                                <span class="badge bg-soft-success text-success ms-1">{{ total_receipts_count }}</span>
+                            {% endif %}
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link d-inline-flex align-items-center gap-2 py-3" id="tab-products-btn" data-bs-toggle="tab" data-bs-target="#tab-products" type="button" role="tab" aria-controls="tab-products" aria-selected="false">
+                            <i class="feather-box" aria-hidden="true"></i>
+                            <span>Matérias-Primas Homologadas</span>
+                            <span class="badge bg-soft-warning text-warning ms-1">{{ homologated_products|length }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link d-inline-flex align-items-center gap-2 py-3" id="tab-scorecard-btn" data-bs-toggle="tab" data-bs-target="#tab-scorecard" type="button" role="tab" aria-controls="tab-scorecard" aria-selected="false">
+                            <i class="feather-activity" aria-hidden="true"></i>
+                            <span>Scorecard & Status de Qualificação</span>
+                            <span class="badge {{ regulatory_verdict_badge }} ms-1 text-white">{{ gates_passed_count }}/5</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card-body p-4">
+                <div class="tab-content" id="supplierCockpitTabContent">
+
+                    <!-- ABA 1: DADOS CADASTRAIS & LICENÇAS SANITÁRIAS (AFE/VISA) -->
+                    <div class="tab-pane fade show active" id="tab-cadastral" role="tabpanel" aria-labelledby="tab-cadastral-btn">
+                        {% if can_view_cadastral %}
+                            <div class="row g-4">
+                                <div class="col-lg-6">
+                                    <div class="card border border-gray-200 shadow-none h-100">
+                                        <div class="card-header bg-light py-3">
+                                            <h6 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">
+                                                <i class="feather-info text-primary" aria-hidden="true"></i>
+                                                <span>Ficha Cadastral e Dados Corporativos</span>
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-sm table-borderless mb-0">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="text-muted fw-semibold w-35">Razão Social:</td>
+                                                            <td class="fw-bold text-dark">{{ partner.legal_name }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-muted fw-semibold">Nome Fantasia:</td>
+                                                            <td>{{ partner.trade_name|default:"Não informado" }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-muted fw-semibold">CNPJ / Documento:</td>
+                                                            <td class="font-monospace fw-semibold">{{ partner.document|default:"Não informado" }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-muted fw-semibold">Tipo de Parceiro:</td>
+                                                            <td><span class="badge bg-light text-dark border">{{ partner.get_partner_type_display }}</span></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-muted fw-semibold">Status de Qualificação:</td>
+                                                            <td>
+                                                                <span class="badge {% if partner.qualification_status == 'qualified' %}bg-soft-success text-success{% elif partner.qualification_status == 'blocked' %}bg-soft-danger text-danger{% else %}bg-soft-warning text-warning{% endif %}">
+                                                                    {{ partner.get_qualification_status_display }}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-muted fw-semibold">Validade da Qualificação:</td>
+                                                            <td>
+                                                                {% if partner.qualification_valid_until %}
+                                                                    <span class="{% if is_expired %}text-danger fw-bold{% endif %}">
+                                                                        {{ partner.qualification_valid_until|date:"d/m/Y" }}
+                                                                        {% if is_expired %}
+                                                                            <span class="badge bg-danger ms-1">Vencido</span>
+                                                                        {% elif days_until_expiry is not None %}
+                                                                            <small class="text-muted">({{ days_until_expiry }} dias restantes)</small>
+                                                                        {% endif %}
+                                                                    </span>
+                                                                {% else %}
+                                                                    <span class="text-muted">Não estipulada</span>
+                                                                {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-muted fw-semibold">Disponibilidade Operacional:</td>
+                                                            <td>
+                                                                {% if partner.is_operationally_available %}
+                                                                    <span class="text-success"><i class="feather-check-circle me-1"></i>Habilitado para pedidos</span>
+                                                                {% else %}
+                                                                    <span class="text-danger"><i class="feather-x-circle me-1"></i>Restrito / Não habilitado</span>
+                                                                {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-muted fw-semibold">E-mail de Contato:</td>
+                                                            <td>
+                                                                {% if partner.email %}
+                                                                    <a href="mailto:{{ partner.email }}">{{ partner.email }}</a>
+                                                                {% else %}
+                                                                    <span class="text-muted">Não informado</span>
+                                                                {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-muted fw-semibold">Telefone:</td>
+                                                            <td>{{ partner.phone|default:"Não informado" }}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <hr class="my-3 text-muted">
+                                            <h6 class="fs-13 text-uppercase fw-bold text-muted mb-2">Endereço & Localização Normalizada</h6>
+                                            <p class="mb-0 text-dark fs-13"><i class="feather-map-pin text-danger me-1"></i>{{ formatted_address }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <div class="card border border-gray-200 shadow-none h-100">
+                                        <div class="card-header bg-light py-3 d-flex align-items-center justify-content-between">
+                                            <h6 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">
+                                                <i class="feather-shield text-success" aria-hidden="true"></i>
+                                                <span>Licenças Sanitárias e AFE/VISA</span>
+                                            </h6>
+                                            {% if can_manage_events %}
+                                                <span class="badge bg-soft-primary text-primary">{{ license_events.count }} documentos</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="card-body p-0">
+                                            {% if license_events %}
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover align-middle mb-0 fs-13">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>Data</th>
+                                                                <th>Descrição / Licença</th>
+                                                                <th>Validade</th>
+                                                                <th>Criticidade</th>
+                                                                <th>Bloqueio</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for evt in license_events %}
+                                                                <tr>
+                                                                    <td>{{ evt.event_date|date:"d/m/Y" }}</td>
+                                                                    <td>
+                                                                        <span class="fw-semibold text-dark">{{ evt.description|truncatechars:60 }}</span>
+                                                                        {% if evt.site %}
+                                                                            <br><small class="text-muted">Unidade: {{ evt.site.name }}</small>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        {% if evt.valid_until %}
+                                                                            {{ evt.valid_until|date:"d/m/Y" }}
+                                                                        {% else %}
+                                                                            <span class="text-muted">Indeterminada</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        {% if evt.severity %}
+                                                                            <span class="badge bg-light text-dark border">{{ evt.severity }}</span>
+                                                                        {% else %}
+                                                                            <span class="text-muted">-</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        {% if evt.is_active_block %}
+                                                                            <span class="badge bg-danger">Bloqueia compras</span>
+                                                                        {% elif evt.blocks_purchases %}
+                                                                            <span class="badge bg-soft-success text-success">Resolvido</span>
+                                                                        {% else %}
+                                                                            <span class="badge bg-soft-secondary text-secondary">Informativo</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            {% else %}
+                                                <div class="p-4 text-center">
+                                                    <div class="avatar-text avatar-md bg-soft-info text-info rounded-circle mx-auto mb-2">
+                                                        <i class="feather-file"></i>
+                                                    </div>
+                                                    <p class="text-muted mb-0 fs-13">Nenhum registro específico de licença sanitária (AFE/VISA) cadastrado em eventos de qualificação.</p>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Histórico de Bloqueios Cautelares de QA e Restrições Ativas -->
+                                <div class="col-12">
+                                    <div class="card border border-gray-200 shadow-none">
+                                        <div class="card-header bg-light py-3">
+                                            <h6 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">
+                                                <i class="feather-slash text-danger" aria-hidden="true"></i>
+                                                <span>Bloqueios Cautelares da Garantia da Qualidade (QA) e Restrições Ativas</span>
+                                            </h6>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            {% if qa_blocks_history or restriction_events %}
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover align-middle mb-0 fs-13">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>Código / Ref</th>
+                                                                <th>Origem</th>
+                                                                <th>Alvo</th>
+                                                                <th>Motivo / Descrição</th>
+                                                                <th>Status</th>
+                                                                <th>Bloqueado por / em</th>
+                                                                <th>Desbloqueio / Conclusão</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for block in qa_blocks_history %}
+                                                                <tr>
+                                                                    <td class="font-monospace fw-bold">{{ block.block_number|default:"-" }}</td>
+                                                                    <td><span class="badge bg-soft-danger text-danger">Bloqueio QA</span></td>
+                                                                    <td>
+                                                                        {{ block.get_target_type_display }}
+                                                                        {% if block.product %}
+                                                                            <br><small class="text-muted">{{ block.product.code }}</small>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>{{ block.reason|truncatechars:80 }}</td>
+                                                                    <td>
+                                                                        {% if block.status == 'active' %}
+                                                                            <span class="badge bg-danger">Ativo (Impeditivo)</span>
+                                                                        {% elif block.status == 'unblocked' %}
+                                                                            <span class="badge bg-success">Desbloqueado</span>
+                                                                        {% else %}
+                                                                            <span class="badge bg-secondary">{{ block.get_status_display }}</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        {% if block.blocked_by.get_full_name %}
+                                                                            {{ block.blocked_by.get_full_name }}
+                                                                        {% else %}
+                                                                            {{ block.blocked_by|default:"Sistema" }}
+                                                                        {% endif %}
+                                                                        <br><small class="text-muted">{{ block.blocked_at|date:"d/m/Y H:i" }}</small>
+                                                                    </td>
+                                                                    <td>
+                                                                        {% if block.status == 'unblocked' %}
+                                                                            {% if block.unblocked_by.get_full_name %}
+                                                                                {{ block.unblocked_by.get_full_name }}
+                                                                            {% else %}
+                                                                                {{ block.unblocked_by|default:"Não informado" }}
+                                                                            {% endif %}
+                                                                            <br><small class="text-muted">{{ block.unblocked_at|date:"d/m/Y H:i" }}</small>
+                                                                        {% else %}
+                                                                            <span class="text-muted">-</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                            {% for evt in restriction_events %}
+                                                                <tr>
+                                                                    <td class="font-monospace fw-bold">EVT-{{ evt.pk }}</td>
+                                                                    <td><span class="badge bg-soft-warning text-warning">Restrição Fornecedor</span></td>
+                                                                    <td>{{ evt.get_event_type_display }}</td>
+                                                                    <td>{{ evt.description|truncatechars:80 }}</td>
+                                                                    <td>
+                                                                        {% if evt.is_active_block %}
+                                                                            <span class="badge bg-danger">Bloqueio Vigente</span>
+                                                                        {% else %}
+                                                                            <span class="badge bg-success">Resolvido</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        {{ evt.event_date|date:"d/m/Y" }}
+                                                                    </td>
+                                                                    <td>
+                                                                        {% if evt.resolved_at %}
+                                                                            {{ evt.resolved_at|date:"d/m/Y H:i" }}
+                                                                        {% else %}
+                                                                            <span class="text-danger fw-semibold">Pendente</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            {% else %}
+                                                <div class="p-4 text-center">
+                                                    <div class="avatar-text avatar-md bg-soft-success text-success rounded-circle mx-auto mb-2">
+                                                        <i class="feather-check"></i>
+                                                    </div>
+                                                    <p class="text-muted mb-0 fs-13">Nenhum bloqueio cautelar de QA ou restrição ativa registrado para este fornecedor.</p>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+                                <i class="feather-lock"></i>
+                                <span>Você não possui permissão para visualizar os dados cadastrais deste parceiro.</span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- ABA 2: AUDITORIAS DE FORNECEDOR BPF -->
+                    <div class="tab-pane fade" id="tab-audits" role="tabpanel" aria-labelledby="tab-audits-btn">
+                        {% if can_view_audits %}
+                            <div class="row g-4">
+                                <div class="col-12">
+                                    <div class="card border border-gray-200 shadow-none">
+                                        <div class="card-header bg-light py-3 d-flex align-items-center justify-content-between">
+                                            <h6 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">
+                                                <i class="feather-check-square text-info" aria-hidden="true"></i>
+                                                <span>Planos e Relatórios de Auditoria BPF / ISO 22716</span>
+                                            </h6>
+                                            <span class="badge bg-primary">{{ supplier_audits.count }} auditorias registradas</span>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            {% if supplier_audits %}
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover align-middle mb-0 fs-13">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>Número</th>
+                                                                <th>Título / Escopo</th>
+                                                                <th>Tipo</th>
+                                                                <th>Auditor Líder</th>
+                                                                <th>Período</th>
+                                                                <th>Status</th>
+                                                                <th>Conformidade</th>
+                                                                <th>Apontamentos</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for audit in supplier_audits %}
+                                                                <tr>
+                                                                    <td class="font-monospace fw-bold">{{ audit.audit_number }}</td>
+                                                                    <td>
+                                                                        <span class="fw-semibold text-dark">{{ audit.title }}</span>
+                                                                        <br><small class="text-muted">{{ audit.scope|truncatechars:70 }}</small>
+                                                                    </td>
+                                                                    <td><span class="badge bg-light text-dark border">{{ audit.get_audit_type_display }}</span></td>
+                                                                    <td>
+                                                                        {% if audit.lead_auditor.get_full_name %}
+                                                                            {{ audit.lead_auditor.get_full_name }}
+                                                                        {% else %}
+                                                                            {{ audit.lead_auditor|default:"Não informado" }}
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        {{ audit.scheduled_start|date:"d/m/Y" }}
+                                                                        {% if audit.actual_start %}
+                                                                            <br><small class="text-muted">Realizado: {{ audit.actual_start|date:"d/m/Y" }}</small>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        <span class="badge {% if audit.status == 'closed' %}bg-soft-success text-success{% elif audit.status == 'cancelled' %}bg-soft-danger text-danger{% else %}bg-soft-info text-info{% endif %}">
+                                                                            {{ audit.get_status_display }}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td>
+                                                                        {% with report=audit.reports.first %}
+                                                                            {% if report and report.compliance_rate is not None %}
+                                                                                <div class="d-flex align-items-center gap-2">
+                                                                                    <div class="progress flex-grow-1" style="height: 6px; min-width: 60px;">
+                                                                                        <div class="progress-bar {% if report.compliance_rate >= 90 %}bg-success{% elif report.compliance_rate >= 75 %}bg-warning{% else %}bg-danger{% endif %}" style="width: {{ report.compliance_rate }}%;"></div>
+                                                                                    </div>
+                                                                                    <span class="fw-bold">{{ report.compliance_rate }}%</span>
+                                                                                </div>
+                                                                            {% else %}
+                                                                                <span class="text-muted">Em apuração</span>
+                                                                            {% endif %}
+                                                                        {% endwith %}
+                                                                    </td>
+                                                                    <td>
+                                                                        <span class="badge bg-light text-dark border">{{ audit.findings.count }} achados</span>
+                                                                    </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            {% else %}
+                                                <div class="p-4 text-center">
+                                                    <div class="avatar-text avatar-md bg-soft-info text-info rounded-circle mx-auto mb-2">
+                                                        <i class="feather-check-square"></i>
+                                                    </div>
+                                                    <p class="text-muted mb-0 fs-13">Nenhuma auditoria BPF registrada diretamente para este fornecedor.</p>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Apontamentos de Auditoria (Findings) -->
+                                <div class="col-12">
+                                    <div class="card border border-gray-200 shadow-none">
+                                        <div class="card-header bg-light py-3 d-flex align-items-center justify-content-between">
+                                            <h6 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">
+                                                <i class="feather-alert-octagon text-warning" aria-hidden="true"></i>
+                                                <span>Apontamentos e Constatações de Auditoria (Findings)</span>
+                                            </h6>
+                                            <div class="d-flex align-items-center gap-2">
+                                                {% if critical_findings_count %}
+                                                    <span class="badge bg-danger">{{ critical_findings_count }} críticos</span>
+                                                {% endif %}
+                                                {% if major_findings_count %}
+                                                    <span class="badge bg-warning">{{ major_findings_count }} maiores</span>
+                                                {% endif %}
+                                                {% if minor_findings_count %}
+                                                    <span class="badge bg-secondary">{{ minor_findings_count }} menores</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            {% if supplier_findings %}
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover align-middle mb-0 fs-13">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>Auditoria</th>
+                                                                <th>Criticidade</th>
+                                                                <th>Classificação</th>
+                                                                <th>Título / Constatação</th>
+                                                                <th>Responsável</th>
+                                                                <th>Prazo</th>
+                                                                <th>Status</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for finding in supplier_findings %}
+                                                                <tr>
+                                                                    <td class="font-monospace fw-bold">{{ finding.audit.audit_number }}</td>
+                                                                    <td>
+                                                                        {% if finding.criticality == 'critical' %}
+                                                                            <span class="badge bg-danger">Crítico</span>
+                                                                        {% elif finding.criticality == 'major' %}
+                                                                            <span class="badge bg-warning">Maior</span>
+                                                                        {% elif finding.criticality == 'minor' %}
+                                                                            <span class="badge bg-secondary">Menor</span>
+                                                                        {% else %}
+                                                                            <span class="badge bg-light text-dark border">{{ finding.criticality|default:"Oportunidade" }}</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>{{ finding.classification|default:"Geral" }}</td>
+                                                                    <td>
+                                                                        <span class="fw-semibold text-dark">{{ finding.title }}</span>
+                                                                        <br><small class="text-muted">{{ finding.description|truncatechars:80 }}</small>
+                                                                    </td>
+                                                                    <td>
+                                                                        {% if finding.responsible.get_full_name %}
+                                                                            {{ finding.responsible.get_full_name }}
+                                                                        {% else %}
+                                                                            {{ finding.responsible|default:"Não informado" }}
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        {{ finding.due_date|date:"d/m/Y"|default:"-" }}
+                                                                    </td>
+                                                                    <td>
+                                                                        <span class="badge {% if finding.status == 'closed' %}bg-soft-success text-success{% else %}bg-soft-danger text-danger{% endif %}">
+                                                                            {{ finding.status|default:"Aberto" }}
+                                                                        </span>
+                                                                    </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            {% else %}
+                                                <div class="p-4 text-center">
+                                                    <div class="avatar-text avatar-md bg-soft-success text-success rounded-circle mx-auto mb-2">
+                                                        <i class="feather-check-circle"></i>
+                                                    </div>
+                                                    <p class="text-muted mb-0 fs-13">Nenhum apontamento ou não-conformidade de auditoria registrado para este fornecedor.</p>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+                                <i class="feather-lock"></i>
+                                <span>Você não possui permissão para visualizar auditorias de fornecedor.</span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- ABA 3: HISTÓRICO DE ENTREGAS & OOS NO RECEBIMENTO -->
+                    <div class="tab-pane fade" id="tab-deliveries" role="tabpanel" aria-labelledby="tab-deliveries-btn">
+                        {% if can_view_deliveries %}
+                            <div class="row g-4">
+                                <!-- Recebimentos de Compra -->
+                                <div class="col-12">
+                                    <div class="card border border-gray-200 shadow-none">
+                                        <div class="card-header bg-light py-3 d-flex align-items-center justify-content-between">
+                                            <h6 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">
+                                                <i class="feather-inbox text-success" aria-hidden="true"></i>
+                                                <span>Histórico de Recebimentos Físicos e Laudos de Entrada</span>
+                                            </h6>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="badge bg-success">{{ approved_receipts_count }} aprovados</span>
+                                                {% if quarantine_receipts_count %}
+                                                    <span class="badge bg-warning">{{ quarantine_receipts_count }} quarentena</span>
+                                                {% endif %}
+                                                {% if rejected_receipts_count %}
+                                                    <span class="badge bg-danger">{{ rejected_receipts_count }} rejeitados</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            {% if purchase_receipts %}
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover align-middle mb-0 fs-13">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>Recibo</th>
+                                                                <th>Pedido Ref</th>
+                                                                <th>NF-e / Documento</th>
+                                                                <th>Recebimento</th>
+                                                                <th>Qualidade (CQ)</th>
+                                                                <th>Estoque</th>
+                                                                <th>Itens Recebidos</th>
+                                                                <th>Recebido por</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for rec in purchase_receipts %}
+                                                                <tr>
+                                                                    <td class="font-monospace fw-bold">{{ rec.receipt_number }}</td>
+                                                                    <td>
+                                                                        {% if rec.order %}
+                                                                            <span class="font-monospace">{{ rec.order.order_number }}</span>
+                                                                        {% else %}
+                                                                            <span class="text-muted">-</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        {{ rec.fiscal_document_number|default:"-" }}
+                                                                        {% if rec.nfe_access_key %}
+                                                                            <br><small class="text-muted font-monospace">{{ rec.nfe_access_key|slice:":20" }}...</small>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>{{ rec.physical_received_at|date:"d/m/Y H:i"|default:"Pendente" }}</td>
+                                                                    <td>
+                                                                        {% if rec.quality_status == 'approved' %}
+                                                                            <span class="badge bg-soft-success text-success"><i class="feather-check-circle me-1"></i>Aprovado</span>
+                                                                        {% elif rec.quality_status == 'quarantine' %}
+                                                                            <span class="badge bg-soft-warning text-warning"><i class="feather-clock me-1"></i>Quarentena</span>
+                                                                        {% elif rec.quality_status == 'rejected' %}
+                                                                            <span class="badge bg-soft-danger text-danger"><i class="feather-x-circle me-1"></i>Rejeitado</span>
+                                                                        {% else %}
+                                                                            <span class="badge bg-light text-dark border">{{ rec.get_quality_status_display }}</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        <span class="badge bg-light text-dark border">{{ rec.get_stock_entry_status_display }}</span>
+                                                                    </td>
+                                                                    <td>
+                                                                        <span class="badge bg-secondary">{{ rec.items.count }} itens</span>
+                                                                    </td>
+                                                                    <td>
+                                                                        {% if rec.received_by.get_full_name %}
+                                                                            {{ rec.received_by.get_full_name }}
+                                                                        {% else %}
+                                                                            {{ rec.received_by|default:"Não informado" }}
+                                                                        {% endif %}
+                                                                    </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            {% else %}
+                                                <div class="p-4 text-center">
+                                                    <div class="avatar-text avatar-md bg-soft-info text-info rounded-circle mx-auto mb-2">
+                                                        <i class="feather-inbox"></i>
+                                                    </div>
+                                                    <p class="text-muted mb-0 fs-13">Nenhum recebimento físico registrado até o momento.</p>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Amostras e Investigações OOS -->
+                                <div class="col-lg-6">
+                                    <div class="card border border-gray-200 shadow-none h-100">
+                                        <div class="card-header bg-light py-3">
+                                            <h6 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">
+                                                <i class="feather-search text-primary" aria-hidden="true"></i>
+                                                <span>Amostras Analíticas de Entrada (CQ)</span>
+                                            </h6>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            {% if quality_samples %}
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover align-middle mb-0 fs-13">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>Amostra</th>
+                                                                <th>Item</th>
+                                                                <th>Status</th>
+                                                                <th>Decisão</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for sample in quality_samples %}
+                                                                <tr>
+                                                                    <td class="font-monospace fw-bold">{{ sample.sample_number }}</td>
+                                                                    <td>
+                                                                        <span class="fw-semibold text-dark">{{ sample.product.code }}</span>
+                                                                        <br><small class="text-muted">{{ sample.product.description|truncatechars:35 }}</small>
+                                                                    </td>
+                                                                    <td><span class="badge bg-light text-dark border">{{ sample.get_status_display }}</span></td>
+                                                                    <td>
+                                                                        {% if sample.approved_at %}
+                                                                            <span class="text-success"><i class="feather-check me-1"></i>Aprovada</span>
+                                                                        {% elif sample.rejected_at %}
+                                                                            <span class="text-danger"><i class="feather-x me-1"></i>Rejeitada</span>
+                                                                        {% else %}
+                                                                            <span class="text-muted">Em análise</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            {% else %}
+                                                <div class="p-4 text-center">
+                                                    <p class="text-muted mb-0 fs-13">Nenhuma amostra analítica vinculada a recebimentos deste fornecedor.</p>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <div class="card border border-gray-200 shadow-none h-100">
+                                        <div class="card-header bg-light py-3">
+                                            <h6 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">
+                                                <i class="feather-alert-triangle text-danger" aria-hidden="true"></i>
+                                                <span>Investigações Laboratoriais (OOS / OOT)</span>
+                                            </h6>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            {% if lab_investigations %}
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover align-middle mb-0 fs-13">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>Número</th>
+                                                                <th>Tipo</th>
+                                                                <th>Causa Raiz</th>
+                                                                <th>Status</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for inv in lab_investigations %}
+                                                                <tr>
+                                                                    <td class="font-monospace fw-bold">{{ inv.investigation_number }}</td>
+                                                                    <td><span class="badge bg-light text-dark border">{{ inv.get_investigation_type_display }}</span></td>
+                                                                    <td>{{ inv.root_cause|truncatechars:40|default:"Em apuração" }}</td>
+                                                                    <td>
+                                                                        <span class="badge {% if inv.status == 'concluded' %}bg-success{% else %}bg-warning{% endif %}">
+                                                                            {{ inv.get_status_display }}
+                                                                        </span>
+                                                                    </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            {% else %}
+                                                <div class="p-4 text-center">
+                                                    <div class="avatar-text avatar-md bg-soft-success text-success rounded-circle mx-auto mb-2">
+                                                        <i class="feather-check"></i>
+                                                    </div>
+                                                    <p class="text-muted mb-0 fs-13">Nenhum resultado fora de especificação (OOS) investigado em matérias-primas deste fornecedor.</p>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Pedidos de Compra Recentes -->
+                                <div class="col-12">
+                                    <div class="card border border-gray-200 shadow-none">
+                                        <div class="card-header bg-light py-3">
+                                            <h6 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">
+                                                <i class="feather-file text-primary" aria-hidden="true"></i>
+                                                <span>Pedidos de Compra (Histórico Recente)</span>
+                                            </h6>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            {% if purchase_orders %}
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover align-middle mb-0 fs-13">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>Pedido</th>
+                                                                <th>Emissão</th>
+                                                                <th>Entrega Prevista</th>
+                                                                <th>Valor Total</th>
+                                                                <th>Status</th>
+                                                                <th>Aprovado por</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for po in purchase_orders %}
+                                                                <tr>
+                                                                    <td class="font-monospace fw-bold">{{ po.order_number }}</td>
+                                                                    <td>{{ po.issue_date|date:"d/m/Y"|default:"-" }}</td>
+                                                                    <td>{{ po.expected_delivery_date|date:"d/m/Y"|default:"-" }}</td>
+                                                                    <td class="fw-semibold">R$ {{ po.total_amount }}</td>
+                                                                    <td>
+                                                                        <span class="badge {% if po.status == 'approved' or po.status == 'received' %}bg-soft-success text-success{% elif po.status == 'cancelled' %}bg-soft-danger text-danger{% else %}bg-soft-secondary text-secondary{% endif %}">
+                                                                            {{ po.get_status_display }}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td>
+                                                                        {% if po.approved_by.get_full_name %}
+                                                                            {{ po.approved_by.get_full_name }}
+                                                                        {% else %}
+                                                                            {{ po.approved_by|default:"Pendente" }}
+                                                                        {% endif %}
+                                                                    </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            {% else %}
+                                                <div class="p-4 text-center">
+                                                    <p class="text-muted mb-0 fs-13">Nenhum pedido de compra emitido até o momento.</p>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+                                <i class="feather-lock"></i>
+                                <span>Você não possui permissão para visualizar o histórico de compras e entregas.</span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- ABA 4: MATÉRIAS-PRIMAS HOMOLOGADAS -->
+                    <div class="tab-pane fade" id="tab-products" role="tabpanel" aria-labelledby="tab-products-btn">
+                        {% if can_view_products %}
+                            <div class="row g-4">
+                                <div class="col-12">
+                                    <div class="card border border-gray-200 shadow-none">
+                                        <div class="card-header bg-light py-3 d-flex align-items-center justify-content-between">
+                                            <h6 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">
+                                                <i class="feather-box text-warning" aria-hidden="true"></i>
+                                                <span>Matérias-Primas e Insumos Fornecidos / Homologados</span>
+                                            </h6>
+                                            <span class="badge bg-warning">{{ homologated_products|length }} itens associados</span>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            {% if homologated_products %}
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover align-middle mb-0 fs-13">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>Código</th>
+                                                                <th>Descrição do Insumo</th>
+                                                                <th>Tipo</th>
+                                                                <th>Unidade</th>
+                                                                <th>Exige CQ</th>
+                                                                <th>Exige Fornecedor Aprovado</th>
+                                                                <th>Qtd Recebida</th>
+                                                                <th>Qtd Aceita</th>
+                                                                <th>Última Entrega</th>
+                                                                <th>Situação</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for item in homologated_products %}
+                                                                <tr>
+                                                                    <td class="font-monospace fw-bold">{{ item.product.code }}</td>
+                                                                    <td>
+                                                                        <span class="fw-semibold text-dark">{{ item.product.description }}</span>
+                                                                        {% if item.product.category %}
+                                                                            <br><small class="text-muted">{{ item.product.category.name }}</small>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td><span class="badge bg-light text-dark border">{{ item.product.get_item_type_display }}</span></td>
+                                                                    <td>{{ item.product.unit.symbol|default:item.product.unit.code }}</td>
+                                                                    <td>
+                                                                        {% if item.product.requires_quality_release %}
+                                                                            <span class="badge bg-soft-info text-info">Sim</span>
+                                                                        {% else %}
+                                                                            <span class="badge bg-soft-secondary text-secondary">Não</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        {% if item.product.requires_approved_supplier %}
+                                                                            <span class="badge bg-soft-primary text-primary">Sim (Crítico)</span>
+                                                                        {% else %}
+                                                                            <span class="badge bg-soft-secondary text-secondary">Não</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>{{ item.total_received }}</td>
+                                                                    <td><span class="text-success fw-semibold">{{ item.total_accepted }}</span></td>
+                                                                    <td>
+                                                                        {{ item.last_delivery_date|date:"d/m/Y"|default:"-" }}
+                                                                    </td>
+                                                                    <td>
+                                                                        {% if item.has_block %}
+                                                                            <span class="badge bg-danger">Bloqueado QA</span>
+                                                                        {% elif item.product.status == 'approved' %}
+                                                                            <span class="badge bg-soft-success text-success">Aprovado</span>
+                                                                        {% else %}
+                                                                            <span class="badge bg-light text-dark border">{{ item.product.get_status_display }}</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            {% else %}
+                                                <div class="p-4 text-center">
+                                                    <div class="avatar-text avatar-md bg-soft-warning text-warning rounded-circle mx-auto mb-2">
+                                                        <i class="feather-box"></i>
+                                                    </div>
+                                                    <p class="text-muted mb-0 fs-13">Nenhuma matéria-prima ou insumo fornecido formalmente via pedido de compra ou recebimento.</p>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Propostas Comerciais e Cotações (RFQs) -->
+                                <div class="col-12">
+                                    <div class="card border border-gray-200 shadow-none">
+                                        <div class="card-header bg-light py-3">
+                                            <h6 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">
+                                                <i class="feather-dollar-sign text-success" aria-hidden="true"></i>
+                                                <span>Cotações e Propostas Comerciais de Fornecedor (RFQs)</span>
+                                            </h6>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            {% if supplier_quotations %}
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover align-middle mb-0 fs-13">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>Cotação / RFQ</th>
+                                                                <th>Status</th>
+                                                                <th>Qtd Cotada</th>
+                                                                <th>Preço Unitário</th>
+                                                                <th>Total</th>
+                                                                <th>Prazo (Dias)</th>
+                                                                <th>Desempenho</th>
+                                                                <th>Validade</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for quote in supplier_quotations %}
+                                                                <tr>
+                                                                    <td class="font-monospace fw-bold">{{ quote.rfq.rfq_number }}</td>
+                                                                    <td><span class="badge bg-light text-dark border">{{ quote.get_status_display }}</span></td>
+                                                                    <td>{{ quote.quoted_quantity }}</td>
+                                                                    <td>R$ {{ quote.unit_price }}</td>
+                                                                    <td class="fw-semibold">R$ {{ quote.total_amount }}</td>
+                                                                    <td>{{ quote.lead_time_days }} dias</td>
+                                                                    <td>
+                                                                        <span class="badge bg-soft-info text-info">{{ quote.supplier_performance_score }}</span>
+                                                                    </td>
+                                                                    <td>
+                                                                        {{ quote.valid_until|date:"d/m/Y"|default:"-" }}
+                                                                    </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            {% else %}
+                                                <div class="p-4 text-center">
+                                                    <p class="text-muted mb-0 fs-13">Nenhuma cotação de fornecedor registrada até o momento.</p>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+                                <i class="feather-lock"></i>
+                                <span>Você não possui permissão para visualizar matérias-primas e insumos.</span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- ABA 5: SCORECARD & STATUS DE QUALIFICAÇÃO (5 GATES REGULATÓRIOS) -->
+                    <div class="tab-pane fade" id="tab-scorecard" role="tabpanel" aria-labelledby="tab-scorecard-btn">
+                        {% if can_view_scorecard %}
+                            <div class="row g-4">
+                                <!-- Parecer Geral Regulatório -->
+                                <div class="col-12">
+                                    <div class="card border-0 shadow-sm p-4 {{ regulatory_verdict_badge }} text-white">
+                                        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                                            <div>
+                                                <div class="d-flex align-items-center gap-2 mb-2">
+                                                    <span class="badge bg-white text-dark fw-bold text-uppercase fs-11">Parecer Sanitário BPF</span>
+                                                    <span class="badge bg-black bg-opacity-25 text-white">{{ gates_passed_count }} de 5 critérios conformes</span>
+                                                </div>
+                                                <h3 class="fw-bold mb-1 text-white">{{ regulatory_verdict }}</h3>
+                                                <p class="mb-0 text-white opacity-90 fs-14">{{ regulatory_verdict_desc }}</p>
+                                            </div>
+                                            <div class="text-md-end">
+                                                <span class="d-block fs-12 text-uppercase opacity-75">Situação Operacional</span>
+                                                <span class="fs-4 fw-bold">
+                                                    {% if partner.is_operationally_available %}
+                                                        Liberado
+                                                    {% else %}
+                                                        Restrito
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 5 Gates de Qualificação Sanitária ANVISA / BPF -->
+                                <div class="col-lg-7">
+                                    <div class="card border border-gray-200 shadow-none h-100">
+                                        <div class="card-header bg-light py-3">
+                                            <h6 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">
+                                                <i class="feather-shield text-primary" aria-hidden="true"></i>
+                                                <span>Checklist Regulatório: 5 Gates de Qualificação de Fornecedor</span>
+                                            </h6>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <ul class="list-group list-group-flush fs-13">
+                                                <!-- Gate 1 -->
+                                                <li class="list-group-item d-flex align-items-start gap-3 py-3">
+                                                    <div class="mt-1">
+                                                        {% if gate1_passed %}
+                                                            <i class="feather-check-circle text-success fs-4"></i>
+                                                        {% else %}
+                                                            <i class="feather-alert-circle text-danger fs-4"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                                            <strong class="text-dark">Gate 1: Cadastro e Regularidade Fiscal</strong>
+                                                            <span class="badge {% if gate1_passed %}bg-soft-success text-success{% else %}bg-soft-danger text-danger{% endif %}">
+                                                                {% if gate1_passed %}Conforme{% else %}Pendente{% endif %}
+                                                            </span>
+                                                        </div>
+                                                        <p class="text-muted mb-0">CNPJ / Documento fiscal válido, razão social preenchida e localização geográfica normalizada (UF, Cidade e CEP).</p>
+                                                    </div>
+                                                </li>
+
+                                                <!-- Gate 2 -->
+                                                <li class="list-group-item d-flex align-items-start gap-3 py-3">
+                                                    <div class="mt-1">
+                                                        {% if gate2_passed %}
+                                                            <i class="feather-check-circle text-success fs-4"></i>
+                                                        {% else %}
+                                                            <i class="feather-alert-circle text-danger fs-4"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                                            <strong class="text-dark">Gate 2: Licenças Sanitárias e AFE/VISA Vigentes</strong>
+                                                            <span class="badge {% if gate2_passed %}bg-soft-success text-success{% else %}bg-soft-danger text-danger{% endif %}">
+                                                                {% if gate2_passed %}Conforme{% else %}Restrito / Vencido{% endif %}
+                                                            </span>
+                                                        </div>
+                                                        <p class="text-muted mb-0">Autorização de Funcionamento de Empresa (AFE), Alvará Sanitário e ausência de bloqueios ativos em eventos regulatórios.</p>
+                                                    </div>
+                                                </li>
+
+                                                <!-- Gate 3 -->
+                                                <li class="list-group-item d-flex align-items-start gap-3 py-3">
+                                                    <div class="mt-1">
+                                                        {% if gate3_passed %}
+                                                            <i class="feather-check-circle text-success fs-4"></i>
+                                                        {% else %}
+                                                            <i class="feather-alert-circle text-warning fs-4"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                                            <strong class="text-dark">Gate 3: Auditoria BPF e Avaliação Técnica</strong>
+                                                            <span class="badge {% if gate3_passed %}bg-soft-success text-success{% else %}bg-soft-warning text-warning{% endif %}">
+                                                                {% if gate3_passed %}Conforme{% else %}Pendente / Achados Abertos{% endif %}
+                                                            </span>
+                                                        </div>
+                                                        <p class="text-muted mb-0">Auditoria presencial ou remota BPF realizada, relatório emitido sem achados críticos pendentes de fechamento.</p>
+                                                    </div>
+                                                </li>
+
+                                                <!-- Gate 4 -->
+                                                <li class="list-group-item d-flex align-items-start gap-3 py-3">
+                                                    <div class="mt-1">
+                                                        {% if gate4_passed %}
+                                                            <i class="feather-check-circle text-success fs-4"></i>
+                                                        {% else %}
+                                                            <i class="feather-alert-circle text-danger fs-4"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                                            <strong class="text-dark">Gate 4: Homologação de Matérias-Primas e Laudos de CQ</strong>
+                                                            <span class="badge {% if gate4_passed %}bg-soft-success text-success{% else %}bg-soft-danger text-danger{% endif %}">
+                                                                {% if gate4_passed %}Conforme (>=90% Aceite){% else %}Reprovado / Alta Rejeição{% endif %}
+                                                            </span>
+                                                        </div>
+                                                        <p class="text-muted mb-0">Insumos analisados e aprovados pelo Controle de Qualidade; taxa de aceitação de lotes de entrada satisfatória.</p>
+                                                    </div>
+                                                </li>
+
+                                                <!-- Gate 5 -->
+                                                <li class="list-group-item d-flex align-items-start gap-3 py-3">
+                                                    <div class="mt-1">
+                                                        {% if gate5_passed %}
+                                                            <i class="feather-check-circle text-success fs-4"></i>
+                                                        {% else %}
+                                                            <i class="feather-slash text-danger fs-4"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                                            <strong class="text-dark">Gate 5: Parecer Sanitário e Ausência de Bloqueios QA</strong>
+                                                            <span class="badge {% if gate5_passed %}bg-soft-success text-success{% else %}bg-soft-danger text-danger{% endif %}">
+                                                                {% if gate5_passed %}Liberado{% else %}Bloqueado por QA{% endif %}
+                                                            </span>
+                                                        </div>
+                                                        <p class="text-muted mb-0">Inexistência de bloqueios cautelares emitidos pela Garantia da Qualidade (QA) e ausência de desvios críticos sem contenção.</p>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Resumo do Scorecard e Métricas de Fornecimento -->
+                                <div class="col-lg-5">
+                                    <div class="card border border-gray-200 shadow-none h-100">
+                                        <div class="card-header bg-light py-3">
+                                            <h6 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">
+                                                <i class="feather-pie-chart text-info" aria-hidden="true"></i>
+                                                <span>Painel de Desempenho e Qualificação</span>
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="mb-4">
+                                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                                    <span class="text-muted fs-13">Índice de Aceitação no CQ:</span>
+                                                    <span class="fw-bold text-dark fs-14">{{ receipt_acceptance_rate }}%</span>
+                                                </div>
+                                                <div class="progress" style="height: 8px;">
+                                                    <div class="progress-bar {% if receipt_acceptance_rate >= 90 %}bg-success{% elif receipt_acceptance_rate >= 75 %}bg-warning{% else %}bg-danger{% endif %}" style="width: {{ receipt_acceptance_rate }}%;"></div>
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-4">
+                                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                                    <span class="text-muted fs-13">Conformidade BPF em Auditorias:</span>
+                                                    <span class="fw-bold text-dark fs-14">{{ avg_audit_compliance_pct|default:"100.00" }}%</span>
+                                                </div>
+                                                <div class="progress" style="height: 8px;">
+                                                    <div class="progress-bar {% if avg_audit_compliance_pct and avg_audit_compliance_pct < 75 %}bg-warning{% else %}bg-info{% endif %}" style="width: {{ avg_audit_compliance_pct|default:'100' }}%;"></div>
+                                                </div>
+                                            </div>
+
+                                            <div class="p-3 bg-light rounded mb-3">
+                                                <div class="row g-2 text-center">
+                                                    <div class="col-6">
+                                                        <span class="d-block text-muted fs-11 text-uppercase">Recebimentos</span>
+                                                        <span class="fs-15 fw-bold text-dark">{{ total_receipts_count }}</span>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <span class="d-block text-muted fs-11 text-uppercase">Rejeições</span>
+                                                        <span class="fs-15 fw-bold {% if rejected_receipts_count %}text-danger{% else %}text-success{% endif %}">{{ rejected_receipts_count }}</span>
+                                                    </div>
+                                                    <div class="col-6 mt-2">
+                                                        <span class="d-block text-muted fs-11 text-uppercase">OOS Laboratório</span>
+                                                        <span class="fs-15 fw-bold {% if total_oos_count %}text-warning{% else %}text-dark{% endif %}">{{ total_oos_count }}</span>
+                                                    </div>
+                                                    <div class="col-6 mt-2">
+                                                        <span class="d-block text-muted fs-11 text-uppercase">Desvios de Entrada</span>
+                                                        <span class="fs-15 fw-bold {% if total_deviations_count %}text-danger{% else %}text-dark{% endif %}">{{ total_deviations_count }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="alert alert-info py-2 px-3 mb-0 fs-12" role="alert">
+                                                <i class="feather-info me-1"></i>
+                                                <span>A homologação deve ser revalidada anualmente ou após qualquer alteração crítica de processo ou rota de síntese pelo fornecedor.</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+                                <i class="feather-lock"></i>
+                                <span>Você não possui permissão para visualizar o scorecard deste fornecedor.</span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

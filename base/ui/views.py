@@ -1284,6 +1284,11 @@ class ResourceDetailView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
             and resource.slug == 'complaints'
             and self.request.user.has_perm('recalls.view_marketcomplaint')
         )
+        context['can_view_supplier_cockpit'] = (
+            self.get_module().slug == 'masters'
+            and resource.slug == 'partners'
+            and self.request.user.has_perm('masters.view_businesspartner')
+        )
         return context
 
 

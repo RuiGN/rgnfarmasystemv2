@@ -6,6 +6,7 @@ from crm.ui_views import SalesOrderCockpitView
 from deviations.ui_views import QualityEventCockpitView
 from formulations.ui_views import MasterFormulaCockpitView, MasterFormulaReuseView
 from production.ui_views import ProductionOrderCockpitView
+from procurement.ui_views import SupplierCockpitView
 from qa.ui_views import LotReleaseCockpitView, StockLotDossierView
 from recalls.ui_views import MarketComplaintCockpitView
 
@@ -120,6 +121,12 @@ urlpatterns = [
         MarketComplaintCockpitView.as_view(),
         {'module_slug': 'recalls', 'resource_slug': 'complaints'},
         name='market_complaint_cockpit',
+    ),
+    path(
+        'masters/partners/<int:pk>/cockpit/',
+        SupplierCockpitView.as_view(),
+        {'module_slug': 'masters', 'resource_slug': 'partners'},
+        name='supplier_cockpit',
     ),
     path(
         '<slug:module_slug>/<slug:resource_slug>/<int:pk>/actions/<slug:action_name>/',
