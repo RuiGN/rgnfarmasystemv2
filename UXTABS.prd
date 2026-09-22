@@ -82,11 +82,11 @@ O padrão consolida em um único template responsivo:
   - [X] Template com abas: Dados Cadastrais & Licenças Sanitárias (AFE/VISA), Auditorias de Fornecedor BPF, Histórico de Entregas & OOS no Recebimento, Matérias-Primas Homologadas, Scorecard & Status de Qualificação
   - [X] Testes automatizados e documentação
 
-- [ ] **Sprint 7: Cockpit de Gestão de Documentos Controlados e Treinamentos (DMS & Capacitação)**
-  - [ ] Mapeamento de governança e capacitação (`ControlledDocument`, `TrainingRequirement`, `TrainingRecord`, `QAReview`, `GovernanceAuditLog`)
-  - [ ] Criação da view `ControlledDocumentCockpitView`
-  - [ ] Template com abas: Metadados & Conteúdo do Procedimento (SOP), Matriz de Treinamentos Requeridos por Cargo, Colaboradores Treinados & Provas de Eficácia, Histórico de Revisões & Assinaturas, Trilha de Auditoria
-  - [ ] Testes automatizados e documentação
+- [X] **Sprint 7: Cockpit de Gestão de Documentos Controlados e Treinamentos (DMS & Capacitação)**
+  - [X] Mapeamento de governança e capacitação (`ControlledDocument`, `TrainingRequirement`, `TrainingRecord`, `QAReview`, `GovernanceAuditLog`)
+  - [X] Criação da view `ControlledDocumentCockpitView`
+  - [X] Template com abas: Metadados & Conteúdo do Procedimento (SOP), Matriz de Treinamentos Requeridos por Cargo, Colaboradores Treinados & Provas de Eficácia, Histórico de Revisões & Assinaturas, Trilha de Auditoria
+  - [X] Testes automatizados e documentação
 
 - [ ] **Sprint 8: Cockpit de Auditorias da Qualidade e Planos de Ação (Audits 360°)**
   - [ ] Mapeamento de auditorias internas e externas (`Audit`, `AuditItem`, `AuditEvidence`, `QualityEvent`, `CapaRecord`)

@@ -189,6 +189,16 @@ receber acesso direto.
   5. *Scorecard e status de qualificação*: Parecer geral regulatório e sanitário (Apto para fornecimento, Qualificação vencida, Fornecimento bloqueado), indicadores consolidados de fornecimento e checklist formal dos 5 Gates de Qualificação Sanitária ANVISA/BPF.
   Cada aba aplica segregação de deveres (SoD) no servidor, restringindo a visualização de auditorias, compras/recebimentos, ensaios de CQ e matérias-primas conforme as permissões de cada perfil.
 
+- **Cockpit de Gestão de Documentos Controlados e Treinamentos (`app:controlled_document_cockpit`):**
+  Disponível no detalhe de `ControlledDocument` (`/app/documents/controlled-documents/<id>/cockpit/`).
+  Consolida a gestão do ciclo de vida documental, matriz de capacitação e conformidade BPF em cinco abas Duralux:
+  1. *Metadados e conteúdo do procedimento (SOP)*: Ficha técnica documental com código, versão, vigência inicial, validade sanitária, responsável, controle de ciclo e assinaturas (elaborador, revisor, aprovador, publicador), histórico e justificativa formal de mudança (ALCOA+), visualização do conteúdo textual do procedimento e anexos documentais com hash criptográfico de integridade.
+  2. *Matriz de treinamentos requeridos por cargo*: Mapeamento da matriz de capacitação vinculando o procedimento a cargos, funções operacionais e competências, referências regulatórias (RDC ANVISA 48/2013 e ISO 22716), periodicidade/validade em dias, nota de corte para aprovação, flags de obrigatoriedade, exigência de avaliação e bloqueio operacional automático de atividades sem treinamento prévio.
+  3. *Colaboradores treinados e provas de eficácia*: Indicadores executivos de taxa de capacitação (compliance rate), média de notas, relação de colaboradores inscritos com status do treinamento (aprovado, realizado, em andamento, reprovado, vencido), datas de realização, notas obtidas, emissão de certificados com número e referência, validade da qualificação e hash de evidência ALCOA+.
+  4. *Histórico de revisões e assinaturas*: Pareceres técnicos e assinaturas eletrônicas formalizadas de revisores e aprovadores com papéis definidos e comentários, linhagem completa de revisões do documento (predecessores e sucessores) e avaliações formais da Garantia da Qualidade (QA Reviews).
+  5. *Distribuição controlada, vínculos e trilha de auditoria*: Scorecard com veredito regulatório dos 5 Gates de Prontidão Sanitária DMS (Elaboração e Metadados, Ciclo de Aprovação, Vigência Ativa, Matriz de Capacitação, Eficácia e Bloqueios QA), alertas de bloqueios cautelares QA, distribuição de cópias controladas com confirmação formal de leitura pelo destinatário, relacionamentos documentais (referências, substituições, impactos) e trilha de auditoria documental ALCOA+ com registros congelados e justificativas.
+  Cada aba aplica segregação de deveres (SoD) no servidor, protegendo o acesso a dados de treinamento, eficácia, aprovações e governança documental de acordo com os perfis de acesso.
+
 ## Regras
 
 - Menus usam permissões `view` dos models.

@@ -4,6 +4,7 @@ from base.ui import views
 from base.ui.actions import views as action_views
 from crm.ui_views import SalesOrderCockpitView
 from deviations.ui_views import QualityEventCockpitView
+from documents.ui_views import ControlledDocumentCockpitView
 from formulations.ui_views import MasterFormulaCockpitView, MasterFormulaReuseView
 from production.ui_views import ProductionOrderCockpitView
 from procurement.ui_views import SupplierCockpitView
@@ -127,6 +128,12 @@ urlpatterns = [
         SupplierCockpitView.as_view(),
         {'module_slug': 'masters', 'resource_slug': 'partners'},
         name='supplier_cockpit',
+    ),
+    path(
+        'documents/controlled-documents/<int:pk>/cockpit/',
+        ControlledDocumentCockpitView.as_view(),
+        {'module_slug': 'documents', 'resource_slug': 'controlled-documents'},
+        name='controlled_document_cockpit',
     ),
     path(
         '<slug:module_slug>/<slug:resource_slug>/<int:pk>/actions/<slug:action_name>/',

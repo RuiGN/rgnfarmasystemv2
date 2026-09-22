@@ -1289,6 +1289,11 @@ class ResourceDetailView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
             and resource.slug == 'partners'
             and self.request.user.has_perm('masters.view_businesspartner')
         )
+        context['can_view_controlled_document_cockpit'] = (
+            self.get_module().slug == 'documents'
+            and resource.slug == 'controlled-documents'
+            and self.request.user.has_perm('documents.view_controlleddocument')
+        )
         return context
 
 

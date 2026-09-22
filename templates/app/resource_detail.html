@@ -70,6 +70,9 @@
                 {% if module.slug == 'masters' and resource.slug == 'partners' and can_view_supplier_cockpit %}
                     <a href="{% url 'app:supplier_cockpit' object.pk %}" class="btn btn-info d-inline-flex align-items-center gap-2"><i class="feather-truck" aria-hidden="true"></i>Cockpit do fornecedor (360°)</a>
                 {% endif %}
+                {% if module.slug == 'documents' and resource.slug == 'controlled-documents' and can_view_controlled_document_cockpit %}
+                    <a href="{% url 'app:controlled_document_cockpit' object.pk %}" class="btn btn-primary d-inline-flex align-items-center gap-2"><i class="feather-book-open" aria-hidden="true"></i>Cockpit do documento (DMS)</a>
+                {% endif %}
                 {% if resource.has_document_viewer %}
                     <a href="{% url 'app:resource_viewer' module.slug resource.slug object.pk %}" class="btn btn-dark d-inline-flex align-items-center gap-2"><i class="feather-book-open" aria-hidden="true"></i>Visualizar documento</a>
                 {% endif %}
