@@ -159,6 +159,16 @@ receber acesso direto.
   5. *Aprovações e fechamento*: Workflow de assinaturas multidisciplinares SoD (Garantia da Qualidade, Controle de Qualidade, Produção, Assuntos Regulatórios, Área Responsável), verificações de eficácia dos planos CAPA, checklist regulatório de prontidão (4 gates) e encerramento sanitário formal do evento.
   Cada aba aplica segregação de deveres (SoD) no servidor, protegendo o acesso de acordo com as permissões atribuídas.
 
+- **Cockpit Comercial Order-to-Cash (`app:sales_order_cockpit`):**
+  Disponível no detalhe de `SalesOrder` (`/app/crm/orders/<id>/cockpit/`).
+  Consolida a jornada comercial completa de ponta a ponta em cinco abas Duralux:
+  1. *Pedido e itens comerciais*: Itens do pedido com preços, descontos, subtotais e totais líquidos, dados completos de entrega e logística, propostas, contratos e observações comerciais.
+  2. *Análise de crédito e limites*: Limites de crédito aprovados, exposição financeira em aberto, margem disponível antes e após comprometer o pedido, conformidade de travas comerciais e regulatórias (AFE ANVISA/compliance).
+  3. *Reserva e estoque (WMS)*: Conferência de atendimento físico por item com saldo aprovado em almoxarifado, detalhamento por lote, armazém e endereço de armazenagem, além do histórico de reservas e movimentações vinculadas.
+  4. *Faturamento e NF-e*: Documentos fiscais eletrônicos associados (modelo 55), status de autorização SEFAZ, chave de acesso, protocolo, destaque de tributos e valor total faturado.
+  5. *Títulos financeiros e baixas*: Contas a receber geradas pelo pedido, histórico de baixas e liquidações financeiras (PIX, boleto, transferência) e régua de prontidão Order-to-Cash (5 Gates).
+  Cada aba aplica segregação de deveres (SoD) no servidor, protegendo o acesso a crédito, estoque, documentos fiscais e finanças conforme as permissões do usuário.
+
 ## Regras
 
 - Menus usam permissões `view` dos models.

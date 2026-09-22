@@ -64,11 +64,11 @@ O padrão consolida em um único template responsivo:
   - [X] Template com abas: Notificação & Contenção Imediata, Investigação Causa Raiz (Ishikawa/5 Porquês), Avaliação de Impacto Regulatório, Planos de Ação CAPA, Verificação de Eficácia & Fechamento
   - [X] Testes automatizados e documentação
 
-- [ ] **Sprint 4: Cockpit Comercial Order-to-Cash (Pedido de Venda 360°)**
-  - [ ] Mapeamento comercial, fiscal, estoque e financeiro (`SalesOrder`, `SalesOrderItem`, `CustomerProfile`, `StockBalance`, `FiscalDocument`, `FinancialTitle`, `FinancialSettlement`)
-  - [ ] Criação da view `SalesOrderCockpitView`
-  - [ ] Template com abas: Dados Comerciais do Pedido, Análise de Crédito & Reserva de Estoque (FEFO), Faturamento NF-e & Impostos, Expedição & Rastreamento Logístico, Títulos Financeiros a Receber
-  - [ ] Testes automatizados e documentação
+- [X] **Sprint 4: Cockpit Comercial Order-to-Cash (Pedido de Venda 360°)**
+  - [X] Mapeamento comercial, fiscal, estoque e financeiro (`SalesOrder`, `SalesOrderItem`, `CustomerProfile`, `StockBalance`, `FiscalDocument`, `FinancialTitle`, `FinancialSettlement`)
+  - [X] Criação da view `SalesOrderCockpitView`
+  - [X] Template com abas: Dados Comerciais do Pedido, Análise de Crédito & Reserva de Estoque (FEFO), Faturamento NF-e & Impostos, Expedição & Rastreamento Logístico, Títulos Financeiros a Receber
+  - [X] Testes automatizados e documentação
 
 - [ ] **Sprint 5: Cockpit de Cosmetovigilância, Reclamações de Mercado e Recolhimento (Recall)**
   - [ ] Mapeamento de pós-mercado e segurança sanitária (`MarketComplaint`, `ProductReturn`, `RecallCampaign`, `RecallImpactedCustomer`, `RecallCommunication`, `RecallEffectivenessReport`, `QualityAnalysis`)

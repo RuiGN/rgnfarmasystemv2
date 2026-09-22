@@ -1,0 +1,936 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ order.order_number }} — Cockpit Comercial Order-to-Cash | RGN Farma System{% endblock %}
+
+{% block page_header %}
+<div class="page-header" id="section-0">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h1 class="h5 m-b-10">Cockpit Comercial Order-to-Cash (O2C)</h1>
+        </div>
+        <ul class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:module' 'crm' %}">{{ module.label }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:resource_list' 'crm' 'orders' %}">{{ resource.label }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:resource_detail' 'crm' 'orders' order.pk %}">{{ order.order_number }}</a></li>
+            <li class="breadcrumb-item active">Cockpit do pedido (O2C)</li>
+        </ul>
+    </div>
+    <div class="page-header-right ms-auto d-flex align-items-center gap-2">
+        <a class="btn btn-light" href="{% url 'app:resource_detail' 'crm' 'orders' order.pk %}">
+            <i class="feather-arrow-left me-1" aria-hidden="true"></i> Voltar ao pedido
+        </a>
+        {% if customer %}
+            <a class="btn btn-light" href="{% url 'app:resource_detail' 'masters' 'partners' customer.pk %}">
+                <i class="feather-user me-1" aria-hidden="true"></i> Ficha do cliente
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Card de Resumo e Identificação Executiva Comercial -->
+<div class="card stretch stretch-full mb-4">
+    <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <span class="text-muted text-uppercase fs-11 fw-semibold">Gestão Comercial · Ciclo Completo Order-to-Cash (O2C)</span>
+                <h2 class="h4 mb-1">{{ order.order_number }} — {{ customer.legal_name }}</h2>
+                <p class="text-muted mb-0">
+                    CNPJ/CPF: <strong>{{ customer.document }}</strong>
+                    {% if customer.trade_name %} · Nome fantasia: <strong>{{ customer.trade_name }}</strong>{% endif %}
+                    · Emissão: <strong>{{ order.created_at|date:"d/m/Y H:i" }}</strong>
+                    · Entrega solicitada: <strong>{{ order.requested_delivery_date|date:"d/m/Y" }}</strong>
+                    · Prazo: <strong>{{ order.payment_terms_days }} dias</strong>
+                    {% if order.representative %} · Representante: <strong>{{ order.representative.name }}</strong>{% endif %}
+                </p>
+                {% if order.block_reason %}
+                    <div class="alert alert-danger py-1 px-2 mt-2 mb-0 fs-12 d-inline-block">
+                        <i class="feather-alert-octagon me-1" aria-hidden="true"></i><strong>Motivo de bloqueio:</strong> {{ order.block_reason }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <!-- Status do Pedido -->
+                <span class="badge {% if order.status == 'approved' or order.status == 'fulfilled' %}bg-soft-success text-success{% elif order.status == 'blocked' %}bg-soft-danger text-danger{% elif order.status == 'cancelled' %}bg-soft-secondary text-secondary{% else %}bg-soft-warning text-warning{% endif %} fs-12 px-3 py-2">
+                    <i class="feather-shopping-cart me-1" aria-hidden="true"></i>{{ order.get_status_display }}
+                </span>
+                <!-- Status de Crédito -->
+                <span class="badge {% if credit_status == 'ok' %}bg-soft-success text-success{% elif credit_status == 'hold' %}bg-soft-danger text-danger{% else %}bg-soft-warning text-warning{% endif %} fs-12 px-3 py-2">
+                    {% if credit_status == 'ok' %}
+                        <i class="feather-check me-1" aria-hidden="true"></i>Crédito Liberado
+                    {% elif credit_status == 'hold' %}
+                        <i class="feather-lock me-1" aria-hidden="true"></i>Bloqueio de Crédito
+                    {% else %}
+                        <i class="feather-alert-triangle me-1" aria-hidden="true"></i>Limite Excedido
+                    {% endif %}
+                </span>
+                <!-- Status de Estoque -->
+                <span class="badge {% if all_items_in_stock %}bg-soft-success text-success{% else %}bg-soft-danger text-danger{% endif %} fs-12 px-3 py-2">
+                    {% if all_items_in_stock %}
+                        <i class="feather-box me-1" aria-hidden="true"></i>Estoque Disponível
+                    {% else %}
+                        <i class="feather-alert-circle me-1" aria-hidden="true"></i>Saldo Insuficiente
+                    {% endif %}
+                </span>
+                <!-- Ações Disponíveis -->
+                {% if available_order_actions %}
+                    <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" id="orderActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="feather-play me-1" aria-hidden="true"></i> Ações do pedido
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="orderActionsDropdown">
+                            {% for act in available_order_actions %}
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'app:resource_action' 'crm' 'orders' order.pk act.action_name %}">
+                                        <i class="feather-arrow-right me-2 text-primary" aria-hidden="true"></i>{{ act.label }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-sm-6 col-xl-3">
+                <div class="p-3 border rounded bg-light">
+                    <span class="text-muted fs-12 text-uppercase d-block mb-1">Valor total do pedido</span>
+                    <h3 class="fs-18 fw-bold mb-0 text-dark">
+                        R$ {{ order.total_amount|floatformat:2 }}
+                    </h3>
+                    <span class="fs-11 text-muted">{{ items|length }} item(ns) cadastrado(s)</span>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="p-3 border rounded bg-light">
+                    <span class="text-muted fs-12 text-uppercase d-block mb-1">Limite e análise de crédito</span>
+                    {% if profile and profile.credit_limit > 0 %}
+                        <h3 class="fs-18 fw-bold mb-0 {% if available_credit >= 0 and not profile.credit_hold and not profile.regulatory_hold %}text-success{% else %}text-danger{% endif %}">
+                            R$ {{ available_credit|floatformat:2 }} <small class="fs-11 text-muted fw-normal">disponível</small>
+                        </h3>
+                        <span class="fs-11 text-muted">Limite total: R$ {{ profile.credit_limit|floatformat:2 }}</span>
+                    {% elif profile %}
+                        <h3 class="fs-18 fw-bold mb-0 text-success">Ilimitado</h3>
+                        <span class="fs-11 text-muted">Sem teto configurado</span>
+                    {% else %}
+                        <h3 class="fs-18 fw-bold mb-0 text-warning">Sem perfil</h3>
+                        <span class="fs-11 text-muted">Pendente de cadastro</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="p-3 border rounded bg-light">
+                    <span class="text-muted fs-12 text-uppercase d-block mb-1">Disponibilidade WMS</span>
+                    {% if all_items_in_stock %}
+                        <h3 class="fs-18 fw-bold mb-0 text-success"><i class="feather-check-circle me-1" aria-hidden="true"></i>100% Atendido</h3>
+                        <span class="fs-11 text-success">Saldo aprovado para todos os itens</span>
+                    {% else %}
+                        <h3 class="fs-18 fw-bold mb-0 text-danger"><i class="feather-alert-triangle me-1" aria-hidden="true"></i>Ruptura</h3>
+                        <span class="fs-11 text-danger">Saldo insuficiente para expedição</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="p-3 border rounded bg-light">
+                    <span class="text-muted fs-12 text-uppercase d-block mb-1">Faturamento e liquidação</span>
+                    <h3 class="fs-18 fw-bold mb-0 {% if finance_summary.settlement_percentage == 100 %}text-success{% elif finance_summary.total_billed > 0 %}text-primary{% else %}text-muted{% endif %}">
+                        {{ finance_summary.settlement_percentage }}% <small class="fs-11 text-muted fw-normal">liquidado</small>
+                    </h3>
+                    <span class="fs-11 text-muted">
+                        {% if fiscal_documents %}{{ fiscal_documents|length }} NF-e(s) emitida(s){% else %}Aguardando faturamento{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cockpit Navegável por Abas -->
+<div class="card stretch stretch-full">
+    <div class="card-header p-0 border-bottom">
+        <ul class="nav nav-tabs card-header-tabs m-0 px-3 flex-wrap" id="salesOrderCockpitTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button 
+                    class="nav-link active d-flex align-items-center gap-2 py-3 px-3 px-lg-4" 
+                    id="tab-items-btn" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#tab-items-pane" 
+                    type="button" 
+                    role="tab" 
+                    aria-controls="tab-items-pane" 
+                    aria-selected="true">
+                    <i class="feather-shopping-bag text-primary fs-16" aria-hidden="true"></i>
+                    <span class="fw-semibold">1. Pedido e itens comerciais</span>
+                    {% if items %}
+                        <span class="badge bg-soft-primary text-primary rounded-pill ms-1">{{ items|length }}</span>
+                    {% endif %}
+                </button>
+            </li>
+
+            <li class="nav-item" role="presentation">
+                <button 
+                    class="nav-link d-flex align-items-center gap-2 py-3 px-3 px-lg-4" 
+                    id="tab-credit-btn" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#tab-credit-pane" 
+                    type="button" 
+                    role="tab" 
+                    aria-controls="tab-credit-pane" 
+                    aria-selected="false">
+                    <i class="feather-credit-card text-info fs-16" aria-hidden="true"></i>
+                    <span class="fw-semibold">2. Análise de crédito e limites</span>
+                    {% if credit_status == 'ok' %}
+                        <i class="feather-check-circle text-success fs-14 ms-1" aria-hidden="true"></i>
+                    {% else %}
+                        <i class="feather-alert-circle text-danger fs-14 ms-1" aria-hidden="true"></i>
+                    {% endif %}
+                </button>
+            </li>
+
+            <li class="nav-item" role="presentation">
+                <button 
+                    class="nav-link d-flex align-items-center gap-2 py-3 px-3 px-lg-4" 
+                    id="tab-inventory-btn" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#tab-inventory-pane" 
+                    type="button" 
+                    role="tab" 
+                    aria-controls="tab-inventory-pane" 
+                    aria-selected="false">
+                    <i class="feather-box text-warning fs-16" aria-hidden="true"></i>
+                    <span class="fw-semibold">3. Reserva e estoque (WMS)</span>
+                    {% if all_items_in_stock %}
+                        <span class="badge bg-soft-success text-success rounded-pill ms-1">OK</span>
+                    {% else %}
+                        <span class="badge bg-soft-danger text-danger rounded-pill ms-1">Falta</span>
+                    {% endif %}
+                </button>
+            </li>
+
+            <li class="nav-item" role="presentation">
+                <button 
+                    class="nav-link d-flex align-items-center gap-2 py-3 px-3 px-lg-4" 
+                    id="tab-fiscal-btn" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#tab-fiscal-pane" 
+                    type="button" 
+                    role="tab" 
+                    aria-controls="tab-fiscal-pane" 
+                    aria-selected="false">
+                    <i class="feather-file-text text-purple fs-16" aria-hidden="true"></i>
+                    <span class="fw-semibold">4. Faturamento e NF-e</span>
+                    {% if fiscal_documents %}
+                        <span class="badge bg-soft-purple text-purple rounded-pill ms-1">{{ fiscal_documents|length }}</span>
+                    {% endif %}
+                </button>
+            </li>
+
+            <li class="nav-item" role="presentation">
+                <button 
+                    class="nav-link d-flex align-items-center gap-2 py-3 px-3 px-lg-4" 
+                    id="tab-finance-btn" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#tab-finance-pane" 
+                    type="button" 
+                    role="tab" 
+                    aria-controls="tab-finance-pane" 
+                    aria-selected="false">
+                    <i class="feather-dollar-sign text-success fs-16" aria-hidden="true"></i>
+                    <span class="fw-semibold">5. Títulos financeiros e baixas</span>
+                    {% if financial_titles %}
+                        <span class="badge bg-soft-success text-success rounded-pill ms-1">{{ financial_titles|length }}</span>
+                    {% endif %}
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="card-body p-4">
+        <div class="tab-content" id="salesOrderCockpitTabContent">
+            
+            <!-- ABA 1: PEDIDO E ITENS COMERCIAIS -->
+            <div class="tab-pane fade show active" id="tab-items-pane" role="tabpanel" aria-labelledby="tab-items-btn">
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-6">
+                        <div class="card border h-100">
+                            <div class="card-header bg-light py-2 px-3">
+                                <h6 class="fs-13 fw-semibold mb-0 text-dark">
+                                    <i class="feather-map-pin me-2 text-primary" aria-hidden="true"></i>Endereço e dados de entrega
+                                </h6>
+                            </div>
+                            <div class="card-body fs-13">
+                                <p class="mb-2">
+                                    <strong class="d-block text-dark">Logradouro de entrega:</strong>
+                                    {% if order.shipping_street %}
+                                        {{ order.shipping_street }}, {{ order.shipping_street_number|default:"S/N" }}
+                                        {% if order.shipping_complement %} - {{ order.shipping_complement }}{% endif %}
+                                        <br>
+                                        Bairro: {{ order.shipping_neighborhood }} · CEP: {{ order.shipping_zipcode }}
+                                        <br>
+                                        {% if order.shipping_city_ref %}{{ order.shipping_city_ref.name }}{% endif %}
+                                        {% if order.shipping_state_ref %} - {{ order.shipping_state_ref.code }}{% endif %}
+                                    {% else %}
+                                        <span class="text-muted">Endereço de entrega não especificado no pedido.</span>
+                                    {% endif %}
+                                </p>
+                                <hr class="my-2">
+                                <div class="row g-2">
+                                    <div class="col-sm-6">
+                                        <span class="text-muted d-block fs-11">Data prometida:</span>
+                                        <strong>{% if order.requested_delivery_date %}{{ order.requested_delivery_date|date:"d/m/Y" }}{% else %}-{% endif %}</strong>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <span class="text-muted d-block fs-11">Condição de pagamento:</span>
+                                        <strong>{{ order.payment_terms_days }} dias</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="card border h-100">
+                            <div class="card-header bg-light py-2 px-3">
+                                <h6 class="fs-13 fw-semibold mb-0 text-dark">
+                                    <i class="feather-file-text me-2 text-primary" aria-hidden="true"></i>Vínculos comerciais e observações
+                                </h6>
+                            </div>
+                            <div class="card-body fs-13">
+                                <div class="row g-2 mb-3">
+                                    <div class="col-sm-6">
+                                        <span class="text-muted d-block fs-11">Proposta comercial:</span>
+                                        {% if order.proposal %}
+                                            <strong>{{ order.proposal.proposal_number }}</strong>
+                                        {% else %}
+                                            <span class="text-muted">Venda direta</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <span class="text-muted d-block fs-11">Contrato de fornecimento:</span>
+                                        {% if order.contract %}
+                                            <strong>{{ order.contract.contract_number }}</strong>
+                                        {% else %}
+                                            <span class="text-muted">Sem contrato</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <span class="text-muted d-block fs-11">Canal de vendas:</span>
+                                        <strong>{% if order.channel %}{{ order.channel.name }}{% else %}Geral{% endif %}</strong>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <span class="text-muted d-block fs-11">Aprovado por:</span>
+                                        <strong>{% if order.approved_by %}{{ order.approved_by.get_full_name|default:order.approved_by.username }} em {{ order.approved_at|date:"d/m/Y H:i" }}{% else %}Aguardando aprovação{% endif %}</strong>
+                                    </div>
+                                </div>
+                                {% if order.notes %}
+                                    <hr class="my-2">
+                                    <span class="text-muted d-block fs-11">Observações do pedido:</span>
+                                    <p class="mb-0 text-muted fs-12">{{ order.notes }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabela de Itens Comerciais -->
+                <div class="card border">
+                    <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center">
+                        <h6 class="fs-13 fw-semibold mb-0 text-dark">
+                            <i class="feather-list me-2 text-primary" aria-hidden="true"></i>Itens do pedido de venda
+                        </h6>
+                        {% if can_manage_order %}
+                            <a href="{% url 'app:resource_create' 'crm' 'order-items' %}?order={{ order.pk }}" class="btn btn-sm btn-light py-1 px-2 fs-11">
+                                <i class="feather-plus me-1" aria-hidden="true"></i>Adicionar item
+                            </a>
+                        {% endif %}
+                    </div>
+                    <div class="card-body p-0">
+                        {% if can_view_items %}
+                            {% if items %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-sm mb-0 align-middle">
+                                        <thead class="table-light fs-11 text-uppercase">
+                                            <tr>
+                                                <th>Item / Produto</th>
+                                                <th class="text-end">Quantidade</th>
+                                                <th class="text-end">Preço unitário</th>
+                                                <th class="text-end">Desconto (%)</th>
+                                                <th class="text-end">Subtotal</th>
+                                                <th class="text-end">Total líquido</th>
+                                                <th>Data prometida</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="fs-12">
+                                            {% for item in items %}
+                                                <tr>
+                                                    <td>
+                                                        <strong class="d-block">{{ item.product.code }}</strong>
+                                                        <span class="text-muted fs-11">{{ item.product.description }}</span>
+                                                        {% if item.notes %}<p class="text-muted fs-10 mb-0"><em>{{ item.notes }}</em></p>{% endif %}
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <strong>{{ item.quantity|floatformat:4 }}</strong>
+                                                        <small class="text-muted">{{ item.product.unit.symbol }}</small>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        R$ {{ item.unit_price|floatformat:2 }}
+                                                    </td>
+                                                    <td class="text-end">
+                                                        {% if item.discount_percent > 0 %}
+                                                            <span class="text-danger">-{{ item.discount_percent|floatformat:2 }}%</span>
+                                                        {% else %}
+                                                            <span class="text-muted">-</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="text-end text-muted">
+                                                        R$ {{ item.line_subtotal|floatformat:2 }}
+                                                    </td>
+                                                    <td class="text-end fw-bold text-dark">
+                                                        R$ {{ item.line_total|floatformat:2 }}
+                                                    </td>
+                                                    <td>
+                                                        {% if item.promised_date %}{{ item.promised_date|date:"d/m/Y" }}{% else %}-{% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                        <tfoot class="table-light fs-13 fw-bold">
+                                            <tr>
+                                                <td colspan="5" class="text-end">Total Geral do Pedido:</td>
+                                                <td class="text-end text-primary">R$ {{ order.total_amount|floatformat:2 }}</td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="p-4 text-center text-muted fs-12">
+                                    Nenhum item comercial cadastrado no pedido.
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="p-3">
+                                <div class="alert alert-warning mb-0 fs-12">
+                                    <i class="feather-lock me-1" aria-hidden="true"></i> Segregação de deveres: você não possui permissão para visualizar os itens do pedido.
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA 2: ANÁLISE DE CRÉDITO E LIMITES -->
+            <div class="tab-pane fade" id="tab-credit-pane" role="tabpanel" aria-labelledby="tab-credit-btn">
+                {% if can_view_credit %}
+                    {% if profile %}
+                        <div class="row g-4 mb-4">
+                            <!-- Cards de Parâmetros de Crédito -->
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="p-3 border rounded bg-light">
+                                    <span class="text-muted fs-12 text-uppercase d-block mb-1">Limite de crédito total</span>
+                                    <h4 class="fs-18 fw-bold mb-0 text-dark">
+                                        {% if profile.credit_limit > 0 %}R$ {{ profile.credit_limit|floatformat:2 }}{% else %}Ilimitado{% endif %}
+                                    </h4>
+                                    <span class="fs-11 text-muted">Cadastrado no perfil comercial</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="p-3 border rounded bg-light">
+                                    <span class="text-muted fs-12 text-uppercase d-block mb-1">Exposição em aberto atual</span>
+                                    <h4 class="fs-18 fw-bold mb-0 text-warning">
+                                        R$ {{ total_open_exposure|floatformat:2 }}
+                                    </h4>
+                                    <span class="fs-11 text-muted">Títulos a receber pendentes</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="p-3 border rounded bg-light">
+                                    <span class="text-muted fs-12 text-uppercase d-block mb-1">Margem disponível</span>
+                                    <h4 class="fs-18 fw-bold mb-0 {% if available_credit >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {% if profile.credit_limit > 0 %}R$ {{ available_credit|floatformat:2 }}{% else %}Livre{% endif %}
+                                    </h4>
+                                    <span class="fs-11 text-muted">Saldo antes deste pedido</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="p-3 border rounded bg-light">
+                                    <span class="text-muted fs-12 text-uppercase d-block mb-1">Margem pós-pedido</span>
+                                    <h4 class="fs-18 fw-bold mb-0 {% if projected_credit >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {% if profile.credit_limit > 0 %}R$ {{ projected_credit|floatformat:2 }}{% else %}Livre{% endif %}
+                                    </h4>
+                                    <span class="fs-11 text-muted">Saldo após comprometer pedido</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card de Bloqueios e Regras Comerciais -->
+                        <div class="card border mb-4">
+                            <div class="card-header bg-light py-2 px-3">
+                                <h6 class="fs-13 fw-semibold mb-0 text-dark">
+                                    <i class="feather-shield me-2 text-primary" aria-hidden="true"></i>Conformidade de travas comerciais e regulatórias
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3 fs-13">
+                                    <div class="col-md-4">
+                                        <div class="p-3 border rounded d-flex align-items-center justify-content-between {% if profile.credit_hold %}bg-soft-danger border-danger{% else %}bg-light{% endif %}">
+                                            <div>
+                                                <strong class="d-block">Bloqueio financeiro / crédito</strong>
+                                                <span class="text-muted fs-11">Restrição manual de concessão</span>
+                                            </div>
+                                            {% if profile.credit_hold %}
+                                                <span class="badge bg-danger">Bloqueado</span>
+                                            {% else %}
+                                                <span class="badge bg-soft-success text-success">Regular</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="p-3 border rounded d-flex align-items-center justify-content-between {% if profile.regulatory_hold %}bg-soft-danger border-danger{% else %}bg-light{% endif %}">
+                                            <div>
+                                                <strong class="d-block">Bloqueio sanitário / regulatório</strong>
+                                                <span class="text-muted fs-11">Licença/AFE ANVISA ou compliance</span>
+                                            </div>
+                                            {% if profile.regulatory_hold %}
+                                                <span class="badge bg-danger">Bloqueado</span>
+                                            {% else %}
+                                                <span class="badge bg-soft-success text-success">Conforme</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="p-3 border rounded d-flex align-items-center justify-content-between {% if order.payment_terms_days > profile.payment_terms_days %}bg-soft-warning border-warning{% else %}bg-light{% endif %}">
+                                            <div>
+                                                <strong class="d-block">Prazo de pagamento</strong>
+                                                <span class="text-muted fs-11">Solicitado: {{ order.payment_terms_days }}d | Aprovado: {{ profile.payment_terms_days }}d</span>
+                                            </div>
+                                            {% if order.payment_terms_days > profile.payment_terms_days %}
+                                                <span class="badge bg-warning">Excede</span>
+                                            {% else %}
+                                                <span class="badge bg-soft-success text-success">Aprovado</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="card border">
+                            <div class="card-body p-5 text-center text-muted">
+                                <i class="feather-user-x fs-36 text-muted d-block mb-2" aria-hidden="true"></i>
+                                <h6 class="fs-14 text-dark mb-1">Cliente sem perfil comercial ativo</h6>
+                                <p class="fs-12 text-muted mb-3">Para aprovar o pedido, cadastre os limites de crédito e condições comerciais aprovadas para este cliente.</p>
+                                <a href="{% url 'app:resource_create' 'crm' 'customer-profiles' %}?customer={{ customer.pk }}" class="btn btn-sm btn-primary">
+                                    <i class="feather-plus me-1" aria-hidden="true"></i> Cadastrar perfil comercial
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="alert alert-warning mb-0 fs-13">
+                        <i class="feather-lock me-1" aria-hidden="true"></i> Segregação de deveres: você não possui permissão para visualizar a análise de crédito deste cliente.
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- ABA 3: RESERVA E ESTOQUE (WMS) -->
+            <div class="tab-pane fade" id="tab-inventory-pane" role="tabpanel" aria-labelledby="tab-inventory-btn">
+                {% if can_view_inventory %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fs-14 fw-semibold mb-0 text-dark">
+                            <i class="feather-box me-2 text-warning" aria-hidden="true"></i>Disponibilidade de lotes aprovados e endereçamento físico
+                        </h6>
+                    </div>
+
+                    <!-- Tabela de Atendimento WMS -->
+                    <div class="card border mb-4">
+                        <div class="card-body p-0">
+                            {% if stock_items_summary %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-sm mb-0 align-middle">
+                                        <thead class="table-light fs-11 text-uppercase">
+                                            <tr>
+                                                <th>Produto</th>
+                                                <th class="text-end">Qtd Solicitada</th>
+                                                <th class="text-end">Saldo Disponível Aprovado</th>
+                                                <th>Status WMS</th>
+                                                <th>Lotes / Endereços no Almoxarifado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="fs-12">
+                                            {% for item_stock in stock_items_summary %}
+                                                <tr>
+                                                    <td>
+                                                        <strong class="d-block">{{ item_stock.product.code }}</strong>
+                                                        <span class="text-muted fs-11">{{ item_stock.product.description }}</span>
+                                                    </td>
+                                                    <td class="text-end fw-semibold">
+                                                        {{ item_stock.ordered_quantity|floatformat:4 }} <small class="text-muted">{{ item_stock.product.unit.symbol }}</small>
+                                                    </td>
+                                                    <td class="text-end fw-bold {% if item_stock.is_sufficient %}text-success{% else %}text-danger{% endif %}">
+                                                        {{ item_stock.available_quantity|floatformat:4 }} <small class="text-muted">{{ item_stock.product.unit.symbol }}</small>
+                                                    </td>
+                                                    <td>
+                                                        {% if item_stock.is_sufficient %}
+                                                            <span class="badge bg-soft-success text-success">
+                                                                <i class="feather-check-circle me-1" aria-hidden="true"></i>Atendido
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="badge bg-soft-danger text-danger">
+                                                                <i class="feather-alert-triangle me-1" aria-hidden="true"></i>Insuficiente
+                                                            </span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if item_stock.balances %}
+                                                            <ul class="list-unstyled mb-0 fs-11">
+                                                                {% for bal in item_stock.balances %}
+                                                                    <li class="mb-1">
+                                                                        <span class="badge {% if bal.quality_status == 'approved' %}bg-soft-success text-success{% else %}bg-soft-secondary text-muted{% endif %}">
+                                                                            Lote: {{ bal.lot.lot_number }}
+                                                                        </span>
+                                                                        — <strong>{{ bal.available_quantity|floatformat:4 }}</strong> {{ bal.unit.symbol }}
+                                                                        <span class="text-muted">({{ bal.warehouse.code }} · {{ bal.location.code }})</span>
+                                                                        {% if bal.lot.is_expired %}<span class="badge bg-danger ms-1">Vencido</span>{% endif %}
+                                                                    </li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                        {% else %}
+                                                            <span class="text-muted fs-11">Sem saldo em estoque</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="p-4 text-center text-muted fs-12">
+                                    Nenhum item associado ao pedido para checagem de estoque.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Movimentações e Reservas Vinculadas ao Pedido -->
+                    {% if can_view_movements and order_movements %}
+                        <div class="card border">
+                            <div class="card-header bg-light py-2 px-3">
+                                <h6 class="fs-13 fw-semibold mb-0 text-dark">
+                                    <i class="feather-activity me-2 text-info" aria-hidden="true"></i>Movimentos de reserva e separação vinculados ao pedido
+                                </h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-sm mb-0 align-middle">
+                                        <thead class="table-light fs-11 text-uppercase">
+                                            <tr>
+                                                <th>Movimento</th>
+                                                <th>Tipo</th>
+                                                <th>Produto / Lote</th>
+                                                <th class="text-end">Quantidade</th>
+                                                <th>Origem / Destino</th>
+                                                <th>Data</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="fs-12">
+                                            {% for mov in order_movements %}
+                                                <tr>
+                                                    <td><strong>{{ mov.movement_number }}</strong></td>
+                                                    <td>
+                                                        <span class="badge bg-soft-info text-info">{{ mov.get_movement_type_display }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <strong>{{ mov.product.code }}</strong>
+                                                        {% if mov.lot %}<span class="text-muted fs-11 d-block">Lote: {{ mov.lot.lot_number }}</span>{% endif %}
+                                                    </td>
+                                                    <td class="text-end fw-semibold">
+                                                        {{ mov.quantity|floatformat:4 }} <small class="text-muted">{{ mov.unit.symbol }}</small>
+                                                    </td>
+                                                    <td>
+                                                        {% if mov.from_warehouse %}{{ mov.from_warehouse.code }}{% if mov.from_location %}:{{ mov.from_location.code }}{% endif %}{% else %}-{% endif %}
+                                                        <i class="feather-arrow-right mx-1 text-muted" aria-hidden="true"></i>
+                                                        {% if mov.to_warehouse %}{{ mov.to_warehouse.code }}{% if mov.to_location %}:{{ mov.to_location.code }}{% endif %}{% else %}-{% endif %}
+                                                    </td>
+                                                    <td class="text-muted fs-11">
+                                                        {{ mov.movement_date|date:"d/m/Y" }}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="alert alert-warning mb-0 fs-13">
+                        <i class="feather-lock me-1" aria-hidden="true"></i> Segregação de deveres: você não possui permissão para visualizar o estoque deste pedido.
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- ABA 4: FATURAMENTO E NF-E -->
+            <div class="tab-pane fade" id="tab-fiscal-pane" role="tabpanel" aria-labelledby="tab-fiscal-btn">
+                {% if can_view_fiscal %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fs-14 fw-semibold mb-0 text-dark">
+                            <i class="feather-file-check me-2 text-purple" aria-hidden="true"></i>Documentos fiscais e faturamento eletrônico (NF-e)
+                        </h6>
+                    </div>
+
+                    {% if fiscal_documents %}
+                        <div class="card border">
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-sm mb-0 align-middle">
+                                        <thead class="table-light fs-11 text-uppercase">
+                                            <tr>
+                                                <th>Documento / Série</th>
+                                                <th>Emissão</th>
+                                                <th>Status SEFAZ</th>
+                                                <th>Protocolo / Chave de Acesso</th>
+                                                <th class="text-end">Total Produtos</th>
+                                                <th class="text-end">Impostos</th>
+                                                <th class="text-end">Total NF-e</th>
+                                                <th class="text-end">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="fs-12">
+                                            {% for doc in fiscal_documents %}
+                                                <tr>
+                                                    <td>
+                                                        <strong class="d-block">NF-e {{ doc.number }} (Série {{ doc.series }})</strong>
+                                                        <span class="text-muted fs-11">{{ doc.get_electronic_model_display }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span>{{ doc.issue_date|date:"d/m/Y" }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge {% if doc.emission_status == 'authorized' %}bg-soft-success text-success{% elif doc.emission_status == 'rejected' or doc.emission_status == 'error' %}bg-soft-danger text-danger{% else %}bg-soft-warning text-warning{% endif %}">
+                                                            {{ doc.get_emission_status_display }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        {% if doc.authorization_protocol %}
+                                                            <strong class="fs-11 d-block">Prot: {{ doc.authorization_protocol }}</strong>
+                                                        {% endif %}
+                                                        {% if doc.access_key %}
+                                                            <code class="fs-10 text-muted" title="{{ doc.access_key }}">{{ doc.access_key|slice:":20" }}...</code>
+                                                        {% else %}
+                                                            <span class="text-muted fs-11">-</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="text-end">
+                                                        R$ {{ doc.total_products|floatformat:2 }}
+                                                    </td>
+                                                    <td class="text-end text-muted">
+                                                        R$ {{ doc.total_taxes|floatformat:2 }}
+                                                    </td>
+                                                    <td class="text-end fw-bold text-dark">
+                                                        R$ {{ doc.total_amount|floatformat:2 }}
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <a href="{% url 'app:resource_detail' 'fiscal' 'documents' doc.pk %}" class="btn btn-sm btn-light py-1 px-2 fs-11">
+                                                            <i class="feather-external-link me-1" aria-hidden="true"></i> Detalhes
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="card border">
+                            <div class="card-body p-5 text-center text-muted">
+                                <i class="feather-file-text fs-36 text-muted d-block mb-2" aria-hidden="true"></i>
+                                <h6 class="fs-14 text-dark mb-1">Nenhum documento fiscal emitido para este pedido</h6>
+                                <p class="fs-12 text-muted mb-0">Após a conferência dos lotes e separação no almoxarifado, o faturamento gerará a NF-e e os títulos no contas a receber.</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="alert alert-warning mb-0 fs-13">
+                        <i class="feather-lock me-1" aria-hidden="true"></i> Segregação de deveres: você não possui permissão para visualizar documentos fiscais.
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- ABA 5: TÍTULOS FINANCEIROS E BAIXAS -->
+            <div class="tab-pane fade" id="tab-finance-pane" role="tabpanel" aria-labelledby="tab-finance-btn">
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-7">
+                        {% if can_view_finance %}
+                            <!-- Resumo Financeiro -->
+                            <div class="card border mb-4">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="fs-12 text-muted text-uppercase fw-bold">Liquidação financeira do pedido</span>
+                                        <span class="fs-13 fw-bold text-dark">{{ finance_summary.settlement_percentage }}% liquidado</span>
+                                    </div>
+                                    <div class="progress mb-3" style="height: 10px;">
+                                        <div class="progress-bar {% if finance_summary.settlement_percentage == 100 %}bg-success{% else %}bg-primary{% endif %}" role="progressbar" style="width: {{ finance_summary.settlement_percentage }}%;" aria-valuenow="{{ finance_summary.settlement_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <div class="row g-2 text-center fs-12">
+                                        <div class="col-4">
+                                            <span class="text-muted d-block fs-11">Total Faturado</span>
+                                            <strong class="text-dark">R$ {{ finance_summary.total_billed|floatformat:2 }}</strong>
+                                        </div>
+                                        <div class="col-4">
+                                            <span class="text-muted d-block fs-11">Total Recebido</span>
+                                            <strong class="text-success">R$ {{ finance_summary.total_paid|floatformat:2 }}</strong>
+                                        </div>
+                                        <div class="col-4">
+                                            <span class="text-muted d-block fs-11">Saldo em Aberto</span>
+                                            <strong class="text-warning">R$ {{ finance_summary.total_open|floatformat:2 }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tabela de Títulos a Receber -->
+                            <div class="card border mb-4">
+                                <div class="card-header bg-light py-2 px-3">
+                                    <h6 class="fs-13 fw-semibold mb-0 text-dark">
+                                        <i class="feather-credit-card me-2 text-primary" aria-hidden="true"></i>Contas a receber (Títulos)
+                                    </h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    {% if financial_titles %}
+                                        <div class="table-responsive">
+                                            <table class="table table-hover table-sm mb-0 align-middle">
+                                                <thead class="table-light fs-11 text-uppercase">
+                                                    <tr>
+                                                        <th>Título</th>
+                                                        <th>Vencimento</th>
+                                                        <th>Status</th>
+                                                        <th class="text-end">Original</th>
+                                                        <th class="text-end">Baixado</th>
+                                                        <th class="text-end">Em Aberto</th>
+                                                        <th class="text-end">Ações</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="fs-12">
+                                                    {% for tit in financial_titles %}
+                                                        <tr>
+                                                            <td>
+                                                                <strong>{{ tit.title_number }}</strong>
+                                                                {% if tit.category %}<span class="text-muted fs-11 d-block">{{ tit.category.name }}</span>{% endif %}
+                                                            </td>
+                                                            <td>{{ tit.due_date|date:"d/m/Y" }}</td>
+                                                            <td>
+                                                                <span class="badge {% if tit.status == 'settled' %}bg-soft-success text-success{% elif tit.status == 'overdue' %}bg-soft-danger text-danger{% elif tit.status == 'partially_settled' %}bg-soft-primary text-primary{% else %}bg-soft-warning text-warning{% endif %}">
+                                                                    {{ tit.get_status_display }}
+                                                                </span>
+                                                            </td>
+                                                            <td class="text-end">R$ {{ tit.original_amount|floatformat:2 }}</td>
+                                                            <td class="text-end text-success">R$ {{ tit.paid_amount|floatformat:2 }}</td>
+                                                            <td class="text-end fw-bold text-dark">R$ {{ tit.open_amount|floatformat:2 }}</td>
+                                                            <td class="text-end">
+                                                                <a href="{% url 'app:resource_detail' 'finance' 'titles' tit.pk %}" class="btn btn-sm btn-light py-1 px-2 fs-11">
+                                                                    <i class="feather-external-link me-1" aria-hidden="true"></i> Detalhes
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {% else %}
+                                        <div class="p-4 text-center text-muted fs-12">
+                                            Nenhum título financeiro gerado para este pedido de venda.
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Baixas e Liquidações -->
+                            {% if can_view_settlements and all_settlements %}
+                                <div class="card border">
+                                    <div class="card-header bg-light py-2 px-3">
+                                        <h6 class="fs-13 fw-semibold mb-0 text-dark">
+                                            <i class="feather-check-circle me-2 text-success" aria-hidden="true"></i>Baixas e conciliações financeiras
+                                        </h6>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover table-sm mb-0 align-middle">
+                                                <thead class="table-light fs-11 text-uppercase">
+                                                    <tr>
+                                                        <th>Título</th>
+                                                        <th>Data</th>
+                                                        <th>Método</th>
+                                                        <th class="text-end">Valor Baixado</th>
+                                                        <th class="text-end">Valor Líquido</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="fs-12">
+                                                    {% for setl in all_settlements %}
+                                                        <tr>
+                                                            <td><strong>{{ setl.title.title_number }}</strong></td>
+                                                            <td>{{ setl.settlement_date|date:"d/m/Y" }}</td>
+                                                            <td>{{ setl.get_method_display }}</td>
+                                                            <td class="text-end">R$ {{ setl.amount|floatformat:2 }}</td>
+                                                            <td class="text-end fw-bold text-success">R$ {{ setl.net_amount|floatformat:2 }}</td>
+                                                            <td>
+                                                                <span class="badge {% if setl.status == 'active' %}bg-soft-success text-success{% else %}bg-soft-secondary text-muted{% endif %}">
+                                                                    {{ setl.get_status_display }}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="alert alert-warning mb-0 fs-13">
+                                <i class="feather-lock me-1" aria-hidden="true"></i> Segregação de deveres: você não possui permissão para visualizar os títulos financeiros.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-lg-5">
+                        <!-- Checklist de Prontidão Order-to-Cash (O2C) -->
+                        <div class="card border mb-4">
+                            <div class="card-header bg-light py-2 px-3">
+                                <h6 class="fs-13 fw-semibold mb-0 text-dark">
+                                    <i class="feather-check-circle me-2 text-primary" aria-hidden="true"></i>Régua de prontidão Order-to-Cash (5 Gates)
+                                </h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush fs-12">
+                                    {% for gate in o2c_gates %}
+                                        <div class="list-group-item d-flex align-items-center justify-content-between p-3">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <i class="{{ gate.icon }} {% if gate.passed %}text-success{% else %}text-warning{% endif %} fs-16" aria-hidden="true"></i>
+                                                <div>
+                                                    <strong class="d-block text-dark">{{ gate.step }}. {{ gate.title }}</strong>
+                                                    <span class="text-muted fs-11">{{ gate.detail }}</span>
+                                                </div>
+                                            </div>
+                                            <span class="badge {% if gate.passed %}bg-soft-success text-success{% else %}bg-soft-warning text-warning{% endif %}">
+                                                {% if gate.passed %}Conforme{% else %}Pendente{% endif %}
+                                            </span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

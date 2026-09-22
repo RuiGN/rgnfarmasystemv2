@@ -1274,6 +1274,11 @@ class ResourceDetailView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
             and resource.slug == 'events'
             and self.request.user.has_perm('deviations.view_qualityevent')
         )
+        context['can_view_sales_order_cockpit'] = (
+            self.get_module().slug == 'crm'
+            and resource.slug == 'orders'
+            and self.request.user.has_perm('crm.view_salesorder')
+        )
         return context
 
 
