@@ -42,6 +42,9 @@
                 {% if resource.is_executable %}
                     <a href="{% url 'app:resource_execute' module.slug resource.slug object.pk %}" class="btn btn-success d-inline-flex align-items-center gap-2"><i class="feather-play-circle" aria-hidden="true"></i>Executar</a>
                 {% endif %}
+                {% if module.slug == 'production' and resource.slug == 'orders' and can_view_production_cockpit %}
+                    <a href="{% url 'app:production_order_cockpit' object.pk %}" class="btn btn-primary d-inline-flex align-items-center gap-2"><i class="feather-activity" aria-hidden="true"></i>Cockpit da OP</a>
+                {% endif %}
                 {% if module.slug == 'production' and resource.slug == 'orders' and can_view_production_maps %}
                     <a href="{% url 'app:production_control_map' object.pk %}" class="btn btn-light d-inline-flex align-items-center gap-2"><i class="feather-clipboard" aria-hidden="true"></i>Mapa de controle</a>
                     <a href="{% url 'app:production_results_map' object.pk %}" class="btn btn-light d-inline-flex align-items-center gap-2"><i class="feather-bar-chart-2" aria-hidden="true"></i>Mapa de resultados</a>

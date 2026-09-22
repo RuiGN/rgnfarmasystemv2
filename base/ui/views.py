@@ -1251,6 +1251,11 @@ class ResourceDetailView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
             and resource.slug == 'formulas'
             and self.request.user.has_perm('formulations.view_masterformula')
         )
+        context['can_view_production_cockpit'] = (
+            self.get_module().slug == 'production'
+            and resource.slug == 'orders'
+            and self.request.user.has_perm('production.view_productionorder')
+        )
         return context
 
 

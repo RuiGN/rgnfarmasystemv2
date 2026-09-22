@@ -1,0 +1,106 @@
+# PRD — Modernização de UX com Tabbed Lifecycle Cockpits
+## RGN Farma System ERP (Indústria de Cosméticos)
+
+---
+
+## 1. Visão Geral e Propósito
+
+Este documento estabelece o Plano de Reestruturação de Experiência do Usuário (UX) do **RGN Farma System ERP**, migrando os principais fluxos operacionais e regulatórios das 31 áreas de negócio para o padrão arquitetural **Tabbed Lifecycle Cockpit UX** (Baseado em abas Bootstrap 5 / Design System Duralux).
+
+### O Desafio
+Em indústrias cosméticas com exigências rigorosas de **Boas Práticas de Fabricação (BPF / ISO 22716)**, **RDC ANVISA** e integridade de dados (**ALCOA+**), os processos de negócio são inerentemente multidisciplinares:
+- Uma formulação exige orçamentos, pedidos de compra e recebimento de matérias-primas.
+- Uma ordem de produção exige pesagem fracionada, apontamento de operações de máquina, controle em processo (IPC), desvios e entrega do acabada.
+- Uma liberação de lote exige laudos físico-químicos e microbiológicos, checklist de batch record e avaliação de desvios.
+
+A navegação dispersa em menus isolados gera fricção cognitiva, atrasos operacionais e risco de inconsistências regulatórias.
+
+### O Padrão Tabbed Lifecycle Cockpit UX
+O padrão consolida em um único template responsivo:
+1. **Cabeçalho Executivo de Identificação:** Código da entidade âncora, descrição, status com badge colorido de ciclo de vida e botão de retorno.
+2. **Cards de Resumo e KPIs:** Métricas imediatas (ex: quantidades planejadas vs. reais, valores, percentual de conclusão).
+3. **Barra de Navegação por Abas (`nav nav-tabs`):** Abas temáticas organizadas cronologicamente ou funcionalmente, com contadores (`badges`) informando pendências em cada etapa.
+4. **Painéis de Conteúdo Contextual (`tab-pane`):**
+   - Listagens com dados críticos e badges de status.
+   - Ações operacionais diretas (links para edição, criação e transição de estado).
+   - Segregação de Deveres (SoD): cada aba valida permissões de leitura/escrita do usuário específico.
+5. **Rastreabilidade e Trilha de Auditoria (ALCOA+):** Datas, atores autenticados e justificativas preservadas.
+
+---
+
+## 2. Roteiro de Sprints de Implementação
+
+- [X] **Sprint 0: Cockpit de Formulação e Abastecimento (Master Formula Cockpit)**
+  - [X] Especificação funcional das abas (Formulação/BOM, Cotações/RFQs, Pedidos de Compra, Recebimento e Lotes)
+  - [X] Criação da view `MasterFormulaCockpitView` em `formulations/ui_views.py` com queries otimizadas
+  - [X] Registro da rota `app:master_formula_cockpit` em `base/ui/urls.py`
+  - [X] Criação do template `templates/app/master_formula_cockpit.html` com padrão Duralux / Bootstrap 5
+  - [X] Botão de acesso "Ciclo de abastecimento" em `resource_detail.html` com permissão granular
+  - [X] Cobertura de testes automatizados (`tests/test_master_formula_cockpit_ui.py`)
+  - [X] Atualização de documentação em `TEMPLATES.md`
+  - [X] Deploy em produção na VPS com testes de saúde HTTP 200
+
+- [X] **Sprint 1: Cockpit de Execução da Ordem de Produção (e-Batch Record / Prontuário da OP)**
+  - [X] Especificação técnica e mapeamento dos modelos (`ProductionOrder`, `MaterialConsumption`, `ProductionOperationExecution`, `ProductionLaborEntry`, `QualitySample`, `QualityEvent`, `ProductionOutput`, `ProductionCostCapture`)
+  - [X] Criação da view `ProductionOrderCockpitView` com context builder e permissões SoD por aba
+  - [X] Registro da rota `/app/production/orders/<int:pk>/cockpit/` (`app:production_order_cockpit`)
+  - [X] Criação do template `templates/app/production_order_cockpit.html` com 6 abas (Ficha/Planejamento, Separação/Pesagem/Consumo, Fases de Fabricação/Mão de Obra, Controle em Processo IPC, Desvios/Ocorrências, Rendimento/Acabado/Custos)
+  - [X] Inclusão do botão "Cockpit da OP" no detalhe da ordem de produção
+  - [X] Implementação de testes automatizados (`tests/test_production_order_cockpit_ui.py`) com 8 testes passando
+  - [X] Revisão de conformidade de templates (pt-BR, sem moji-bake, sem regressões)
+  - [X] Atualização de documentação em `TEMPLATES.md` e marcação da sprint
+
+- [ ] **Sprint 2: Cockpit de Liberação de Lote e Dossiê QA (Batch Record Review & Release)**
+  - [ ] Especificação e mapeamento (`StockLot`, `LotRelease`, `StockLotGenealogy`, `QualityAnalysis`, `BatchRecordChecklistItem`, `QualityBlock`)
+  - [ ] Criação da view `LotReleaseCockpitView` / `StockLotDossierView`
+  - [ ] Registro de rotas de navegação do Dossiê do Lote
+  - [ ] Template com abas: Genealogia & Rastreabilidade, Laudos CQ (Físico-Químico e Micro), Checklist Batch Record QA, Bloqueios & Desvios, Decisão de Liberação (ALCOA+)
+  - [ ] Integração com ações de liberação e rejeição sanitária
+  - [ ] Testes automatizados e documentação
+
+- [ ] **Sprint 3: Cockpit Integrado de Não-Conformidade, Investigação e CAPA (Quality Event 360°)**
+  - [ ] Mapeamento transversal de qualidade (`QualityEvent`, `DeviationEvidence`, `DeviationInvestigation`, `DeviationImpactAssessment`, `DeviationApproval`, `CapaRecord`, `CapaAction`, `EffectivenessCheck`)
+  - [ ] Criação da view `QualityEventCockpitView`
+  - [ ] Template com abas: Notificação & Contenção Imediata, Investigação Causa Raiz (Ishikawa/5 Porquês), Avaliação de Impacto Regulatório, Planos de Ação CAPA, Verificação de Eficácia & Fechamento
+  - [ ] Testes automatizados e documentação
+
+- [ ] **Sprint 4: Cockpit Comercial Order-to-Cash (Pedido de Venda 360°)**
+  - [ ] Mapeamento comercial, fiscal, estoque e financeiro (`SalesOrder`, `SalesOrderItem`, `CustomerProfile`, `StockBalance`, `FiscalDocument`, `FinancialTitle`, `FinancialSettlement`)
+  - [ ] Criação da view `SalesOrderCockpitView`
+  - [ ] Template com abas: Dados Comerciais do Pedido, Análise de Crédito & Reserva de Estoque (FEFO), Faturamento NF-e & Impostos, Expedição & Rastreamento Logístico, Títulos Financeiros a Receber
+  - [ ] Testes automatizados e documentação
+
+- [ ] **Sprint 5: Cockpit de Cosmetovigilância, Reclamações de Mercado e Recolhimento (Recall)**
+  - [ ] Mapeamento de pós-mercado e segurança sanitária (`MarketComplaint`, `ProductReturn`, `RecallCampaign`, `RecallImpactedCustomer`, `RecallCommunication`, `RecallEffectivenessReport`, `QualityAnalysis`)
+  - [ ] Criação da view `MarketComplaintCockpitView`
+  - [ ] Template com abas: Notificação & Triagem Clínica de Cosmetovigilância, Amostroteca & Investigação Laboratorial, Devoluções & Quarentena, Clientes Impactados & Comunicações, Dossiê Regulatório ANVISA & Eficácia
+  - [ ] Testes automatizados e documentação
+
+- [ ] **Sprint 6: Cockpit de Homologação e Qualificação de Fornecedores (Vendor Lifecycle 360°)**
+  - [ ] Mapeamento de parceiros de negócio (`BusinessPartner`, `Audit`, `SupplierQuotation`, `PurchaseOrder`, `PurchaseReceipt`, `QualityEvent`)
+  - [ ] Criação da view `SupplierCockpitView`
+  - [ ] Template com abas: Dados Cadastrais & Licenças Sanitárias (AFE/VISA), Auditorias de Fornecedor BPF, Histórico de Entregas & OOS no Recebimento, Matérias-Primas Homologadas, Scorecard & Status de Qualificação
+  - [ ] Testes automatizados e documentação
+
+- [ ] **Sprint 7: Cockpit de Gestão de Documentos Controlados e Treinamentos (DMS & Capacitação)**
+  - [ ] Mapeamento de governança e capacitação (`ControlledDocument`, `TrainingRequirement`, `TrainingRecord`, `QAReview`, `GovernanceAuditLog`)
+  - [ ] Criação da view `ControlledDocumentCockpitView`
+  - [ ] Template com abas: Metadados & Conteúdo do Procedimento (SOP), Matriz de Treinamentos Requeridos por Cargo, Colaboradores Treinados & Provas de Eficácia, Histórico de Revisões & Assinaturas, Trilha de Auditoria
+  - [ ] Testes automatizados e documentação
+
+- [ ] **Sprint 8: Cockpit de Auditorias da Qualidade e Planos de Ação (Audits 360°)**
+  - [ ] Mapeamento de auditorias internas e externas (`Audit`, `AuditItem`, `AuditEvidence`, `QualityEvent`, `CapaRecord`)
+  - [ ] Criação da view `AuditCockpitView`
+  - [ ] Template com abas: Escopo, Cronograma & Equipe Auditora, Checklist de Verificação BPF / ISO 22716, Constatações, Evidências & Não-Conformidades, Planos de Ação & CAPAs Vinculados, Relatório Final & Conclusão
+  - [ ] Testes automatizados e documentação
+
+---
+
+## 3. Critérios de Aceite Globais para cada Cockpit
+
+1. **Identidade Visual Unificada:** Todos os cockpits devem estender `base.html`, utilizar as classes de componentes Duralux (`card`, `stretch stretch-full`, `card-header-tabs`, `nav-link`, `badge`, `feather-icons`).
+2. **Segregação de Permissões (SoD):** Usuários com permissão parcial no módulo principal visualizam apenas as abas para as quais possuem permissão (`has_perm`), recebendo avisos claros de permissão não concedida nas demais abas.
+3. **Conformidade de Linguagem:** Todos os textos, cabeçalhos, rótulos de colunas e mensagens devem estar rigorosamente em português brasileiro (pt-BR), em conformidade com os testes de integridade léxica (`test_template_language.py`).
+4. **Catálogo de Ações:** Nenhuma ação POST ou link para ações de catálogo (`ResourceActionView`) pode ser rompida.
+5. **Testes Automatizados:** Cada cockpit deve possuir uma suíte de testes com validação de autenticação, permissões, contexto e renderização das abas.
+6. **Atualização Contínua do PRD:** Ao finalizar cada sprint, atualizar as caixas de seleção `[ ]` para `[X]` neste documento.

@@ -128,6 +128,17 @@ receber acesso direto.
   4. *Recebimento e Lotes*: Entradas físicas e fiscais com status de qualidade e lote.
   Cada aba verifica permissões granulares no servidor e mantém o sincronismo de navegação via hash da URL.
 
+- **Cockpit da Ordem de Produção / e-Batch Record (`app:production_order_cockpit`):**
+  Disponível no detalhe de `ProductionOrder` (`/app/production/orders/<id>/cockpit/`).
+  Consolida a execução industrial e o prontuário eletrônico da batelada em seis abas Duralux:
+  1. *Ficha e planejamento*: Identificação do processo, fórmula, roteiro, linha, cronograma e auditoria do ciclo de vida.
+  2. *Materiais e pesagem*: BOM de produção alocado, pesagens reais, perdas e lotes de insumos.
+  3. *Fases e mão de obra*: Sequência de operações, centros de trabalho, duração planejada vs. real e apontamento de operadores.
+  4. *Controle em processo (IPC)*: Amostras de qualidade colhidas, ensaios laboratoriais e laudos analíticos.
+  5. *Desvios e ocorrências*: Eventos de qualidade, severidade, criticidade e status de investigação da batelada.
+  6. *Rendimento e custos*: Entradas de produto acabado em quarentena, conciliação teórica vs. real e apropriação de custos de produção.
+  Cada aba aplica segregação de deveres (SoD) no servidor, protegendo dados restritos de qualidade e custos contra acessos não autorizados.
+
 ## Regras
 
 - Menus usam permissões `view` dos models.

@@ -1,0 +1,778 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ order.order_number }} — {{ order.product.description }} | Cockpit da ordem de produção | RGN Farma System{% endblock %}
+
+{% block page_header %}
+<div class="page-header" id="section-0">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h1 class="h5 m-b-10">Cockpit da ordem de produção</h1>
+        </div>
+        <ul class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:module' 'production' %}">{{ module.label }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:resource_list' 'production' 'orders' %}">{{ resource.label }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:resource_detail' 'production' 'orders' order.pk %}">{{ order.order_number }}</a></li>
+            <li class="breadcrumb-item active">Cockpit da OP</li>
+        </ul>
+    </div>
+    <div class="page-header-right ms-auto d-flex align-items-center gap-2">
+        <a class="btn btn-light" href="{% url 'app:resource_detail' 'production' 'orders' order.pk %}">
+            <i class="feather-arrow-left me-1" aria-hidden="true"></i> Voltar à ordem
+        </a>
+        <a class="btn btn-light" href="{% url 'app:master_formula_cockpit' order.formula_id %}">
+            <i class="feather-layers me-1" aria-hidden="true"></i> Fórmula e abastecimento
+        </a>
+        {% if can_view_production_maps %}
+            <a class="btn btn-light" href="{% url 'app:production_control_map' order.pk %}">
+                <i class="feather-clipboard me-1" aria-hidden="true"></i> Mapa de controle
+            </a>
+            <a class="btn btn-light" href="{% url 'app:production_results_map' order.pk %}">
+                <i class="feather-bar-chart-2 me-1" aria-hidden="true"></i> Mapa de resultados
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Card de Resumo e KPIs Executivos -->
+<div class="card stretch stretch-full mb-4">
+    <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <span class="text-muted text-uppercase fs-11 fw-semibold">Ordem de Produção (e-Batch Record)</span>
+                <h2 class="h4 mb-1">{{ order.order_number }} — {{ order.product.code }} · {{ order.product.description }}</h2>
+                <p class="text-muted mb-0">
+                    Lote da batelada: <strong>{{ order.batch_number }}</strong>
+                    · Linha: <strong>{{ order.production_line|default:'Não informada' }}</strong>
+                    · Responsável: <strong>{% if order.responsible %}{{ order.responsible.get_full_name|default:order.responsible.username }}{% else %}Não designado{% endif %}</strong>
+                </p>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="badge {% if order.priority == 'urgent' %}bg-soft-danger text-danger{% elif order.priority == 'high' %}bg-soft-warning text-warning{% else %}bg-soft-info text-info{% endif %} fs-12 px-3 py-2">
+                    Prioridade {{ order.get_priority_display }}
+                </span>
+                <span class="badge {% if order.status == 'completed' or order.status == 'closed' %}bg-soft-success text-success{% elif order.status == 'cancelled' %}bg-soft-danger text-danger{% elif order.status == 'in_progress' %}bg-soft-warning text-warning{% elif order.status == 'released' %}bg-soft-primary text-primary{% else %}bg-soft-secondary text-secondary{% endif %} fs-12 px-3 py-2">
+                    {{ order.get_status_display }}
+                </span>
+                {% if available_order_actions %}
+                    <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" id="orderActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="feather-play me-1" aria-hidden="true"></i> Transições de estado
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="orderActionsDropdown">
+                            {% for act in available_order_actions %}
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'app:resource_action' 'production' 'orders' order.pk act.action_name %}">
+                                        <i class="feather-arrow-right me-2 text-primary" aria-hidden="true"></i>{{ act.label }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-sm-6 col-xl-3">
+                <div class="p-3 border rounded bg-light">
+                    <span class="text-muted fs-12 text-uppercase d-block mb-1">Quantidade planejada</span>
+                    <h3 class="fs-18 fw-bold mb-0 text-dark">{{ order.planned_quantity|floatformat:4 }} <small class="fs-12 fw-normal text-muted">{{ order.unit.symbol }}</small></h3>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="p-3 border rounded bg-light">
+                    <span class="text-muted fs-12 text-uppercase d-block mb-1">Rendimento real</span>
+                    {% if order.actual_yield_quantity is not None %}
+                        <h3 class="fs-18 fw-bold mb-0 text-success">
+                            {{ order.actual_yield_quantity|floatformat:4 }} <small class="fs-12 fw-normal text-muted">{{ order.unit.symbol }}</small>
+                            {% if yield_percentage %}
+                                <span class="badge bg-soft-success text-success fs-11 ms-1">{{ yield_percentage|floatformat:1 }}%</span>
+                            {% endif %}
+                        </h3>
+                    {% else %}
+                        <h3 class="fs-18 fw-normal mb-0 text-muted">Pendente</h3>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="p-3 border rounded bg-light">
+                    <span class="text-muted fs-12 text-uppercase d-block mb-1">Perda real registrada</span>
+                    <h3 class="fs-18 fw-bold mb-0 {% if order.real_loss_quantity > 0 %}text-danger{% else %}text-dark{% endif %}">
+                        {{ order.real_loss_quantity|floatformat:4 }} <small class="fs-12 fw-normal text-muted">{{ order.unit.symbol }}</small>
+                    </h3>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="p-3 border rounded bg-light">
+                    <span class="text-muted fs-12 text-uppercase d-block mb-1">Cronograma previsto</span>
+                    <p class="fs-14 fw-semibold mb-0 text-dark">
+                        {{ order.scheduled_start|date:'d/m/Y'|default:'-' }} <span class="text-muted">até</span> {{ order.scheduled_end|date:'d/m/Y'|default:'-' }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cockpit Navegável por Abas -->
+<div class="card stretch stretch-full">
+    <div class="card-header p-0 border-bottom">
+        <ul class="nav nav-tabs card-header-tabs m-0 px-3 flex-wrap" id="productionCockpitTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button 
+                    class="nav-link active d-flex align-items-center gap-2 py-3 px-3 px-lg-4" 
+                    id="tab-overview-btn" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#tab-overview-pane" 
+                    type="button" 
+                    role="tab"
+                    aria-controls="tab-overview-pane" 
+                    aria-selected="true">
+                    <i class="feather-file-text text-primary fs-16" aria-hidden="true"></i>
+                    <span class="fw-semibold">1. Ficha e planejamento</span>
+                </button>
+            </li>
+
+            <li class="nav-item" role="presentation">
+                <button 
+                    class="nav-link d-flex align-items-center gap-2 py-3 px-3 px-lg-4" 
+                    id="tab-materials-btn" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#tab-materials-pane" 
+                    type="button" 
+                    role="tab"
+                    aria-controls="tab-materials-pane" 
+                    aria-selected="false">
+                    <i class="feather-package text-info fs-16" aria-hidden="true"></i>
+                    <span class="fw-semibold">2. Materiais e pesagem</span>
+                    {% if can_view_materials and materials|length %}
+                        <span class="badge bg-soft-info text-info rounded-pill fs-11 ms-1">{{ materials|length }}</span>
+                    {% endif %}
+                </button>
+            </li>
+
+            <li class="nav-item" role="presentation">
+                <button 
+                    class="nav-link d-flex align-items-center gap-2 py-3 px-3 px-lg-4" 
+                    id="tab-operations-btn" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#tab-operations-pane" 
+                    type="button" 
+                    role="tab"
+                    aria-controls="tab-operations-pane" 
+                    aria-selected="false">
+                    <i class="feather-tool text-warning fs-16" aria-hidden="true"></i>
+                    <span class="fw-semibold">3. Fases e mão de obra</span>
+                    {% if can_view_operations and operations|length %}
+                        <span class="badge bg-soft-warning text-warning rounded-pill fs-11 ms-1">{{ operations|length }}</span>
+                    {% endif %}
+                </button>
+            </li>
+
+            <li class="nav-item" role="presentation">
+                <button 
+                    class="nav-link d-flex align-items-center gap-2 py-3 px-3 px-lg-4" 
+                    id="tab-quality-btn" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#tab-quality-pane" 
+                    type="button" 
+                    role="tab"
+                    aria-controls="tab-quality-pane" 
+                    aria-selected="false">
+                    <i class="feather-check-circle text-success fs-16" aria-hidden="true"></i>
+                    <span class="fw-semibold">4. Controle em processo (IPC)</span>
+                    {% if can_view_quality and quality_samples|length %}
+                        <span class="badge bg-soft-success text-success rounded-pill fs-11 ms-1">{{ quality_samples|length }}</span>
+                        {% if pending_samples_count %}
+                            <span class="badge bg-soft-warning text-warning rounded-pill fs-11 ms-1">{{ pending_samples_count }} pendente(s)</span>
+                        {% endif %}
+                    {% endif %}
+                </button>
+            </li>
+
+            <li class="nav-item" role="presentation">
+                <button 
+                    class="nav-link d-flex align-items-center gap-2 py-3 px-3 px-lg-4" 
+                    id="tab-deviations-btn" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#tab-deviations-pane" 
+                    type="button" 
+                    role="tab"
+                    aria-controls="tab-deviations-pane" 
+                    aria-selected="false">
+                    <i class="feather-alert-triangle text-danger fs-16" aria-hidden="true"></i>
+                    <span class="fw-semibold">5. Desvios e ocorrências</span>
+                    {% if can_view_deviations and deviations|length %}
+                        <span class="badge bg-soft-danger text-danger rounded-pill fs-11 ms-1">{{ deviations|length }}</span>
+                        {% if open_deviations_count %}
+                            <span class="badge bg-danger text-white rounded-pill fs-11 ms-1">{{ open_deviations_count }} aberto(s)</span>
+                        {% endif %}
+                    {% endif %}
+                </button>
+            </li>
+
+            <li class="nav-item" role="presentation">
+                <button 
+                    class="nav-link d-flex align-items-center gap-2 py-3 px-3 px-lg-4" 
+                    id="tab-outputs-btn" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#tab-outputs-pane" 
+                    type="button" 
+                    role="tab"
+                    aria-controls="tab-outputs-pane" 
+                    aria-selected="false">
+                    <i class="feather-dollar-sign text-primary fs-16" aria-hidden="true"></i>
+                    <span class="fw-semibold">6. Rendimento e custos</span>
+                    {% if can_view_outputs and outputs|length %}
+                        <span class="badge bg-soft-primary text-primary rounded-pill fs-11 ms-1">{{ outputs|length }}</span>
+                    {% endif %}
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="card-body p-4">
+        <div class="tab-content" id="productionCockpitContent">
+            <!-- Painel 1: Ficha e Planejamento -->
+            <div class="tab-pane fade show active" id="tab-overview-pane" role="tabpanel" aria-labelledby="tab-overview-btn">
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="border rounded p-3 h-100 bg-white shadow-sm">
+                            <h3 class="h6 fw-bold border-bottom pb-2 mb-3 text-dark">
+                                <i class="feather-info me-2 text-primary" aria-hidden="true"></i>Identificação do processo
+                            </h3>
+                            <table class="table table-sm table-borderless align-middle mb-0">
+                                <tbody>
+                                    <tr>
+                                        <th class="text-muted" style="width: 35%;">Produto acabado:</th>
+                                        <td><strong>{{ order.product.code }}</strong> — {{ order.product.description }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">Fórmula mestra:</th>
+                                        <td>
+                                            <a href="{% url 'app:resource_detail' 'formulations' 'formulas' order.formula_id %}" class="fw-semibold">
+                                                {{ order.formula.code }} v{{ order.formula.version }}
+                                            </a>
+                                            <a href="{% url 'app:master_formula_cockpit' order.formula_id %}" class="badge bg-soft-warning text-warning ms-2">
+                                                Ver abastecimento
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">Roteiro de fabricação:</th>
+                                        <td>
+                                            <a href="{% url 'app:resource_detail' 'formulations' 'routes' order.route_id %}" class="fw-semibold">
+                                                {{ order.route.code }} v{{ order.route.version }}
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">Unidade de medida:</th>
+                                        <td>{{ order.unit.name }} ({{ order.unit.symbol }})</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">Linha de envase/fab.:</th>
+                                        <td>{{ order.production_line|default:'Não especificada' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">Responsável técnico:</th>
+                                        <td>{% if order.responsible %}{{ order.responsible.get_full_name|default:order.responsible.username }}{% else %}Não designado{% endif %}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="border rounded p-3 h-100 bg-white shadow-sm">
+                            <h3 class="h6 fw-bold border-bottom pb-2 mb-3 text-dark">
+                                <i class="feather-clock me-2 text-primary" aria-hidden="true"></i>Datas e auditoria do ciclo de vida
+                            </h3>
+                            <table class="table table-sm table-borderless align-middle mb-0">
+                                <tbody>
+                                    <tr>
+                                        <th class="text-muted" style="width: 35%;">Início previsto:</th>
+                                        <td>{{ order.scheduled_start|date:'d/m/Y'|default:'-' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">Fim previsto:</th>
+                                        <td>{{ order.scheduled_end|date:'d/m/Y'|default:'-' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">Início real:</th>
+                                        <td>{{ order.actual_start|date:'d/m/Y H:i'|default:'Não iniciado' }}{% if order.started_by %} <small class="text-muted">por {{ order.started_by.get_full_name|default:order.started_by.username }}</small>{% endif %}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">Fim real:</th>
+                                        <td>{{ order.actual_end|date:'d/m/Y H:i'|default:'Não concluído' }}{% if order.completed_by %} <small class="text-muted">por {{ order.completed_by.get_full_name|default:order.completed_by.username }}</small>{% endif %}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">Aprovação:</th>
+                                        <td>{% if order.approved_at and order.approved_by %}{{ order.approved_at|date:'d/m/Y H:i' }} por {{ order.approved_by.get_full_name|default:order.approved_by.username }}{% else %}<span class="text-muted">Não aprovada</span>{% endif %}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">Liberação:</th>
+                                        <td>{% if order.released_at and order.released_by %}{{ order.released_at|date:'d/m/Y H:i' }} por {{ order.released_by.get_full_name|default:order.released_by.username }}{% else %}<span class="text-muted">Não liberada</span>{% endif %}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {% if order.notes %}
+                        <div class="col-12">
+                            <div class="border rounded p-3 bg-light">
+                                <h4 class="fs-13 fw-bold text-uppercase text-muted mb-2">Observações da ordem</h4>
+                                <p class="mb-0 text-dark">{{ order.notes|linebreaksbr }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Painel 2: Separação e Consumo de Insumos -->
+            <div class="tab-pane fade" id="tab-materials-pane" role="tabpanel" aria-labelledby="tab-materials-btn">
+                {% if not can_view_materials %}
+                    <div class="alert alert-warning mb-0">
+                        <i class="feather-lock me-2" aria-hidden="true"></i>Você não possui permissão para consultar os consumos de materiais desta ordem.
+                    </div>
+                {% else %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h3 class="h6 fw-bold mb-1">Materiais alocados e consumidos (BOM de Produção)</h3>
+                            <p class="text-muted fs-12 mb-0">
+                                Total planejado: <strong>{{ materials_summary.planned_total|floatformat:4 }}</strong>
+                                · Total baixado: <strong>{{ materials_summary.actual_total|floatformat:4 }}</strong>
+                                · Perdas totais: <strong>{{ materials_summary.loss_total|floatformat:4 }}</strong>
+                            </p>
+                        </div>
+                    </div>
+
+                    {% if materials %}
+                        <div class="table-responsive border rounded">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Insumo / Matéria-prima</th>
+                                        <th class="text-end">Qtd. Planejada</th>
+                                        <th class="text-end">Qtd. Baixada</th>
+                                        <th class="text-end">Perda</th>
+                                        <th>Unidade</th>
+                                        <th>Lote alocado</th>
+                                        <th>Status do lote</th>
+                                        <th>Validade</th>
+                                        <th>Almoxarifado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for mat in materials %}
+                                        <tr>
+                                            <td><span class="fw-semibold">{{ mat.material.code }}</span></td>
+                                            <td>{{ mat.material.description }}</td>
+                                            <td class="text-end">{{ mat.planned_quantity|floatformat:4 }}</td>
+                                            <td class="text-end fw-semibold {% if mat.actual_quantity > 0 %}text-success{% endif %}">
+                                                {{ mat.actual_quantity|floatformat:4 }}
+                                            </td>
+                                            <td class="text-end {% if mat.loss_quantity > 0 %}text-danger fw-semibold{% else %}text-muted{% endif %}">
+                                                {{ mat.loss_quantity|floatformat:4 }}
+                                            </td>
+                                            <td>{{ mat.unit.symbol }}</td>
+                                            <td>
+                                                {% if mat.stock_lot %}
+                                                    <span class="badge bg-light text-dark border">{{ mat.stock_lot.lot_number }}</span>
+                                                {% elif mat.lot_number %}
+                                                    <span class="badge bg-light text-dark border">{{ mat.lot_number }}</span>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge {% if mat.quality_status == 'approved' %}bg-soft-success text-success{% elif mat.quality_status == 'quarantine' %}bg-soft-warning text-warning{% else %}bg-soft-danger text-danger{% endif %} fs-11">
+                                                    {{ mat.get_quality_status_display }}
+                                                </span>
+                                            </td>
+                                            <td>{{ mat.expiry_date|date:'d/m/Y'|default:'-' }}</td>
+                                            <td>{{ mat.warehouse.name|default:'-' }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 border rounded bg-light">
+                            <i class="feather-package fs-32 text-muted mb-2 d-block" aria-hidden="true"></i>
+                            <p class="text-muted mb-0">Nenhum consumo de material registrado para esta ordem.</p>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            <!-- Painel 3: Fases de Fabricação e Mão de Obra -->
+            <div class="tab-pane fade" id="tab-operations-pane" role="tabpanel" aria-labelledby="tab-operations-btn">
+                {% if not can_view_operations and not can_view_labor %}
+                    <div class="alert alert-warning mb-0">
+                        <i class="feather-lock me-2" aria-hidden="true"></i>Você não possui permissão para visualizar as operações e mão de obra desta ordem.
+                    </div>
+                {% else %}
+                    <!-- Subseção: Operações / Fases -->
+                    {% if can_view_operations %}
+                        <div class="mb-4">
+                            <h3 class="h6 fw-bold mb-3">
+                                <i class="feather-activity me-2 text-warning" aria-hidden="true"></i>Execução das etapas do processo
+                            </h3>
+                            {% if operations %}
+                                <div class="table-responsive border rounded mb-4">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th style="width: 80px;">Seq.</th>
+                                                <th>Etapa / Operação</th>
+                                                <th>Centro de trabalho</th>
+                                                <th class="text-center">Status</th>
+                                                <th class="text-end">Tempo planejado</th>
+                                                <th class="text-end">Tempo real</th>
+                                                <th>Início</th>
+                                                <th>Fim</th>
+                                                <th>Operador</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for op in operations %}
+                                                <tr>
+                                                    <td class="fw-bold">{{ op.sequence }}</td>
+                                                    <td>
+                                                        <span class="fw-semibold">{{ op.operation }}</span>
+                                                        {% if op.notes %}<small class="d-block text-muted">{{ op.notes }}</small>{% endif %}
+                                                    </td>
+                                                    <td><span class="badge bg-light text-secondary border">{{ op.work_center|default:'Padrão' }}</span></td>
+                                                    <td class="text-center">
+                                                        <span class="badge {% if op.status == 'completed' %}bg-soft-success text-success{% elif op.status == 'in_progress' %}bg-soft-warning text-warning{% elif op.status == 'skipped' %}bg-soft-secondary text-secondary{% else %}bg-soft-info text-info{% endif %} fs-11">
+                                                            {{ op.get_status_display }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-end">{{ op.planned_minutes|floatformat:0 }} min</td>
+                                                    <td class="text-end fw-semibold {% if op.actual_minutes > op.planned_minutes %}text-danger{% endif %}">
+                                                        {{ op.actual_minutes|floatformat:0 }} min
+                                                    </td>
+                                                    <td>{{ op.started_at|date:'d/m/Y H:i'|default:'-' }}</td>
+                                                    <td>{{ op.ended_at|date:'d/m/Y H:i'|default:'-' }}</td>
+                                                    <td>{% if op.recorded_by %}{{ op.recorded_by.get_full_name|default:op.recorded_by.username }}{% else %}-{% endif %}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4 border rounded bg-light mb-4">
+                                    <p class="text-muted mb-0">Nenhuma execução de operação registrada para esta ordem.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Subseção: Mão de Obra -->
+                    {% if can_view_labor %}
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h3 class="h6 fw-bold mb-0">
+                                    <i class="feather-users me-2 text-primary" aria-hidden="true"></i>Apontamento de mão de obra direta
+                                </h3>
+                                <span class="text-muted fs-12">
+                                    Tempo total: <strong>{{ labor_summary.total_minutes|floatformat:0 }} min</strong>
+                                    · Custo mão de obra: <strong>R$ {{ labor_summary.total_cost|floatformat:2 }}</strong>
+                                </span>
+                            </div>
+                            {% if labor_entries %}
+                                <div class="table-responsive border rounded">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Colaborador</th>
+                                                <th>Função</th>
+                                                <th>Início</th>
+                                                <th>Fim</th>
+                                                <th class="text-end">Duração</th>
+                                                <th class="text-end">Custo horário</th>
+                                                <th class="text-end">Custo total</th>
+                                                <th>Observações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for lab in labor_entries %}
+                                                <tr>
+                                                    <td class="fw-semibold">{{ lab.user.get_full_name|default:lab.user.username }}</td>
+                                                    <td>{{ lab.role|default:'Operador' }}</td>
+                                                    <td>{{ lab.started_at|date:'d/m/Y H:i' }}</td>
+                                                    <td>{{ lab.ended_at|date:'d/m/Y H:i' }}</td>
+                                                    <td class="text-end">{{ lab.duration_minutes|floatformat:0 }} min</td>
+                                                    <td class="text-end">R$ {{ lab.hourly_cost|floatformat:2 }}</td>
+                                                    <td class="text-end fw-semibold">R$ {{ lab.entry_cost|floatformat:2 }}</td>
+                                                    <td>{{ lab.notes|default:'-' }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4 border rounded bg-light">
+                                    <p class="text-muted mb-0">Nenhum apontamento de mão de obra registrado para esta ordem.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            <!-- Painel 4: Controle em Processo (IPC) -->
+            <div class="tab-pane fade" id="tab-quality-pane" role="tabpanel" aria-labelledby="tab-quality-btn">
+                {% if not can_view_quality %}
+                    <div class="alert alert-warning mb-0">
+                        <i class="feather-lock me-2" aria-hidden="true"></i>Você não possui permissão para consultar as amostras de controle de qualidade desta ordem.
+                    </div>
+                {% else %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="h6 fw-bold mb-0">Amostras de controle em processo e laudos analíticos</h3>
+                    </div>
+
+                    {% if quality_samples %}
+                        <div class="table-responsive border rounded">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Nº Amostra</th>
+                                        <th>Tipo</th>
+                                        <th>Ponto de coleta</th>
+                                        <th>Qtd. Amostrada</th>
+                                        <th class="text-center">Status</th>
+                                        <th>Coletada em</th>
+                                        <th>Coletor</th>
+                                        <th>Análises vinculadas</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sample in quality_samples %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'app:resource_detail' 'quality' 'samples' sample.pk %}" class="fw-semibold">
+                                                    {{ sample.sample_number }}
+                                                </a>
+                                            </td>
+                                            <td><span class="badge bg-light text-secondary border">{{ sample.get_sample_type_display }}</span></td>
+                                            <td>{{ sample.collection_point|default:sample.collection_site|default:'Linha de produção' }}</td>
+                                            <td>{{ sample.quantity|floatformat:4 }} {{ sample.unit.symbol }}</td>
+                                            <td class="text-center">
+                                                <span class="badge {% if sample.status == 'approved' %}bg-soft-success text-success{% elif sample.status == 'rejected' %}bg-soft-danger text-danger{% elif sample.status == 'in_analysis' %}bg-soft-warning text-warning{% else %}bg-soft-info text-info{% endif %} fs-11">
+                                                    {{ sample.get_status_display }}
+                                                </span>
+                                            </td>
+                                            <td>{{ sample.collected_at|date:'d/m/Y H:i'|default:'-' }}</td>
+                                            <td>{% if sample.collected_by %}{{ sample.collected_by.get_full_name|default:sample.collected_by.username }}{% else %}-{% endif %}</td>
+                                            <td>
+                                                {% with sample_analyses=sample.analyses.all %}
+                                                    {% if sample_analyses %}
+                                                        <span class="badge bg-soft-primary text-primary">{{ sample_analyses|length }} análise(s)</span>
+                                                    {% else %}
+                                                        <span class="text-muted fs-12">Aguardando ensaio</span>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 border rounded bg-light">
+                            <i class="feather-check-circle fs-32 text-muted mb-2 d-block" aria-hidden="true"></i>
+                            <p class="text-muted mb-0">Nenhuma amostra de controle em processo vinculada a esta ordem.</p>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            <!-- Painel 5: Desvios e Ocorrências -->
+            <div class="tab-pane fade" id="tab-deviations-pane" role="tabpanel" aria-labelledby="tab-deviations-btn">
+                {% if not can_view_deviations %}
+                    <div class="alert alert-warning mb-0">
+                        <i class="feather-lock me-2" aria-hidden="true"></i>Você não possui permissão para consultar os desvios e não conformidades.
+                    </div>
+                {% else %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="h6 fw-bold mb-0">Desvios de processo e não conformidades associadas</h3>
+                    </div>
+
+                    {% if deviations %}
+                        <div class="table-responsive border rounded">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Tipo</th>
+                                        <th>Severidade / Criticidade</th>
+                                        <th class="text-center">Status</th>
+                                        <th>Descrição sumária</th>
+                                        <th>Data de abertura</th>
+                                        <th>Responsável</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for dev in deviations %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'app:resource_detail' 'deviations' 'events' dev.pk %}" class="fw-semibold">
+                                                    {{ dev.event_number }}
+                                                </a>
+                                            </td>
+                                            <td><span class="badge bg-light text-secondary border">{{ dev.get_event_type_display }}</span></td>
+                                            <td>
+                                                <span class="badge {% if dev.severity == 'critical' or dev.criticality == 'critical' %}bg-soft-danger text-danger{% elif dev.severity == 'high' or dev.criticality == 'major' %}bg-soft-warning text-warning{% else %}bg-soft-info text-info{% endif %} fs-11">
+                                                    {{ dev.get_severity_display }} · {{ dev.get_criticality_display }}
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge {% if dev.status == 'closed' %}bg-soft-success text-success{% elif dev.status == 'open' or dev.status == 'under_investigation' %}bg-soft-danger text-danger{% else %}bg-soft-secondary text-secondary{% endif %} fs-11">
+                                                    {{ dev.get_status_display }}
+                                                </span>
+                                            </td>
+                                            <td>{{ dev.description|truncatewords:15 }}</td>
+                                            <td>{{ dev.opened_at|date:'d/m/Y H:i' }}</td>
+                                            <td>{% if dev.responsible %}{{ dev.responsible.get_full_name|default:dev.responsible.username }}{% else %}Não designado{% endif %}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 border rounded bg-light">
+                            <i class="feather-shield fs-32 text-success mb-2 d-block" aria-hidden="true"></i>
+                            <h4 class="h6 fw-bold text-success mb-1">Nenhum desvio apontado</h4>
+                            <p class="text-muted mb-0">Esta batelada não possui registros de desvios ou não conformidades abertos.</p>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            <!-- Painel 6: Rendimento, Produto Acabado e Custos -->
+            <div class="tab-pane fade" id="tab-outputs-pane" role="tabpanel" aria-labelledby="tab-outputs-btn">
+                {% if not can_view_outputs and not can_view_costs %}
+                    <div class="alert alert-warning mb-0">
+                        <i class="feather-lock me-2" aria-hidden="true"></i>Você não possui permissão para visualizar as saídas e apropriação de custos desta ordem.
+                    </div>
+                {% else %}
+                    <!-- Subseção: Produtos Acabados / Saídas -->
+                    {% if can_view_outputs %}
+                        <div class="mb-4">
+                            <h3 class="h6 fw-bold mb-3">
+                                <i class="feather-check-circle me-2 text-success" aria-hidden="true"></i>Produtos acabados gerados na batelada
+                            </h3>
+                            {% if outputs %}
+                                <div class="table-responsive border rounded mb-4">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Lote acabado</th>
+                                                <th>Sublote</th>
+                                                <th class="text-end">Qtd. Planejada</th>
+                                                <th class="text-end">Qtd. Produzida</th>
+                                                <th>Unidade</th>
+                                                <th>Almoxarifado</th>
+                                                <th>Fabricação / Validade</th>
+                                                <th class="text-center">Status</th>
+                                                <th>Recebido por</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for out in outputs %}
+                                                <tr>
+                                                    <td class="fw-semibold">
+                                                        {% if out.stock_lot %}
+                                                            <a href="{% url 'app:resource_detail' 'inventory' 'lots' out.stock_lot_id %}">
+                                                                {{ out.lot_number }}
+                                                            </a>
+                                                        {% else %}
+                                                            {{ out.lot_number }}
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ out.sublot_number|default:'-' }}</td>
+                                                    <td class="text-end">{{ out.planned_quantity|floatformat:4 }}</td>
+                                                    <td class="text-end fw-semibold text-success">{{ out.produced_quantity|floatformat:4 }}</td>
+                                                    <td>{{ out.unit.symbol }}</td>
+                                                    <td>{{ out.warehouse.name|default:'-' }}</td>
+                                                    <td>
+                                                        {{ out.manufacturing_date|date:'d/m/Y'|default:'-' }}
+                                                        {% if out.expiry_date %} até {{ out.expiry_date|date:'d/m/Y' }}{% endif %}
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <span class="badge {% if out.status == 'received' %}bg-soft-success text-success{% else %}bg-soft-warning text-warning{% endif %} fs-11">
+                                                            {{ out.get_status_display }}
+                                                        </span>
+                                                    </td>
+                                                    <td>{% if out.received_by %}{{ out.received_by.get_full_name|default:out.received_by.username }}{% else %}-{% endif %}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4 border rounded bg-light mb-4">
+                                    <p class="text-muted mb-0">Nenhum produto acabado apontado para esta ordem até o momento.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Subseção: Apuração de Custos -->
+                    {% if can_view_costs %}
+                        <div>
+                            <h3 class="h6 fw-bold mb-3">
+                                <i class="feather-dollar-sign me-2 text-primary" aria-hidden="true"></i>Apropriação e conciliação de custos
+                            </h3>
+                            {% if cost_captures %}
+                                <div class="table-responsive border rounded">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Período</th>
+                                                <th class="text-end">Custo planejado</th>
+                                                <th class="text-end">Custo matérias-primas</th>
+                                                <th class="text-end">Custo mão de obra</th>
+                                                <th class="text-end">Custo máquina/setup</th>
+                                                <th class="text-end">Custo total real</th>
+                                                <th class="text-end">Variação</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for cost in cost_captures %}
+                                                <tr>
+                                                    <td>{{ cost.period_start|date:'d/m/Y' }} a {{ cost.period_end|date:'d/m/Y' }}</td>
+                                                    <td class="text-end">R$ {{ cost.planned_cost|floatformat:2 }}</td>
+                                                    <td class="text-end">R$ {{ cost.actual_material_cost|floatformat:2 }}</td>
+                                                    <td class="text-end">R$ {{ cost.actual_labor_cost|floatformat:2 }}</td>
+                                                    <td class="text-end">R$ {{ cost.actual_machine_cost|floatformat:2 }}</td>
+                                                    <td class="text-end fw-bold text-dark">R$ {{ cost.total_actual_cost|floatformat:2 }}</td>
+                                                    <td class="text-end fw-semibold {% if cost.variance_amount > 0 %}text-danger{% elif cost.variance_amount < 0 %}text-success{% else %}text-muted{% endif %}">
+                                                        R$ {{ cost.variance_amount|floatformat:2 }}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4 border rounded bg-light">
+                                    <p class="text-muted mb-0">Nenhuma captura de custos processada para esta ordem de produção.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
