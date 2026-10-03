@@ -1,2 +1,20 @@
 # Benign prose describing NF-e validation; scoped to one historical finding.
 d54d6419383889da2159e2df080aacf63c1fedee:docs/superpowers/plans/2026-07-27-purchase-nfe-xml-import.md:generic-api-key:14
+
+# Verified source/artifact SHA-256 findings in immutable commit 43b1c1a only.
+# Exact Git findings; directory scans and all later commits remain scanned.
+43b1c1aed42017018acec43769244854d9f49c45:docs/validation/evidence/corrections/current-main-v2-reconciliation.json:generic-api-key:32
+43b1c1aed42017018acec43769244854d9f49c45:docs/validation/evidence/corrections/current-main-v3-source-manifest.json:generic-api-key:99
+43b1c1aed42017018acec43769244854d9f49c45:docs/validation/evidence/corrections/current-main-v3-source-manifest.json:generic-api-key:204
+43b1c1aed42017018acec43769244854d9f49c45:docs/validation/evidence/corrections/current-main-v3-source-manifest.json:generic-api-key:871
+43b1c1aed42017018acec43769244854d9f49c45:docs/validation/evidence/corrections/current-main-v3-source-manifest.json:generic-api-key:934
+43b1c1aed42017018acec43769244854d9f49c45:docs/validation/evidence/corrections/current-main-v3-source-manifest.json:generic-api-key:1023
+43b1c1aed42017018acec43769244854d9f49c45:docs/validation/evidence/corrections/current-main-v3-source-manifest.json:generic-api-key:1042
+43b1c1aed42017018acec43769244854d9f49c45:docs/validation/evidence/corrections/current-main-v3-source-manifest.json:generic-api-key:1319
+43b1c1aed42017018acec43769244854d9f49c45:docs/validation/evidence/corrections/current-main-v3-source-manifest.json:generic-api-key:2062
+43b1c1aed42017018acec43769244854d9f49c45:docs/validation/evidence/corrections/current-main-v3-source-manifest.json:generic-api-key:2119
+43b1c1aed42017018acec43769244854d9f49c45:docs/validation/evidence/corrections/current-main-v3-source-manifest.json:generic-api-key:2124
+43b1c1aed42017018acec43769244854d9f49c45:docs/validation/evidence/corrections/current-main-v3-source-manifest.json:generic-api-key:2133
+43b1c1aed42017018acec43769244854d9f49c45:docs/validation/evidence/corrections/current-main-v3-source-manifest.json:generic-api-key:2135
+43b1c1aed42017018acec43769244854d9f49c45:docs/validation/evidence/corrections/current-main-v3-suite-reconciliation.json:generic-api-key:19
+43b1c1aed42017018acec43769244854d9f49c45:docs/validation/evidence/corrections/first-frozen-source-artifact-reconciliation.json:generic-api-key:10
