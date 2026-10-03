@@ -8,8 +8,8 @@ from django.views.generic import TemplateView
 
 from base.ui.actions.context import available_actions
 from base.ui.views import ResourceContextMixin
-from crm.models import CustomerProfile, SalesOrder, SalesOrderItem
-from finance.models import FinancialSettlement, FinancialTitle
+from crm.models import CustomerProfile, SalesOrder
+from finance.models import FinancialTitle
 from fiscal.models import FiscalDocument
 from inventory.models import StockBalance, StockMovement
 
@@ -62,9 +62,11 @@ class SalesOrderCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateVi
         credit_status = 'ok'  # 'ok', 'hold', 'exceeded'
 
         if can_view_credit:
-            profile = CustomerProfile.objects.filter(
-                customer=order.customer, is_active=True
-            ).select_related('group', 'default_channel', 'representative').first()
+            profile = (
+                CustomerProfile.objects.filter(customer=order.customer, is_active=True)
+                .select_related('group', 'default_channel', 'representative')
+                .first()
+            )
 
             if profile:
                 open_titles = FinancialTitle.objects.filter(
@@ -77,9 +79,9 @@ class SalesOrderCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateVi
                         FinancialTitle.Status.REVERSED,
                     ]
                 )
-                total_open_exposure = (
-                    open_titles.aggregate(total=Sum('open_amount'))['total'] or Decimal('0.0000')
-                )
+                total_open_exposure = open_titles.aggregate(total=Sum('open_amount'))[
+                    'total'
+                ] or Decimal('0.0000')
 
                 if profile.credit_limit > 0:
                     available_credit = profile.credit_limit - total_open_exposure
@@ -225,7 +227,9 @@ class SalesOrderCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateVi
                 finance_summary['total_open'] = total_open
 
                 if total_billed > 0:
-                    finance_summary['settlement_percentage'] = int((total_paid / total_billed) * 100)
+                    finance_summary['settlement_percentage'] = int(
+                        (total_paid / total_billed) * 100
+                    )
 
                 if can_view_settlements:
                     for t in financial_titles:
@@ -308,7 +312,7 @@ class SalesOrderCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateVi
                     'Títulos financeiros 100% liquidados'
                     if has_settled
                     else (
-                        f"{finance_summary['settlement_percentage']}% liquidado"
+                        f'{finance_summary["settlement_percentage"]}% liquidado'
                         if financial_titles
                         else 'Aguardando faturamento/títulos'
                     )

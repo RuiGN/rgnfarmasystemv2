@@ -16,8 +16,7 @@ from documents.models import (
     DocumentDistribution,
     DocumentRelationship,
 )
-from governance.models import GovernanceAuditLog, OperationalModule
-from qa.models import QAReview, QualityBlock
+from qa.models import QualityBlock
 from training.models import (
     Competency,
     JobPosition,
@@ -198,7 +197,9 @@ class ControlledDocumentCockpitUiTests(TestCase):
         )
 
         # Rota do cockpit
-        self.cockpit_url = reverse('app:controlled_document_cockpit', kwargs={'pk': self.document.pk})
+        self.cockpit_url = reverse(
+            'app:controlled_document_cockpit', kwargs={'pk': self.document.pk}
+        )
 
     def _grant_all_permissions(self):
         perms = Permission.objects.filter(
@@ -270,7 +271,9 @@ class ControlledDocumentCockpitUiTests(TestCase):
         self.assertIn('Linhagem Completa de Versões e Revisões', content)
 
         # Conteúdo da Aba 5 (Distribuição, Trilha e 5 Gates)
-        self.assertIn('Confirmo a leitura integral e compreensão dos passos de sanitização do POP', content)
+        self.assertIn(
+            'Confirmo a leitura integral e compreensão dos passos de sanitização do POP', content
+        )
         self.assertIn('RDC ANVISA nº 48/2013 - Boas Práticas de Fabricação', content)
         self.assertIn('SOP-PRD-001 v1.0 - Publicado', content)
         self.assertIn('Gate 1: Elaboração & Metadados', content)
@@ -293,7 +296,9 @@ class ControlledDocumentCockpitUiTests(TestCase):
         content = response.content.decode('utf-8')
         # Como can_view_matrix inclui documents.view_controlleddocument ou training.view_trainingrequirement,
         # vamos testar SoD na aba de colaboradores (enrollments)
-        self.assertIn('Você não possui permissão para visualizar colaboradores treinados e eficácia.', content)
+        self.assertIn(
+            'Você não possui permissão para visualizar colaboradores treinados e eficácia.', content
+        )
         self.assertNotIn('CERT-2026-0881', content)
 
     def test_sod_enrollments_tab_permission_segmented(self):
@@ -301,7 +306,9 @@ class ControlledDocumentCockpitUiTests(TestCase):
         response = self.client.get(self.cockpit_url)
         self.assertEqual(response.status_code, 200)
         content = response.content.decode('utf-8')
-        self.assertIn('Você não possui permissão para visualizar colaboradores treinados e eficácia.', content)
+        self.assertIn(
+            'Você não possui permissão para visualizar colaboradores treinados e eficácia.', content
+        )
         self.assertNotIn('TRN-2026-0001', content)
 
     def test_sod_approvals_tab_permission_segmented(self):
@@ -311,15 +318,22 @@ class ControlledDocumentCockpitUiTests(TestCase):
         response = self.client.get(self.cockpit_url)
         self.assertEqual(response.status_code, 200)
         content = response.content.decode('utf-8')
-        self.assertIn('Você não possui permissão para visualizar distribuição, vínculos e trilha de auditoria.', content)
-        self.assertNotIn('Confirmo a leitura integral e compreensão dos passos de sanitização do POP', content)
+        self.assertIn(
+            'Você não possui permissão para visualizar distribuição, vínculos e trilha de auditoria.',
+            content,
+        )
+        self.assertNotIn(
+            'Confirmo a leitura integral e compreensão dos passos de sanitização do POP', content
+        )
 
     def test_dms_5_gates_evaluation_conforming_vs_blocked(self):
         self._grant_all_permissions()
         response = self.client.get(self.cockpit_url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['gates_passed_count'], 5)
-        self.assertEqual(response.context['regulatory_verdict'], 'Vigente & Capacitação Conforme (BPF)')
+        self.assertEqual(
+            response.context['regulatory_verdict'], 'Vigente & Capacitação Conforme (BPF)'
+        )
         self.assertFalse(response.context['has_active_block'])
 
         # Criar bloqueio sanitário QA

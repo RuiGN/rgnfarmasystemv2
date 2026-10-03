@@ -1,0 +1,212 @@
+{
+  "scope": [
+    "audits/ui_views.py",
+    "crm/ui_views.py",
+    "deviations/ui_views.py",
+    "documents/ui_views.py",
+    "procurement/ui_views.py",
+    "production/ui_views.py",
+    "qa/ui_views.py",
+    "recalls/ui_views.py",
+    "governance/forms.py",
+    "core/settings/base.py",
+    "procurement/models.py"
+  ],
+  "checks": {
+    "ruff": {
+      "command": "/home/deploy/.hermes/cache/scratch/rgn-clean-runtime/bin/python -m ruff check audits/ui_views.py crm/ui_views.py deviations/ui_views.py documents/ui_views.py procurement/ui_views.py production/ui_views.py qa/ui_views.py recalls/ui_views.py governance/forms.py core/settings/base.py procurement/models.py",
+      "returncode": 0,
+      "stdout": "All checks passed!\n",
+      "stderr": ""
+    },
+    "format": {
+      "command": "/home/deploy/.hermes/cache/scratch/rgn-clean-runtime/bin/python -m ruff format --check audits/ui_views.py crm/ui_views.py deviations/ui_views.py documents/ui_views.py procurement/ui_views.py production/ui_views.py qa/ui_views.py recalls/ui_views.py governance/forms.py core/settings/base.py procurement/models.py",
+      "returncode": 0,
+      "stdout": "11 files already formatted\n",
+      "stderr": ""
+    },
+    "mypy": {
+      "command": "/home/deploy/.hermes/cache/scratch/rgn-clean-runtime/bin/python -m mypy --cache-dir=/home/deploy/.hermes/cache/scratch/rgn-integration-quality-mypy audits/ui_views.py crm/ui_views.py deviations/ui_views.py documents/ui_views.py procurement/ui_views.py production/ui_views.py qa/ui_views.py recalls/ui_views.py governance/forms.py core/settings/base.py procurement/models.py",
+      "returncode": 0,
+      "stdout": "Success: no issues found in 11 source files\n",
+      "stderr": ""
+    },
+    "bandit": {
+      "command": "/home/deploy/.hermes/cache/scratch/rgn-clean-runtime/bin/python -m bandit -f json audits/ui_views.py crm/ui_views.py deviations/ui_views.py documents/ui_views.py procurement/ui_views.py production/ui_views.py qa/ui_views.py recalls/ui_views.py governance/forms.py core/settings/base.py procurement/models.py",
+      "returncode": 0,
+      "stdout": "{\n  \"errors\": [],\n  \"generated_at\": \"2026-10-03T01:50:58Z\",\n  \"metrics\": {\n    \"./audits/ui_views.py\": {\n      \"CONFIDENCE.HIGH\": 0,\n      \"CONFIDENCE.LOW\": 0,\n      \"CONFIDENCE.MEDIUM\": 0,\n      \"CONFIDENCE.UNDEFINED\": 0,\n      \"SEVERITY.HIGH\": 0,\n      \"SEVERITY.LOW\": 0,\n      \"SEVERITY.MEDIUM\": 0,\n      \"SEVERITY.UNDEFINED\": 0,\n      \"loc\": 332,\n      \"nosec\": 0,\n      \"skipped_tests\": 0\n    },\n    \"./core/settings/base.py\": {\n      \"CONFIDENCE.HIGH\": 0,\n      \"CONFIDENCE.LOW\": 0,\n      \"CONFIDENCE.MEDIUM\": 0,\n      \"CONFIDENCE.UNDEFINED\": 0,\n      \"SEVERITY.HIGH\": 0,\n      \"SEVERITY.LOW\": 0,\n      \"SEVERITY.MEDIUM\": 0,\n      \"SEVERITY.UNDEFINED\": 0,\n      \"loc\": 330,\n      \"nosec\": 0,\n      \"skipped_tests\": 1\n    },\n    \"./crm/ui_views.py\": {\n      \"CONFIDENCE.HIGH\": 0,\n      \"CONFIDENCE.LOW\": 0,\n      \"CONFIDENCE.MEDIUM\": 0,\n      \"CONFIDENCE.UNDEFINED\": 0,\n      \"SEVERITY.HIGH\": 0,\n      \"SEVERITY.LOW\": 0,\n      \"SEVERITY.MEDIUM\": 0,\n      \"SEVERITY.UNDEFINED\": 0,\n      \"loc\": 313,\n      \"nosec\": 0,\n      \"skipped_tests\": 0\n    },\n    \"./deviations/ui_views.py\": {\n      \"CONFIDENCE.HIGH\": 0,\n      \"CONFIDENCE.LOW\": 0,\n      \"CONFIDENCE.MEDIUM\": 0,\n      \"CONFIDENCE.UNDEFINED\": 0,\n      \"SEVERITY.HIGH\": 0,\n      \"SEVERITY.LOW\": 0,\n      \"SEVERITY.MEDIUM\": 0,\n      \"SEVERITY.UNDEFINED\": 0,\n      \"loc\": 242,\n      \"nosec\": 0,\n      \"skipped_tests\": 0\n    },\n    \"./documents/ui_views.py\": {\n      \"CONFIDENCE.HIGH\": 0,\n      \"CONFIDENCE.LOW\": 0,\n      \"CONFIDENCE.MEDIUM\": 0,\n      \"CONFIDENCE.UNDEFINED\": 0,\n      \"SEVERITY.HIGH\": 0,\n      \"SEVERITY.LOW\": 0,\n      \"SEVERITY.MEDIUM\": 0,\n      \"SEVERITY.UNDEFINED\": 0,\n      \"loc\": 354,\n      \"nosec\": 0,\n      \"skipped_tests\": 0\n    },\n    \"./governance/forms.py\": {\n      \"CONFIDENCE.HIGH\": 0,\n      \"CONFIDENCE.LOW\": 0,\n      \"CONFIDENCE.MEDIUM\": 0,\n      \"CONFIDENCE.UNDEFINED\": 0,\n      \"SEVERITY.HIGH\": 0,\n      \"SEVERITY.LOW\": 0,\n      \"SEVERITY.MEDIUM\": 0,\n      \"SEVERITY.UNDEFINED\": 0,\n      \"loc\": 95,\n      \"nosec\": 0,\n      \"skipped_tests\": 0\n    },\n    \"./procurement/models.py\": {\n      \"CONFIDENCE.HIGH\": 0,\n      \"CONFIDENCE.LOW\": 0,\n      \"CONFIDENCE.MEDIUM\": 0,\n      \"CONFIDENCE.UNDEFINED\": 0,\n      \"SEVERITY.HIGH\": 0,\n      \"SEVERITY.LOW\": 0,\n      \"SEVERITY.MEDIUM\": 0,\n      \"SEVERITY.UNDEFINED\": 0,\n      \"loc\": 1122,\n      \"nosec\": 0,\n      \"skipped_tests\": 0\n    },\n    \"./procurement/ui_views.py\": {\n      \"CONFIDENCE.HIGH\": 0,\n      \"CONFIDENCE.LOW\": 0,\n      \"CONFIDENCE.MEDIUM\": 0,\n      \"CONFIDENCE.UNDEFINED\": 0,\n      \"SEVERITY.HIGH\": 0,\n      \"SEVERITY.LOW\": 0,\n      \"SEVERITY.MEDIUM\": 0,\n      \"SEVERITY.UNDEFINED\": 0,\n      \"loc\": 413,\n      \"nosec\": 0,\n      \"skipped_tests\": 0\n    },\n    \"./production/ui_views.py\": {\n      \"CONFIDENCE.HIGH\": 0,\n      \"CONFIDENCE.LOW\": 0,\n      \"CONFIDENCE.MEDIUM\": 0,\n      \"CONFIDENCE.UNDEFINED\": 0,\n      \"SEVERITY.HIGH\": 0,\n      \"SEVERITY.LOW\": 0,\n      \"SEVERITY.MEDIUM\": 0,\n      \"SEVERITY.UNDEFINED\": 0,\n      \"loc\": 181,\n      \"nosec\": 0,\n      \"skipped_tests\": 0\n    },\n    \"./qa/ui_views.py\": {\n      \"CONFIDENCE.HIGH\": 0,\n      \"CONFIDENCE.LOW\": 0,\n      \"CONFIDENCE.MEDIUM\": 0,\n      \"CONFIDENCE.UNDEFINED\": 0,\n      \"SEVERITY.HIGH\": 0,\n      \"SEVERITY.LOW\": 0,\n      \"SEVERITY.MEDIUM\": 0,\n      \"SEVERITY.UNDEFINED\": 0,\n      \"loc\": 334,\n      \"nosec\": 0,\n      \"skipped_tests\": 0\n    },\n    \"./recalls/ui_views.py\": {\n      \"CONFIDENCE.HIGH\": 0,\n      \"CONFIDENCE.LOW\": 0,\n      \"CONFIDENCE.MEDIUM\": 0,\n      \"CONFIDENCE.UNDEFINED\": 0,\n      \"SEVERITY.HIGH\": 0,\n      \"SEVERITY.LOW\": 0,\n      \"SEVERITY.MEDIUM\": 0,\n      \"SEVERITY.UNDEFINED\": 0,\n      \"loc\": 301,\n      \"nosec\": 0,\n      \"skipped_tests\": 0\n    },\n    \"_totals\": {\n      \"CONFIDENCE.HIGH\": 0,\n      \"CONFIDENCE.LOW\": 0,\n      \"CONFIDENCE.MEDIUM\": 0,\n      \"CONFIDENCE.UNDEFINED\": 0,\n      \"SEVERITY.HIGH\": 0,\n      \"SEVERITY.LOW\": 0,\n      \"SEVERITY.MEDIUM\": 0,\n      \"SEVERITY.UNDEFINED\": 0,\n      \"loc\": 4017,\n      \"nosec\": 0,\n      \"skipped_tests\": 1\n    }\n  },\n  \"results\": []\n}",
+      "stderr": "[main]\tINFO\tprofile include tests: None\n[main]\tINFO\tprofile exclude tests: None\n[main]\tINFO\tcli include tests: None\n[main]\tINFO\tcli exclude tests: None\n"
+    },
+    "diff_check": {
+      "command": "git diff --check -- audits/ui_views.py crm/ui_views.py deviations/ui_views.py documents/ui_views.py procurement/ui_views.py production/ui_views.py qa/ui_views.py recalls/ui_views.py governance/forms.py core/settings/base.py procurement/models.py",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  },
+  "removed_imports": {
+    "audits/ui_views.py": [
+      [
+        "audits.models",
+        "AuditProgram",
+        "AuditProgram"
+      ],
+      [
+        "capa.models",
+        "CapaRecord",
+        "CapaRecord"
+      ],
+      [
+        "decimal",
+        "Decimal",
+        "Decimal"
+      ],
+      [
+        "deviations.models",
+        "QualityEvent",
+        "QualityEvent"
+      ],
+      [
+        "django.db.models",
+        "Count",
+        "Count"
+      ],
+      [
+        "django.db.models",
+        "Q",
+        "Q"
+      ],
+      [
+        "django.utils",
+        "timezone",
+        "timezone"
+      ]
+    ],
+    "crm/ui_views.py": [
+      [
+        "crm.models",
+        "SalesOrderItem",
+        "SalesOrderItem"
+      ],
+      [
+        "finance.models",
+        "FinancialSettlement",
+        "FinancialSettlement"
+      ]
+    ],
+    "deviations/ui_views.py": [
+      [
+        "capa.models",
+        "CapaRecord",
+        "CapaRecord"
+      ]
+    ],
+    "documents/ui_views.py": [
+      [
+        "decimal",
+        "Decimal",
+        "Decimal"
+      ]
+    ],
+    "procurement/ui_views.py": [
+      [
+        "audits.models",
+        "AuditChecklistItem",
+        "AuditChecklistItem"
+      ],
+      [
+        "audits.models",
+        "AuditEvidence",
+        "AuditEvidence"
+      ],
+      [
+        "django.db.models",
+        "Count",
+        "Count"
+      ]
+    ],
+    "production/ui_views.py": [
+      [
+        "costing.models",
+        "ProductionCostCapture",
+        "ProductionCostCapture"
+      ],
+      [
+        "django.core.exceptions",
+        "PermissionDenied",
+        "PermissionDenied"
+      ],
+      [
+        "production.models",
+        "MaterialConsumption",
+        "MaterialConsumption"
+      ],
+      [
+        "production.models",
+        "ProductionLaborEntry",
+        "ProductionLaborEntry"
+      ],
+      [
+        "production.models",
+        "ProductionOperationExecution",
+        "ProductionOperationExecution"
+      ]
+    ],
+    "qa/ui_views.py": [
+      [
+        "inventory.models",
+        "StockQualityStatus",
+        "StockQualityStatus"
+      ]
+    ],
+    "recalls/ui_views.py": [
+      [
+        "capa.models",
+        "CapaRecord",
+        "CapaRecord"
+      ],
+      [
+        "recalls.models",
+        "RecallCommunication",
+        "RecallCommunication"
+      ],
+      [
+        "recalls.models",
+        "RecallImpactedCustomer",
+        "RecallImpactedCustomer"
+      ]
+    ],
+    "governance/forms.py": [],
+    "core/settings/base.py": [],
+    "procurement/models.py": []
+  },
+  "removed_imports_count": 23,
+  "unused_import_bindings_verified": true,
+  "pure_format_ast_equal": {
+    "core/settings/base.py": true,
+    "procurement/models.py": true
+  },
+  "annotation_additions": {
+    "audits/ui_views.py": [],
+    "crm/ui_views.py": [],
+    "deviations/ui_views.py": [],
+    "documents/ui_views.py": [],
+    "procurement/ui_views.py": [],
+    "production/ui_views.py": [
+      "materials_summary: dict[str, Decimal | int] = {'planned_total': Decimal('0.0000'), 'actual_total': Decimal('0.0000'), 'loss_total': Decimal('0.0000'), 'count': 0}",
+      "labor_summary: dict[str, Decimal | int] = {'total_minutes': Decimal('0.00'), 'total_cost': Decimal('0.0000'), 'count': 0}"
+    ],
+    "qa/ui_views.py": [
+      "balances_summary: dict[str, Decimal | int] = {'total_quantity': Decimal('0.0000'), 'total_reserved': Decimal('0.0000'), 'total_available': Decimal('0.0000'), 'count': 0}"
+    ],
+    "recalls/ui_views.py": [],
+    "governance/forms.py": [],
+    "core/settings/base.py": [],
+    "procurement/models.py": []
+  },
+  "compilation": "11 files compiled in memory; no Django setup or DB access",
+  "aggregate_normalized_ast_before_sha256": "4af7ac7cb72a965731f90e3f109ebcaa621837e74d2299f85bd9bb6c1ef04227",
+  "aggregate_normalized_ast_after_sha256": "4af7ac7cb72a965731f90e3f109ebcaa621837e74d2299f85bd9bb6c1ef04227",
+  "preservation_report": "/home/deploy/.hermes/cache/scratch/rgn-source-static-verification.json",
+  "passed": true
+}

@@ -460,13 +460,50 @@ class ApprovalTask(SingleInstanceModel):
             .first()
         )
 
+    def validate_sensitive_changes(self, user, attrs):
+        sensitive = {
+            'queue',
+            'assigned_to',
+            'requested_by',
+            'amount',
+            'area',
+            'criticality',
+            'source_module',
+            'source_model',
+            'source_record_id',
+            'source_module_ref',
+            'source_model_ref',
+            'area_ref',
+            'criticality_ref',
+        }
+        changed = any(name in attrs and attrs[name] != getattr(self, name) for name in sensitive)
+        if changed and not (
+            user and user.is_active and user.has_perm('workflow.change_approvalqueue')
+        ):
+            raise ValidationError(
+                {'permission': 'Alteração sensível exige gestão da fila de aprovação.'}
+            )
+
     def can_approve(self, user):
-        if not user:
+        if not user or not user.is_authenticated or not user.is_active:
+            return False
+        if user.pk == self.requested_by_id:
             return False
         if user.is_superuser:
-            return True
+            return self.queue.matches(
+                user, self.source_module, self.area, self.criticality, self.amount
+            )
         if self.assigned_to_id:
-            return user.pk == self.assigned_to_id or self.active_delegation_for(user) is not None
+            if user.pk == self.assigned_to_id:
+                return self.queue.matches(
+                    user, self.source_module, self.area, self.criticality, self.amount
+                )
+            if self.assigned_to_id == self.requested_by_id:
+                return False
+            delegation = self.active_delegation_for(user)
+            return delegation is not None and self.queue.matches(
+                delegation.from_user, self.source_module, self.area, self.criticality, self.amount
+            )
         return self.queue.matches(
             user, self.source_module, self.area, self.criticality, self.amount
         )
@@ -646,6 +683,18 @@ class WorkflowDelegation(SingleInstanceModel):
         if not getattr(self, '_skip_clean', False):
             self.full_clean()
         super().save(*args, **kwargs)
+
+    def validate_actor(self, user, attrs):
+        targets = [attrs['from_user']] if 'from_user' in attrs else [self.from_user]
+        if self.pk:
+            targets.append(self.from_user)
+        manager = user and user.is_active and user.has_perm('workflow.change_approvalqueue')
+        if not manager and (
+            not user or not user.is_active or any(target.pk != user.pk for target in targets)
+        ):
+            raise ValidationError(
+                {'permission': 'Somente o substituído ou gestor da fila pode delegar.'}
+            )
 
     def applies_to(self, task):
         now = timezone.now()

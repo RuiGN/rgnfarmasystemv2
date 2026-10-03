@@ -263,11 +263,21 @@ class ProcurementModelTests(TestCase):
             expiry_date=timezone.localdate() + timedelta(days=365),
         )
 
-        receipt.post_stock()
+        # post_stock sem destino apenas marcava flags; o contrato seguro exige entrada real.
+        from inventory.models import StockBalance, StockMovement
+        from tests.test_inventory import create_stock_address
+
+        warehouse, location = create_stock_address(suffix='PROCUREMENT-POST')
+        receipt.post_stock(warehouse=warehouse, location=location)
         receipt.refresh_from_db()
 
         assert item.accepted_quantity + item.rejected_quantity == item.received_quantity
         assert receipt.stock_entry_status == PurchaseReceipt.StockEntryStatus.POSTED
+        movement = StockMovement.objects.get(source_purchase_receipt_item=item)
+        assert movement.quantity == item.accepted_quantity
+        assert StockBalance.objects.get(lot=movement.lot, location=location).quantity == Decimal(
+            '48.0000'
+        )
 
         invalid_item = PurchaseReceiptItem(
             receipt=receipt,

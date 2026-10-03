@@ -9,7 +9,8 @@ from core.evidence_audit import evaluate_evidence_catalog
 
 ROOT = Path(__file__).resolve().parents[1]
 HISTORICAL_ACTION_HASH = 'c5a622328b62e9dc3b2383f8e266d9c6a22a7af4e1eff75e107015b7b4297ea9'
-CURRENT_ACTION_HASH = '999f18cdb174eef57bc0321eca781887e8472a6a16df88cb63b66eb5099aaee5'
+# Recapturado após executar o catálogo corrente; o hash histórico permanece intacto.
+CURRENT_ACTION_HASH = '32135d1fda299878281720b9095ca224653f1663694b8abbee27ff170de58388'
 
 
 def _read(path):
@@ -53,9 +54,9 @@ def test_domain_action_documentation_records_the_complete_contract():
     source = _read('docs/architecture/domain-actions.md')
 
     for expected in (
-        '258',
-        '252',
-        'seis ações de coleção',
+        '234',
+        '227',
+        'sete ações de coleção',
         'ActionConfig',
         'allowed_states',
         'fallback sem JavaScript',

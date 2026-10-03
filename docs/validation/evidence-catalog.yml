@@ -59,7 +59,7 @@ evidence:
     title: Validação de agentes de IA em escopo global
     owner: engineering
     reviewed_by: automated-quality-gate
-    captured_at: '2026-09-01T00:00:00Z'
+    captured_at: '2026-10-03T01:50:40Z'
     status: approved
     sha256: '43851cb9c3c36f0d9dc08621377dec364e2b1720423f4599d57321ec29d10e3e'
     artifact: tests/test_ai_agents.py
@@ -86,7 +86,7 @@ evidence:
     title: Validação do PostgreSQL containerizado e da compatibilidade de continuidade
     owner: engineering
     reviewed_by: automated-quality-gate
-    captured_at: '2026-09-01T00:00:00Z'
+    captured_at: '2026-10-03T01:50:40Z'
     status: approved
     sha256: '78cf7058af897080d13950c9b58dfe00e12dbc310817db58c1f76f474d2f1368'
     artifact: tests/test_native_postgres_deployment.py
@@ -113,9 +113,9 @@ evidence:
     title: Igualdade entre ações POST DRF e catálogo HTML
     owner: engineering
     reviewed_by: automated-quality-gate
-    captured_at: '2026-09-01T00:00:00Z'
+    captured_at: '2026-10-03T01:50:40Z'
     status: approved
-    sha256: '999f18cdb174eef57bc0321eca781887e8472a6a16df88cb63b66eb5099aaee5'
+    sha256: '32135d1fda299878281720b9095ca224653f1663694b8abbee27ff170de58388'
     artifact: tests/test_action_catalog_completeness.py
   - id: EV-SIA-PTBR
     requirement: SIA-PTBR

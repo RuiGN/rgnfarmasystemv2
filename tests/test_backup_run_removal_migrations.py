@@ -50,9 +50,7 @@ class BackupRunRemovalMigrationTests(TransactionTestCase):
         Permission = self.apps.get_model('auth', 'Permission')
 
         assert 'auxiliary_backuprun' not in tables
-        assert not ContentType.objects.filter(
-            app_label='auxiliary', model='backuprun'
-        ).exists()
+        assert not ContentType.objects.filter(app_label='auxiliary', model='backuprun').exists()
         assert not Permission.objects.filter(
             content_type__app_label='auxiliary',
             content_type__model='backuprun',

@@ -1,0 +1,734 @@
+{
+  "passed": true,
+  "normalization": "Imports removed; annotations removed; valued AnnAssign converted to Assign. No calls, branches, methods, bases or values removed.",
+  "files": {
+    "audits/ui_views.py": {
+      "normalized_ast_equal": true,
+      "definitions_equal": true,
+      "class_bases_equal": true,
+      "before_ast_sha256": "d7d4d66c1fffa2cb96dafe21853ccec1b6d2d6c2403b619c1ddc7560d6b2d33e",
+      "after_ast_sha256": "d7d4d66c1fffa2cb96dafe21853ccec1b6d2d6c2403b619c1ddc7560d6b2d33e"
+    },
+    "crm/ui_views.py": {
+      "normalized_ast_equal": true,
+      "definitions_equal": true,
+      "class_bases_equal": true,
+      "before_ast_sha256": "22d4f908a0967edab95f64dac931ccc47fca57931dc5e498f007b2370ee9e3d2",
+      "after_ast_sha256": "22d4f908a0967edab95f64dac931ccc47fca57931dc5e498f007b2370ee9e3d2"
+    },
+    "deviations/ui_views.py": {
+      "normalized_ast_equal": true,
+      "definitions_equal": true,
+      "class_bases_equal": true,
+      "before_ast_sha256": "30aee399fe59cd654ac2a3bf029edccf1c556b9f9f581dcc49cdaf129da61ec7",
+      "after_ast_sha256": "30aee399fe59cd654ac2a3bf029edccf1c556b9f9f581dcc49cdaf129da61ec7"
+    },
+    "documents/ui_views.py": {
+      "normalized_ast_equal": true,
+      "definitions_equal": true,
+      "class_bases_equal": true,
+      "before_ast_sha256": "fdb1d929ad2a5f9c212f60a24c90f66ee5a13aaeb8e63cf44a176747b74411d3",
+      "after_ast_sha256": "fdb1d929ad2a5f9c212f60a24c90f66ee5a13aaeb8e63cf44a176747b74411d3"
+    },
+    "procurement/ui_views.py": {
+      "normalized_ast_equal": true,
+      "definitions_equal": true,
+      "class_bases_equal": true,
+      "before_ast_sha256": "32f7dbf86a80a56d67a097503d3955237b3bacb6a6c54cce0ad1980ee4e5bad5",
+      "after_ast_sha256": "32f7dbf86a80a56d67a097503d3955237b3bacb6a6c54cce0ad1980ee4e5bad5"
+    },
+    "production/ui_views.py": {
+      "normalized_ast_equal": true,
+      "definitions_equal": true,
+      "class_bases_equal": true,
+      "before_ast_sha256": "56f7d161104fc7856cd98a649953597e7b40739dfb31d07325c7767f5fa0a42a",
+      "after_ast_sha256": "56f7d161104fc7856cd98a649953597e7b40739dfb31d07325c7767f5fa0a42a"
+    },
+    "qa/ui_views.py": {
+      "normalized_ast_equal": true,
+      "definitions_equal": true,
+      "class_bases_equal": true,
+      "before_ast_sha256": "ee772b74366367d1a62213244d30618bc44d476c927a9f03f905f981c1f5a937",
+      "after_ast_sha256": "ee772b74366367d1a62213244d30618bc44d476c927a9f03f905f981c1f5a937"
+    },
+    "recalls/ui_views.py": {
+      "normalized_ast_equal": true,
+      "definitions_equal": true,
+      "class_bases_equal": true,
+      "before_ast_sha256": "1e4330b27cbd9bf2986a3e2352d5600597f682dcb6e31e9e1d49e5e359f55883",
+      "after_ast_sha256": "1e4330b27cbd9bf2986a3e2352d5600597f682dcb6e31e9e1d49e5e359f55883"
+    },
+    "governance/forms.py": {
+      "normalized_ast_equal": true,
+      "definitions_equal": true,
+      "class_bases_equal": true,
+      "before_ast_sha256": "a5d3da1d3221db2eafc46597e6e0429dc4950477ffa99ef40d2d4144344c0471",
+      "after_ast_sha256": "a5d3da1d3221db2eafc46597e6e0429dc4950477ffa99ef40d2d4144344c0471"
+    },
+    "core/settings/base.py": {
+      "normalized_ast_equal": true,
+      "definitions_equal": true,
+      "class_bases_equal": true,
+      "before_ast_sha256": "3d5c5c1b7152fcaff77b9480740be68b7f77a7809a10513407a40a9fa9f7049e",
+      "after_ast_sha256": "3d5c5c1b7152fcaff77b9480740be68b7f77a7809a10513407a40a9fa9f7049e"
+    },
+    "procurement/models.py": {
+      "normalized_ast_equal": true,
+      "definitions_equal": true,
+      "class_bases_equal": true,
+      "before_ast_sha256": "b876e2716403e990296526b1d45363c7887d8798f9bad8f23739fa9c11ce9379",
+      "after_ast_sha256": "b876e2716403e990296526b1d45363c7887d8798f9bad8f23739fa9c11ce9379"
+    }
+  },
+  "after": {
+    "audits/ui_views.py": {
+      "sha256": "7a24671b78f4142bd12966b850c949937adee41a13cbd8d4b51437df0dbfc54a",
+      "ast_sha256": "1cfa558ad09b776a52be913b7fb8936542e06e9ecb9fea026969d1277fb11741",
+      "normalized_ast_sha256": "d7d4d66c1fffa2cb96dafe21853ccec1b6d2d6c2403b619c1ddc7560d6b2d33e",
+      "definitions": [
+        [
+          "ClassDef",
+          "AuditCockpitView"
+        ],
+        [
+          "FunctionDef",
+          "dispatch"
+        ],
+        [
+          "FunctionDef",
+          "get_context_data"
+        ]
+      ],
+      "class_bases": {
+        "AuditCockpitView": [
+          "Name(id='LoginRequiredMixin', ctx=Load())",
+          "Name(id='ResourceContextMixin', ctx=Load())",
+          "Name(id='TemplateView', ctx=Load())"
+        ]
+      }
+    },
+    "crm/ui_views.py": {
+      "sha256": "42dde95800bbf24fe97e1d7bcd045addd8aca94d93e530d1d549d6f5f0829042",
+      "ast_sha256": "1af0623b0f2188e7402d25e9d399fed6f849440e540509a5376e8177e299ed12",
+      "normalized_ast_sha256": "22d4f908a0967edab95f64dac931ccc47fca57931dc5e498f007b2370ee9e3d2",
+      "definitions": [
+        [
+          "ClassDef",
+          "SalesOrderCockpitView"
+        ],
+        [
+          "FunctionDef",
+          "dispatch"
+        ],
+        [
+          "FunctionDef",
+          "get_context_data"
+        ]
+      ],
+      "class_bases": {
+        "SalesOrderCockpitView": [
+          "Name(id='LoginRequiredMixin', ctx=Load())",
+          "Name(id='ResourceContextMixin', ctx=Load())",
+          "Name(id='TemplateView', ctx=Load())"
+        ]
+      }
+    },
+    "deviations/ui_views.py": {
+      "sha256": "460af1aae0fec8a7dbcbbe3416ffada79f4413b5652a7490ad7131e19613aa8f",
+      "ast_sha256": "e17c93a523a864516f76dc4a2a8ecabcba84146ba7067c8cc786cdf70121b6ef",
+      "normalized_ast_sha256": "30aee399fe59cd654ac2a3bf029edccf1c556b9f9f581dcc49cdaf129da61ec7",
+      "definitions": [
+        [
+          "ClassDef",
+          "QualityEventCockpitView"
+        ],
+        [
+          "FunctionDef",
+          "dispatch"
+        ],
+        [
+          "FunctionDef",
+          "get_context_data"
+        ]
+      ],
+      "class_bases": {
+        "QualityEventCockpitView": [
+          "Name(id='LoginRequiredMixin', ctx=Load())",
+          "Name(id='ResourceContextMixin', ctx=Load())",
+          "Name(id='TemplateView', ctx=Load())"
+        ]
+      }
+    },
+    "documents/ui_views.py": {
+      "sha256": "13be00919b9cef4cbed9821422f394467e0371e3592c945418d360b9e63d18ec",
+      "ast_sha256": "1ad851837ab6e4a7758ce417f884488232837323cb1609cec46489f2f94751bb",
+      "normalized_ast_sha256": "fdb1d929ad2a5f9c212f60a24c90f66ee5a13aaeb8e63cf44a176747b74411d3",
+      "definitions": [
+        [
+          "ClassDef",
+          "ControlledDocumentCockpitView"
+        ],
+        [
+          "FunctionDef",
+          "dispatch"
+        ],
+        [
+          "FunctionDef",
+          "get_context_data"
+        ]
+      ],
+      "class_bases": {
+        "ControlledDocumentCockpitView": [
+          "Name(id='LoginRequiredMixin', ctx=Load())",
+          "Name(id='ResourceContextMixin', ctx=Load())",
+          "Name(id='TemplateView', ctx=Load())"
+        ]
+      }
+    },
+    "procurement/ui_views.py": {
+      "sha256": "5740500c2bc0276e7e8c1ce92f472f2a86d17e9b9bb7f85e08e723ca67a029b8",
+      "ast_sha256": "d1e6cbbfb1ae262191b35267e697296805654a645da3fee422562c4d7bae6491",
+      "normalized_ast_sha256": "32f7dbf86a80a56d67a097503d3955237b3bacb6a6c54cce0ad1980ee4e5bad5",
+      "definitions": [
+        [
+          "ClassDef",
+          "SupplierCockpitView"
+        ],
+        [
+          "FunctionDef",
+          "dispatch"
+        ],
+        [
+          "FunctionDef",
+          "get_context_data"
+        ]
+      ],
+      "class_bases": {
+        "SupplierCockpitView": [
+          "Name(id='LoginRequiredMixin', ctx=Load())",
+          "Name(id='ResourceContextMixin', ctx=Load())",
+          "Name(id='TemplateView', ctx=Load())"
+        ]
+      }
+    },
+    "production/ui_views.py": {
+      "sha256": "702aeea7d69119d9400a1ed0a47b7228f644bc85b94b661a0981bc50f7068da7",
+      "ast_sha256": "ef6fc493dfb3500100187c0ad216f3aaee48bbbc2bcc6f90fec106b5398e1495",
+      "normalized_ast_sha256": "56f7d161104fc7856cd98a649953597e7b40739dfb31d07325c7767f5fa0a42a",
+      "definitions": [
+        [
+          "ClassDef",
+          "ProductionOrderCockpitView"
+        ],
+        [
+          "FunctionDef",
+          "dispatch"
+        ],
+        [
+          "FunctionDef",
+          "get_context_data"
+        ]
+      ],
+      "class_bases": {
+        "ProductionOrderCockpitView": [
+          "Name(id='LoginRequiredMixin', ctx=Load())",
+          "Name(id='ResourceContextMixin', ctx=Load())",
+          "Name(id='TemplateView', ctx=Load())"
+        ]
+      }
+    },
+    "qa/ui_views.py": {
+      "sha256": "ffcf996218ceccd487cb716b7406fc2655bc3a7e82e826532967adeb8127e395",
+      "ast_sha256": "79b5c9eb819242bf174714d48b00bf6dc5bfd88c8966fb56c3b5689aa3b1da51",
+      "normalized_ast_sha256": "ee772b74366367d1a62213244d30618bc44d476c927a9f03f905f981c1f5a937",
+      "definitions": [
+        [
+          "ClassDef",
+          "LotReleaseCockpitView"
+        ],
+        [
+          "ClassDef",
+          "StockLotDossierView"
+        ],
+        [
+          "FunctionDef",
+          "dispatch"
+        ],
+        [
+          "FunctionDef",
+          "get_context_data"
+        ],
+        [
+          "FunctionDef",
+          "get"
+        ]
+      ],
+      "class_bases": {
+        "LotReleaseCockpitView": [
+          "Name(id='LoginRequiredMixin', ctx=Load())",
+          "Name(id='ResourceContextMixin', ctx=Load())",
+          "Name(id='TemplateView', ctx=Load())"
+        ],
+        "StockLotDossierView": [
+          "Name(id='LoginRequiredMixin', ctx=Load())",
+          "Name(id='View', ctx=Load())"
+        ]
+      }
+    },
+    "recalls/ui_views.py": {
+      "sha256": "6d5d89ad288e8ea9b81e7014a030d10530c1b797e4b94a92285026a8493314e0",
+      "ast_sha256": "05573c9bb48d1d6947d8d34614e9c73bcb8e9205f4b8eacd9deef784330d5baa",
+      "normalized_ast_sha256": "1e4330b27cbd9bf2986a3e2352d5600597f682dcb6e31e9e1d49e5e359f55883",
+      "definitions": [
+        [
+          "ClassDef",
+          "MarketComplaintCockpitView"
+        ],
+        [
+          "FunctionDef",
+          "dispatch"
+        ],
+        [
+          "FunctionDef",
+          "get_context_data"
+        ]
+      ],
+      "class_bases": {
+        "MarketComplaintCockpitView": [
+          "Name(id='LoginRequiredMixin', ctx=Load())",
+          "Name(id='ResourceContextMixin', ctx=Load())",
+          "Name(id='TemplateView', ctx=Load())"
+        ]
+      }
+    },
+    "governance/forms.py": {
+      "sha256": "18c6f0e355ed3202e0561b39428268e9b343ed3ceacd6cb3fa5453cc91fcc0ba",
+      "ast_sha256": "593f86f09a38429e417c9f99e56206c2634c7d4a452d4e1256f744bcefbc0dce",
+      "normalized_ast_sha256": "a5d3da1d3221db2eafc46597e6e0429dc4950477ffa99ef40d2d4144344c0471",
+      "definitions": [
+        [
+          "FunctionDef",
+          "_boolean_default"
+        ],
+        [
+          "ClassDef",
+          "GovernanceParameterForm"
+        ],
+        [
+          "ClassDef",
+          "Meta"
+        ],
+        [
+          "FunctionDef",
+          "__init__"
+        ],
+        [
+          "FunctionDef",
+          "_effective_value_type"
+        ],
+        [
+          "FunctionDef",
+          "_effective_rules"
+        ],
+        [
+          "FunctionDef",
+          "_typed_field"
+        ],
+        [
+          "FunctionDef",
+          "_normalize_boolean_initial"
+        ],
+        [
+          "FunctionDef",
+          "clean"
+        ]
+      ],
+      "class_bases": {
+        "GovernanceParameterForm": [
+          "Attribute(value=Name(id='forms', ctx=Load()), attr='ModelForm', ctx=Load())"
+        ],
+        "Meta": []
+      }
+    },
+    "core/settings/base.py": {
+      "sha256": "798cc758d7ee07acf609abfd9f84bb7c6d25a5850d7a78257110d38e50a26744",
+      "ast_sha256": "811dfe69944e5372072635eefdcbe15dfb960bff2a9c0ff6e81c02014965b2d8",
+      "normalized_ast_sha256": "3d5c5c1b7152fcaff77b9480740be68b7f77a7809a10513407a40a9fa9f7049e",
+      "definitions": [
+        [
+          "FunctionDef",
+          "resolve_runtime_path"
+        ],
+        [
+          "FunctionDef",
+          "_nearest_existing_parent"
+        ],
+        [
+          "FunctionDef",
+          "resolve_media_root"
+        ]
+      ],
+      "class_bases": {}
+    },
+    "procurement/models.py": {
+      "sha256": "30aadd3a74749ad5551d5e249327e82b6293e891d41bdb7b0f306d1f83818783",
+      "ast_sha256": "d2dd9ac9fddd6fa31b0bcb9bfb14e67d3d16ba25d21de0558955aa996d34a578",
+      "normalized_ast_sha256": "b876e2716403e990296526b1d45363c7887d8798f9bad8f23739fa9c11ce9379",
+      "definitions": [
+        [
+          "FunctionDef",
+          "_sequence_code"
+        ],
+        [
+          "ClassDef",
+          "PurchaseRequisition"
+        ],
+        [
+          "ClassDef",
+          "PurchaseRequisitionItem"
+        ],
+        [
+          "ClassDef",
+          "QuotationRequest"
+        ],
+        [
+          "ClassDef",
+          "SupplierQuotation"
+        ],
+        [
+          "ClassDef",
+          "SupplierQualificationEvent"
+        ],
+        [
+          "ClassDef",
+          "PurchaseOrder"
+        ],
+        [
+          "ClassDef",
+          "PurchaseOrderItem"
+        ],
+        [
+          "ClassDef",
+          "PurchaseReceipt"
+        ],
+        [
+          "ClassDef",
+          "PurchaseReceiptItem"
+        ],
+        [
+          "ClassDef",
+          "Source"
+        ],
+        [
+          "ClassDef",
+          "Status"
+        ],
+        [
+          "ClassDef",
+          "Meta"
+        ],
+        [
+          "FunctionDef",
+          "save"
+        ],
+        [
+          "FunctionDef",
+          "create_from_mrp_suggestion"
+        ],
+        [
+          "FunctionDef",
+          "_require_status"
+        ],
+        [
+          "FunctionDef",
+          "submit"
+        ],
+        [
+          "FunctionDef",
+          "approve"
+        ],
+        [
+          "FunctionDef",
+          "reject"
+        ],
+        [
+          "FunctionDef",
+          "cancel"
+        ],
+        [
+          "FunctionDef",
+          "mark_converted"
+        ],
+        [
+          "FunctionDef",
+          "__str__"
+        ],
+        [
+          "ClassDef",
+          "Meta"
+        ],
+        [
+          "FunctionDef",
+          "clean"
+        ],
+        [
+          "FunctionDef",
+          "__str__"
+        ],
+        [
+          "ClassDef",
+          "Status"
+        ],
+        [
+          "ClassDef",
+          "Meta"
+        ],
+        [
+          "FunctionDef",
+          "save"
+        ],
+        [
+          "FunctionDef",
+          "clean"
+        ],
+        [
+          "FunctionDef",
+          "send"
+        ],
+        [
+          "FunctionDef",
+          "approve"
+        ],
+        [
+          "FunctionDef",
+          "best_quotation"
+        ],
+        [
+          "FunctionDef",
+          "__str__"
+        ],
+        [
+          "ClassDef",
+          "Status"
+        ],
+        [
+          "ClassDef",
+          "Meta"
+        ],
+        [
+          "FunctionDef",
+          "total_amount"
+        ],
+        [
+          "FunctionDef",
+          "is_supplier_valid"
+        ],
+        [
+          "FunctionDef",
+          "clean"
+        ],
+        [
+          "FunctionDef",
+          "__str__"
+        ],
+        [
+          "ClassDef",
+          "EventType"
+        ],
+        [
+          "ClassDef",
+          "Meta"
+        ],
+        [
+          "FunctionDef",
+          "is_active_block"
+        ],
+        [
+          "FunctionDef",
+          "supplier_has_active_block"
+        ],
+        [
+          "FunctionDef",
+          "clean"
+        ],
+        [
+          "FunctionDef",
+          "__str__"
+        ],
+        [
+          "ClassDef",
+          "Status"
+        ],
+        [
+          "ClassDef",
+          "Meta"
+        ],
+        [
+          "FunctionDef",
+          "save"
+        ],
+        [
+          "FunctionDef",
+          "clean"
+        ],
+        [
+          "FunctionDef",
+          "_requires_qualified_supplier"
+        ],
+        [
+          "FunctionDef",
+          "_supplier_is_available_for_controlled_items"
+        ],
+        [
+          "FunctionDef",
+          "recalculate_total"
+        ],
+        [
+          "FunctionDef",
+          "approve"
+        ],
+        [
+          "FunctionDef",
+          "send"
+        ],
+        [
+          "FunctionDef",
+          "cancel"
+        ],
+        [
+          "FunctionDef",
+          "__str__"
+        ],
+        [
+          "ClassDef",
+          "Meta"
+        ],
+        [
+          "FunctionDef",
+          "line_subtotal"
+        ],
+        [
+          "FunctionDef",
+          "line_total"
+        ],
+        [
+          "FunctionDef",
+          "save"
+        ],
+        [
+          "FunctionDef",
+          "_validate_posted_quantity"
+        ],
+        [
+          "FunctionDef",
+          "clean"
+        ],
+        [
+          "FunctionDef",
+          "__str__"
+        ],
+        [
+          "ClassDef",
+          "Status"
+        ],
+        [
+          "ClassDef",
+          "QualityStatus"
+        ],
+        [
+          "ClassDef",
+          "StockEntryStatus"
+        ],
+        [
+          "ClassDef",
+          "Meta"
+        ],
+        [
+          "FunctionDef",
+          "save"
+        ],
+        [
+          "FunctionDef",
+          "clean"
+        ],
+        [
+          "FunctionDef",
+          "mark_received"
+        ],
+        [
+          "FunctionDef",
+          "release_quality"
+        ],
+        [
+          "FunctionDef",
+          "post_stock"
+        ],
+        [
+          "FunctionDef",
+          "__str__"
+        ],
+        [
+          "FunctionDef",
+          "save"
+        ],
+        [
+          "ClassDef",
+          "Meta"
+        ],
+        [
+          "FunctionDef",
+          "clean"
+        ],
+        [
+          "FunctionDef",
+          "__str__"
+        ]
+      ],
+      "class_bases": {
+        "PurchaseRequisition": [
+          "Name(id='SingleInstanceModel', ctx=Load())"
+        ],
+        "PurchaseRequisitionItem": [
+          "Name(id='SingleInstanceModel', ctx=Load())"
+        ],
+        "QuotationRequest": [
+          "Name(id='SingleInstanceModel', ctx=Load())"
+        ],
+        "SupplierQuotation": [
+          "Name(id='SingleInstanceModel', ctx=Load())"
+        ],
+        "SupplierQualificationEvent": [
+          "Name(id='SingleInstanceModel', ctx=Load())"
+        ],
+        "PurchaseOrder": [
+          "Name(id='SingleInstanceModel', ctx=Load())"
+        ],
+        "PurchaseOrderItem": [
+          "Name(id='SingleInstanceModel', ctx=Load())"
+        ],
+        "PurchaseReceipt": [
+          "Name(id='SingleInstanceModel', ctx=Load())"
+        ],
+        "PurchaseReceiptItem": [
+          "Name(id='SingleInstanceModel', ctx=Load())"
+        ],
+        "Source": [
+          "Attribute(value=Name(id='models', ctx=Load()), attr='TextChoices', ctx=Load())"
+        ],
+        "Status": [
+          "Attribute(value=Name(id='models', ctx=Load()), attr='TextChoices', ctx=Load())"
+        ],
+        "Meta": [],
+        "EventType": [
+          "Attribute(value=Name(id='models', ctx=Load()), attr='TextChoices', ctx=Load())"
+        ],
+        "QualityStatus": [
+          "Attribute(value=Name(id='models', ctx=Load()), attr='TextChoices', ctx=Load())"
+        ],
+        "StockEntryStatus": [
+          "Attribute(value=Name(id='models', ctx=Load()), attr='TextChoices', ctx=Load())"
+        ]
+      }
+    }
+  }
+}

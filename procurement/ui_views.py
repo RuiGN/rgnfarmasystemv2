@@ -2,15 +2,13 @@ from decimal import Decimal
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
-from django.db.models import Avg, Count, Q, Sum
+from django.db.models import Avg, Q, Sum
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views.generic import TemplateView
 
 from audits.models import (
-    AuditChecklistItem,
-    AuditEvidence,
     AuditFinding,
     AuditFindingLink,
     AuditPlan,
@@ -107,7 +105,9 @@ class SupplierCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateView
             address_components.append(f'CEP: {partner.zipcode}')
         if partner.country_ref:
             address_components.append(partner.country_ref.name)
-        formatted_address = ' - '.join(address_components) if address_components else 'Endereço não cadastrado'
+        formatted_address = (
+            ' - '.join(address_components) if address_components else 'Endereço não cadastrado'
+        )
 
         # Validade da qualificação
         days_until_expiry = None
@@ -130,9 +130,7 @@ class SupplierCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateView
         )
 
         has_active_block = (
-            partner.is_blocked
-            or active_supplier_event_blocks.exists()
-            or active_qa_blocks.exists()
+            partner.is_blocked or active_supplier_event_blocks.exists() or active_qa_blocks.exists()
         )
 
         # --- TAB 1: DADOS CADASTRAIS & LICENÇAS SANITÁRIAS ---
@@ -180,18 +178,16 @@ class SupplierCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateView
         total_audits_count = supplier_audits.count()
         closed_audits_count = supplier_audits.filter(status=AuditPlan.Status.CLOSED).count()
         critical_findings_count = supplier_findings.filter(criticality='critical').count()
-        critical_findings_open = supplier_findings.filter(
-            criticality='critical'
-        ).exclude(status='closed').count()
+        critical_findings_open = (
+            supplier_findings.filter(criticality='critical').exclude(status='closed').count()
+        )
         major_findings_count = supplier_findings.filter(criticality='major').count()
         minor_findings_count = supplier_findings.filter(criticality='minor').count()
 
         issued_audit_reports = AuditReport.objects.filter(
             audit__supplier=partner, status=AuditReport.Status.ISSUED
         )
-        avg_audit_compliance = (
-            issued_audit_reports.aggregate(avg=Avg('compliance_rate'))['avg']
-        )
+        avg_audit_compliance = issued_audit_reports.aggregate(avg=Avg('compliance_rate'))['avg']
         if avg_audit_compliance is not None:
             avg_audit_compliance_pct = Decimal(str(avg_audit_compliance)).quantize(Decimal('0.01'))
         else:
@@ -242,9 +238,15 @@ class SupplierCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateView
         ).count()
 
         receipt_items = PurchaseReceiptItem.objects.filter(receipt__order__supplier=partner)
-        total_received_qty = receipt_items.aggregate(s=Sum('received_quantity'))['s'] or Decimal('0.0000')
-        total_accepted_qty = receipt_items.aggregate(s=Sum('accepted_quantity'))['s'] or Decimal('0.0000')
-        total_rejected_qty = receipt_items.aggregate(s=Sum('rejected_quantity'))['s'] or Decimal('0.0000')
+        total_received_qty = receipt_items.aggregate(s=Sum('received_quantity'))['s'] or Decimal(
+            '0.0000'
+        )
+        total_accepted_qty = receipt_items.aggregate(s=Sum('accepted_quantity'))['s'] or Decimal(
+            '0.0000'
+        )
+        total_rejected_qty = receipt_items.aggregate(s=Sum('rejected_quantity'))['s'] or Decimal(
+            '0.0000'
+        )
 
         if total_received_qty > Decimal('0'):
             receipt_acceptance_rate = (
@@ -280,9 +282,15 @@ class SupplierCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateView
         homologated_products = []
         for prod in homologated_products_raw:
             p_receipt_items = receipt_items.filter(product=prod)
-            p_received = p_receipt_items.aggregate(s=Sum('received_quantity'))['s'] or Decimal('0.0000')
-            p_accepted = p_receipt_items.aggregate(s=Sum('accepted_quantity'))['s'] or Decimal('0.0000')
-            p_rejected = p_receipt_items.aggregate(s=Sum('rejected_quantity'))['s'] or Decimal('0.0000')
+            p_received = p_receipt_items.aggregate(s=Sum('received_quantity'))['s'] or Decimal(
+                '0.0000'
+            )
+            p_accepted = p_receipt_items.aggregate(s=Sum('accepted_quantity'))['s'] or Decimal(
+                '0.0000'
+            )
+            p_rejected = p_receipt_items.aggregate(s=Sum('rejected_quantity'))['s'] or Decimal(
+                '0.0000'
+            )
             last_receipt = (
                 purchase_receipts.filter(items__product=prod)
                 .order_by('-physical_received_at')
@@ -342,13 +350,14 @@ class SupplierCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateView
 
         # Gate 5: Parecer Sanitário e Ausência de Bloqueios QA
         gate5_passed = (
-            not active_qa_blocks.exists()
-            and not partner.is_blocked
-            and partner.is_active
+            not active_qa_blocks.exists() and not partner.is_blocked and partner.is_active
         )
 
         gates_passed_count = sum(
-            [1 if g else 0 for g in [gate1_passed, gate2_passed, gate3_passed, gate4_passed, gate5_passed]]
+            [
+                1 if g else 0
+                for g in [gate1_passed, gate2_passed, gate3_passed, gate4_passed, gate5_passed]
+            ]
         )
 
         # Parecer Geral de Qualificação
@@ -370,7 +379,10 @@ class SupplierCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateView
                 'Fornecedor com bloqueio cautelar ativo emitido pela Garantia da Qualidade (QA) '
                 'ou restrição sanitária impeditiva no recebimento.'
             )
-        elif is_expired or partner.qualification_status == BusinessPartner.QualificationStatus.EXPIRED:
+        elif (
+            is_expired
+            or partner.qualification_status == BusinessPartner.QualificationStatus.EXPIRED
+        ):
             regulatory_verdict = 'Qualificação sanitária vencida'
             regulatory_verdict_badge = 'bg-warning'
             regulatory_verdict_desc = (

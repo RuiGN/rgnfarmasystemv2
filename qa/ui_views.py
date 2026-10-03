@@ -12,7 +12,7 @@ from django.views.generic import TemplateView
 from base.ui.actions.context import available_actions
 from base.ui.views import ResourceContextMixin
 from deviations.models import QualityEvent
-from inventory.models import StockLot, StockQualityStatus
+from inventory.models import StockLot
 from qa.models import BatchRecordChecklistItem, LotRelease, QAReview, QualityBlock
 from quality.models import QualityDocument, QualitySample
 
@@ -28,7 +28,9 @@ class LotReleaseCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateVi
         if self.get_resource().model is not LotRelease:
             raise Http404('Cockpit disponível apenas para liberações de lote.')
         if not request.user.has_perm('qa.view_lotrelease'):
-            raise PermissionDenied('Você não possui permissão para visualizar o cockpit de liberação de lote.')
+            raise PermissionDenied(
+                'Você não possui permissão para visualizar o cockpit de liberação de lote.'
+            )
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -54,7 +56,7 @@ class LotReleaseCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateVi
 
         # Aba 1: Ficha do Lote, Saldos & Genealogia
         balances = []
-        balances_summary = {
+        balances_summary: dict[str, Decimal | int] = {
             'total_quantity': Decimal('0.0000'),
             'total_reserved': Decimal('0.0000'),
             'total_available': Decimal('0.0000'),
@@ -141,23 +143,29 @@ class LotReleaseCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateVi
         if can_view_reviews and qa_review:
             if can_view_checklist:
                 checklist_items = list(
-                    qa_review.checklist_items.select_related('responsible', 'completed_by').order_by(
-                        'created_at'
-                    )
+                    qa_review.checklist_items.select_related(
+                        'responsible', 'completed_by'
+                    ).order_by('created_at')
                 )
                 checklist_summary['total'] = len(checklist_items)
                 checklist_summary['completed'] = sum(
-                    1 for item in checklist_items if item.status == BatchRecordChecklistItem.Status.COMPLETED
+                    1
+                    for item in checklist_items
+                    if item.status == BatchRecordChecklistItem.Status.COMPLETED
                 )
                 checklist_summary['pending'] = sum(
-                    1 for item in checklist_items if item.status == BatchRecordChecklistItem.Status.PENDING
+                    1
+                    for item in checklist_items
+                    if item.status == BatchRecordChecklistItem.Status.PENDING
                 )
                 if checklist_summary['total'] > 0:
                     checklist_summary['completion_percentage'] = int(
                         (checklist_summary['completed'] / checklist_summary['total']) * 100
                     )
                 else:
-                    checklist_summary['completion_percentage'] = 100 if qa_review.status == QAReview.Status.APPROVED else 0
+                    checklist_summary['completion_percentage'] = (
+                        100 if qa_review.status == QAReview.Status.APPROVED else 0
+                    )
 
         # Aba 4: Bloqueios Sanitários & Desvios
         quality_blocks = []
@@ -217,7 +225,7 @@ class LotReleaseCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateVi
                 'title': 'Amostras de Controle de Qualidade Aprovadas',
                 'passed': has_approved_samples,
                 'detail': (
-                    f"{qc_summary['approved_samples']} de {qc_summary['total_samples']} amostras aprovadas"
+                    f'{qc_summary["approved_samples"]} de {qc_summary["total_samples"]} amostras aprovadas'
                     if quality_samples
                     else 'Nenhuma amostra coletada'
                 ),
@@ -227,7 +235,7 @@ class LotReleaseCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateVi
                 'title': 'Laudo Analítico / Certificado de Análise Emitido',
                 'passed': has_issued_document,
                 'detail': (
-                    f"{sum(1 for d in quality_documents if d.status == QualityDocument.Status.ISSUED)} laudo(s) emitido(s)"
+                    f'{sum(1 for d in quality_documents if d.status == QualityDocument.Status.ISSUED)} laudo(s) emitido(s)'
                     if quality_documents
                     else 'Laudo pendente de emissão'
                 ),
@@ -237,7 +245,7 @@ class LotReleaseCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateVi
                 'title': 'Revisão do Batch Record Aprovada pela Garantia',
                 'passed': has_approved_review,
                 'detail': (
-                    f"Status: {qa_review.get_status_display()}"
+                    f'Status: {qa_review.get_status_display()}'
                     if qa_review
                     else 'Revisão QA não iniciada'
                 ),
@@ -247,7 +255,7 @@ class LotReleaseCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateVi
                 'title': 'Checklist de Verificação Sem Pendências',
                 'passed': has_clean_checklist,
                 'detail': (
-                    f"{checklist_summary['completed']} de {checklist_summary['total']} itens concluídos"
+                    f'{checklist_summary["completed"]} de {checklist_summary["total"]} itens concluídos'
                     if checklist_summary['total'] > 0
                     else 'Checklist não configurado'
                 ),
@@ -259,7 +267,7 @@ class LotReleaseCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateVi
                 'detail': (
                     'Nenhum bloqueio ativo no lote'
                     if has_no_active_blocks
-                    else f"{active_blocks_count} bloqueio(s) ativo(s)"
+                    else f'{active_blocks_count} bloqueio(s) ativo(s)'
                 ),
                 'icon': 'feather-check-circle' if has_no_active_blocks else 'feather-slash',
             },
@@ -269,9 +277,11 @@ class LotReleaseCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateVi
                 'detail': (
                     'Nenhum desvio pendente'
                     if has_no_open_deviations
-                    else f"{open_deviations_count} desvio(s) aberto(s)"
+                    else f'{open_deviations_count} desvio(s) aberto(s)'
                 ),
-                'icon': 'feather-check-circle' if has_no_open_deviations else 'feather-alert-triangle',
+                'icon': 'feather-check-circle'
+                if has_no_open_deviations
+                else 'feather-alert-triangle',
             },
         ]
         all_readiness_passed = all(c['passed'] for c in readiness_criteria)

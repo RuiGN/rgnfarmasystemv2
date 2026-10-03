@@ -1,11 +1,7 @@
-from decimal import Decimal
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count, Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
 from django.views.generic import TemplateView
 
 from audits.models import (
@@ -15,13 +11,10 @@ from audits.models import (
     AuditFindingLink,
     AuditFollowUpAction,
     AuditPlan,
-    AuditProgram,
     AuditReport,
 )
 from base.ui.actions.context import available_actions
 from base.ui.views import ResourceContextMixin
-from capa.models import CapaRecord
-from deviations.models import QualityEvent
 
 
 class AuditCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateView):
@@ -111,7 +104,9 @@ class AuditCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateView):
             address_components.append(f'CEP: {audit.venue_zipcode}')
         if audit.venue_country_ref:
             address_components.append(audit.venue_country_ref.name)
-        formatted_address = ' - '.join(address_components) if address_components else 'Local não especificado'
+        formatted_address = (
+            ' - '.join(address_components) if address_components else 'Local não especificado'
+        )
 
         # Aba 2: Checklist de Verificação BPF / ISO 22716
         checklist_items = (
@@ -251,11 +246,7 @@ class AuditCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateView):
         )
 
         # Aba 5: Relatório Final, Conclusão & Gates de Prontidão
-        report = (
-            audit.reports.select_related('issued_by').first()
-            if can_view_report
-            else None
-        )
+        report = audit.reports.select_related('issued_by').first() if can_view_report else None
 
         # 5 Gates de Prontidão e Governança Sanitária de Auditoria (Audit Readiness Gates)
         gate1_passed = bool(
@@ -274,9 +265,7 @@ class AuditCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateView):
         )
         findings_exist = audit.findings.exists()
         gate3_passed = (
-            not audit.findings.exclude(evidences__isnull=False).exists()
-            if findings_exist
-            else True
+            not audit.findings.exclude(evidences__isnull=False).exists() if findings_exist else True
         )
 
         critical_or_major = audit.findings.filter(
@@ -320,52 +309,54 @@ class AuditCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateView):
             regulatory_verdict = f'Em preparação ({audit.get_status_display()})'
             regulatory_verdict_badge = 'bg-secondary'
 
-        context.update({
-            'audit': audit,
-            'can_view_scope': can_view_scope,
-            'can_view_checklist': can_view_checklist,
-            'can_view_findings': can_view_findings,
-            'can_view_actions': can_view_actions,
-            'can_view_report': can_view_report,
-            'can_manage_audit': can_manage_audit,
-            'can_manage_checklist': can_manage_checklist,
-            'can_manage_findings': can_manage_findings,
-            'can_manage_actions': can_manage_actions,
-            'can_manage_report': can_manage_report,
-            'available_audit_actions': available_audit_actions,
-            'formatted_address': formatted_address,
-            'checklist_items': checklist_items,
-            'checklist_total': checklist_total,
-            'checklist_evaluated': checklist_evaluated,
-            'checklist_conform': checklist_conform,
-            'checklist_non_conform': checklist_non_conform,
-            'checklist_na': checklist_na,
-            'checklist_pending': checklist_pending,
-            'checklist_required_pending': checklist_required_pending,
-            'compliance_rate': compliance_rate,
-            'findings': findings,
-            'findings_total': findings_total,
-            'findings_critical': findings_critical,
-            'findings_major': findings_major,
-            'findings_minor': findings_minor,
-            'findings_open': findings_open,
-            'findings_closed': findings_closed,
-            'evidences': evidences,
-            'evidences_total': evidences_total,
-            'actions': actions,
-            'actions_total': actions_total,
-            'actions_completed': actions_completed,
-            'actions_pending': actions_pending,
-            'actions_completion_rate': actions_completion_rate,
-            'finding_links': finding_links,
-            'report': report,
-            'gate1_passed': gate1_passed,
-            'gate2_passed': gate2_passed,
-            'gate3_passed': gate3_passed,
-            'gate4_passed': gate4_passed,
-            'gate5_passed': gate5_passed,
-            'gates_passed_count': gates_passed_count,
-            'regulatory_verdict': regulatory_verdict,
-            'regulatory_verdict_badge': regulatory_verdict_badge,
-        })
+        context.update(
+            {
+                'audit': audit,
+                'can_view_scope': can_view_scope,
+                'can_view_checklist': can_view_checklist,
+                'can_view_findings': can_view_findings,
+                'can_view_actions': can_view_actions,
+                'can_view_report': can_view_report,
+                'can_manage_audit': can_manage_audit,
+                'can_manage_checklist': can_manage_checklist,
+                'can_manage_findings': can_manage_findings,
+                'can_manage_actions': can_manage_actions,
+                'can_manage_report': can_manage_report,
+                'available_audit_actions': available_audit_actions,
+                'formatted_address': formatted_address,
+                'checklist_items': checklist_items,
+                'checklist_total': checklist_total,
+                'checklist_evaluated': checklist_evaluated,
+                'checklist_conform': checklist_conform,
+                'checklist_non_conform': checklist_non_conform,
+                'checklist_na': checklist_na,
+                'checklist_pending': checklist_pending,
+                'checklist_required_pending': checklist_required_pending,
+                'compliance_rate': compliance_rate,
+                'findings': findings,
+                'findings_total': findings_total,
+                'findings_critical': findings_critical,
+                'findings_major': findings_major,
+                'findings_minor': findings_minor,
+                'findings_open': findings_open,
+                'findings_closed': findings_closed,
+                'evidences': evidences,
+                'evidences_total': evidences_total,
+                'actions': actions,
+                'actions_total': actions_total,
+                'actions_completed': actions_completed,
+                'actions_pending': actions_pending,
+                'actions_completion_rate': actions_completion_rate,
+                'finding_links': finding_links,
+                'report': report,
+                'gate1_passed': gate1_passed,
+                'gate2_passed': gate2_passed,
+                'gate3_passed': gate3_passed,
+                'gate4_passed': gate4_passed,
+                'gate5_passed': gate5_passed,
+                'gates_passed_count': gates_passed_count,
+                'regulatory_verdict': regulatory_verdict,
+                'regulatory_verdict_badge': regulatory_verdict_badge,
+            }
+        )
         return context

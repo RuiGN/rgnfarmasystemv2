@@ -229,7 +229,7 @@ class LotReleaseCockpitUiTests(TestCase):
         self.assertContains(response, 'Almoxarifado Geral')
         self.assertContains(response, 'R01-P01')
         self.assertContains(response, '1000,0000')  # pt-BR decimal
-        self.assertContains(response, '900,0000')   # disponível
+        self.assertContains(response, '900,0000')  # disponível
         self.assertContains(response, 'LOT-MP-001')
         self.assertContains(response, '15,5000')
 
@@ -248,9 +248,7 @@ class LotReleaseCockpitUiTests(TestCase):
         self.assertContains(response, '5,5000')
 
     def test_tab3_renders_qa_review_and_checklist_items(self):
-        perm_review = Permission.objects.get(
-            content_type__app_label='qa', codename='view_qareview'
-        )
+        perm_review = Permission.objects.get(content_type__app_label='qa', codename='view_qareview')
         perm_checklist = Permission.objects.get(
             content_type__app_label='qa', codename='view_batchrecordchecklistitem'
         )

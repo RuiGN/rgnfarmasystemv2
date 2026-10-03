@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.core.exceptions import PermissionDenied
+from files.selectors import accessible_protected_files
 from base.admin_mixins import GxpRetentionModelAdmin
 from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin, ImmutableAuditAdminMixin
 from files.models import (
@@ -9,8 +11,47 @@ from files.models import (
 )
 
 
+class FileObjectScopeAdminMixin(admin.ModelAdmin):
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        permission = 'manage' if self.model is ProtectedFileAccessRule else 'view'
+        allowed = accessible_protected_files(request.user, permission).values('pk')
+        lookup = 'pk__in' if self.model is ProtectedFile else 'protected_file_id__in'
+        return queryset.filter(**{lookup: allowed})
+
+    def has_change_permission(self, request, obj=None):
+        allowed = super().has_change_permission(request, obj)
+        target = obj if self.model is ProtectedFile else getattr(obj, 'protected_file', None)
+        return allowed and (
+            target is None or target.user_can_access(request.user, permission='manage')
+        )
+
+    def save_model(self, request, obj, form, change):
+        targets = []
+        if self.model is ProtectedFile:
+            if change:
+                targets.append(ProtectedFile.objects.get(pk=obj.pk))
+            else:
+                obj.uploaded_by = request.user
+        else:
+            targets.append(obj.protected_file)
+            if change:
+                targets.append(self.model.objects.get(pk=obj.pk).protected_file)
+        if any(not target.user_can_access(request.user, permission='manage') for target in targets):
+            raise PermissionDenied('A alteração administrativa exige gestão de ambos os arquivos.')
+        super().save_model(request, obj, form, change)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.related_model is ProtectedFile:
+            permission = 'manage' if self.model is ProtectedFileAccessRule else 'view'
+            kwargs['queryset'] = accessible_protected_files(request.user, permission)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
 @admin.register(ProtectedFile)
-class ProtectedFileAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
+class ProtectedFileAdmin(
+    FileObjectScopeAdminMixin, AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin
+):
     list_display = (
         'file_number',
         'title',
@@ -66,7 +107,7 @@ class ProtectedFileAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAd
 
 
 @admin.register(ProtectedFileAccessRule)
-class ProtectedFileAccessRuleAdmin(GxpRetentionModelAdmin):
+class ProtectedFileAccessRuleAdmin(FileObjectScopeAdminMixin, GxpRetentionModelAdmin):
     list_display = (
         'protected_file',
         'rule_type',
@@ -89,7 +130,7 @@ class ProtectedFileAccessRuleAdmin(GxpRetentionModelAdmin):
 
 
 @admin.register(SecureFileLink)
-class SecureFileLinkAdmin(GxpRetentionModelAdmin):
+class SecureFileLinkAdmin(FileObjectScopeAdminMixin, GxpRetentionModelAdmin):
     list_display = (
         'protected_file',
         'purpose',
@@ -111,7 +152,9 @@ class SecureFileLinkAdmin(GxpRetentionModelAdmin):
 
 
 @admin.register(ProtectedFileAuditTrail)
-class ProtectedFileAuditTrailAdmin(ImmutableAuditAdminMixin, GxpRetentionModelAdmin):
+class ProtectedFileAuditTrailAdmin(
+    FileObjectScopeAdminMixin, ImmutableAuditAdminMixin, GxpRetentionModelAdmin
+):
     list_display = ('protected_file', 'action', 'actor', 'occurred_at')
     list_filter = ('action', 'occurred_at')
     search_fields = (

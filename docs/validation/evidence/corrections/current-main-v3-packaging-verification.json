@@ -1,0 +1,13 @@
+{
+  "image_sources_matched": 2163,
+  "intentional_exclusions": [
+    ".env.development.example"
+  ],
+  "source_mismatches": [],
+  "pinned_packages_checked": 98,
+  "runtime_version_mismatches": [],
+  "image_id": "sha256:8a69a7a1c1f0ab77b2f47265721b7ab9178cffc21a062a948759270c4064b953",
+  "frozen_source_count": 2164,
+  "frozen_source_mismatches": [],
+  "release_approved": false
+}

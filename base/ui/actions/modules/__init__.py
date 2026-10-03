@@ -12,6 +12,7 @@ from base.ui.actions.modules.finance import ACTION_KEYS as finance_keys
 from base.ui.actions.modules.fiscal import ACTION_KEYS as fiscal_keys
 from base.ui.actions.modules.governance import ACTION_KEYS as governance_keys
 from base.ui.actions.modules.integrations import ACTION_KEYS as integrations_keys
+from base.ui.actions.modules.inventory import ACTION_KEYS as inventory_keys
 from base.ui.actions.modules.planning import ACTION_KEYS as planning_keys
 from base.ui.actions.modules.procurement import ACTION_KEYS as procurement_keys
 from base.ui.actions.modules.qa import ACTION_KEYS as qa_keys
@@ -39,6 +40,7 @@ ACTION_KEYS = (
     *(('fiscal', *key) for key in fiscal_keys),
     *(('governance', *key) for key in governance_keys),
     *(('integrations', *key) for key in integrations_keys),
+    *(('inventory', *key) for key in inventory_keys),
     *(('planning', *key) for key in planning_keys),
     *(('procurement', *key) for key in procurement_keys),
     *(('qa', *key) for key in qa_keys),

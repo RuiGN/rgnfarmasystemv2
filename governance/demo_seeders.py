@@ -53,6 +53,28 @@ class DemoSeeder:
         self.counts[count_key] = self.counts.get(count_key, 0) + 1
         return obj
 
+    @transaction.atomic
+    def _upsert_finance(self, model, count_key, lookup, defaults):
+        from finance.models import FinancialTitle
+
+        obj = model.objects.select_for_update().filter(**lookup).first()
+        if obj is None:
+            obj = model(**lookup, **defaults)
+            obj.save()
+            if model is FinancialTitle:
+                obj.approve(user=self.refs['finance_user'])
+        else:
+            # A demo rerun may refresh metadata, never economics or ledger evidence.
+            changed = []
+            for field, value in defaults.items():
+                if field in model.BULK_METADATA_FIELDS and getattr(obj, field) != value:
+                    setattr(obj, field, value)
+                    changed.append(field)
+            if changed:
+                obj.save(update_fields=[*changed, 'updated_at'])
+        self.counts[count_key] = self.counts.get(count_key, 0) + 1
+        return obj
+
     def _hash(self, value):
         return hashlib.sha256(value.encode('utf-8')).hexdigest()
 
@@ -1055,7 +1077,10 @@ class DemoSeeder:
                 'chart_account': account,
             },
         )
-        bank = self._upsert(
+        # These locks live until the outer full-demo transaction commits. Match
+        # ledger title -> account order, including reruns of an existing title.
+        FinancialTitle.objects.select_for_update().filter(title_number='DEMO-CR-0001').first()
+        bank = self._upsert_finance(
             FinancialAccount,
             'finance.accounts',
             {'code': 'DEMO-BANK'},
@@ -1066,7 +1091,6 @@ class DemoSeeder:
                 'agency_number': '0001',
                 'account_number': '12345-6',
                 'opening_balance': Decimal('100000.0000'),
-                'current_balance': Decimal('100000.0000'),
             },
         )
         self._upsert(
@@ -1093,7 +1117,7 @@ class DemoSeeder:
         )
         if standard_cost.status == StandardCost.Status.DRAFT:
             standard_cost.approve(user=self.refs['finance_user'])
-        title = self._upsert(
+        title = self._upsert_finance(
             FinancialTitle,
             'finance.titles',
             {'title_number': 'DEMO-CR-0001'},
@@ -1104,13 +1128,10 @@ class DemoSeeder:
                 'category': category,
                 'financial_account': bank,
                 'sale_reference': 'DEMO-PV-0001',
-                'status': FinancialTitle.Status.APPROVED,
+                'status': FinancialTitle.Status.PENDING,
                 'issue_date': self.today,
                 'due_date': self.today + timezone.timedelta(days=30),
                 'original_amount': Decimal('25000.0000'),
-                'open_amount': Decimal('25000.0000'),
-                'approved_by': self.refs['finance_user'],
-                'approved_at': self.now,
             },
         )
         company = self._upsert(

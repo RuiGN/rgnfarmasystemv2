@@ -215,6 +215,9 @@ class InvalidChatSession(ValueError):
 
 
 def retrieve_context(question, limit=5):
+    # The privacy policy applies to retrieval, not just answer generation.
+    if getattr(settings, 'RAG_CHAT_LOCAL_ONLY', False):
+        return _postgres_retrieve_context(question, limit=limit)
     redis_context = _redis_retrieve_context(question, limit=limit)
     if redis_context is not None:
         return redis_context

@@ -819,8 +819,39 @@ class PurchaseOrderItem(SingleInstanceModel):
     def line_total(self):
         return (self.line_subtotal + self.tax_amount).quantize(MONEY_SCALE)
 
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        if self.pk is not None:
+            # Same row lock as receipt posting; no receipt/balance/sequence locks here.
+            type(self).objects.select_for_update(no_key=True).get(pk=self.pk)
+            update_fields = kwargs.get('update_fields')
+            if update_fields is None or 'quantity' in update_fields:
+                self._validate_posted_quantity()
+        super().save(*args, **kwargs)
+
+    def _validate_posted_quantity(self):
+        if self.pk is None:
+            return
+        from django.db.models import Sum
+        from inventory.models import StockMovement
+
+        accepted_posted = (
+            StockMovement.objects.filter(
+                movement_type=StockMovement.MovementType.RECEIPT,
+                source_purchase_receipt_item__order_item_id=self.pk,
+            ).aggregate(quantity=Sum('quantity'))['quantity']
+            or ZERO_QUANTITY
+        )
+        if self.quantity < accepted_posted:
+            raise ValidationError(
+                {
+                    'quantity': 'A quantidade do pedido não pode ser inferior à quantidade aceita já lançada.'
+                }
+            )
+
     def clean(self):
         super().clean()
+        self._validate_posted_quantity()
         errors = {}
         if self.quantity <= 0:
             errors['quantity'] = 'A quantidade deve ser maior que zero.'
@@ -927,7 +958,36 @@ class PurchaseReceipt(SingleInstanceModel):
         verbose_name = 'recebimento de compra'
         verbose_name_plural = 'recebimentos de compra'
 
+    @transaction.atomic
     def save(self, *args, **kwargs):
+        stock_posting = kwargs.pop('_stock_posting', False)
+        persisted = None
+        if self.pk:
+            persisted = type(self).objects.select_for_update().get(pk=self.pk)
+        if (
+            not stock_posting
+            and (
+                self.status == self.Status.STOCK_POSTED
+                or self.stock_entry_status == self.StockEntryStatus.POSTED
+            )
+            and (persisted is None or persisted.stock_entry_status != self.StockEntryStatus.POSTED)
+        ):
+            raise ValidationError(
+                {'stock_entry_status': 'Use post_stock para lançar estoque real.'}
+            )
+        if persisted is not None:
+            if persisted.stock_entry_status == self.StockEntryStatus.POSTED:
+                fields = (
+                    'order_id',
+                    'status',
+                    'quality_status',
+                    'stock_entry_status',
+                    'fiscal_document_number',
+                )
+                if any(getattr(self, field) != getattr(persisted, field) for field in fields):
+                    raise ValidationError(
+                        {'receipt': 'Recebimento lançado é imutável; use compensação de domínio.'}
+                    )
         if not self.receipt_number:
             self.receipt_number = _sequence_code(PurchaseReceipt, 'receipt_number', 'REC')
         super().save(*args, **kwargs)
@@ -951,22 +1011,180 @@ class PurchaseReceipt(SingleInstanceModel):
         self.quality_status = quality_status
         self.save(update_fields=['status', 'quality_status', 'updated_at'])
 
-    def post_stock(self):
-        if self.quality_status != self.QualityStatus.APPROVED:
+    def _validate_stock_entry_status(self, quality_status):
+        from inventory.models import StockQualityStatus
+
+        if self.status == self.Status.CANCELLED:
+            raise ValidationError({'status': 'Recebimento cancelado não pode ser lançado.'})
+        if (
+            quality_status == StockQualityStatus.APPROVED
+            and self.quality_status != self.QualityStatus.APPROVED
+        ):
             raise ValidationError(
                 {'quality_status': 'A entrada em estoque exige qualidade aprovada.'}
             )
-        if self.pk and not self.items.exists():
+
+    def _validate_first_stock_entry(self, items, quality_status):
+        """Validate first entry using receipt/items/order items already locked by the caller."""
+        from django.db.models import Sum
+        from inventory.models import StockMovement, StockQualityStatus
+
+        self._validate_stock_entry_status(quality_status)
+        for order_item in {item.order_item_id: item.order_item for item in items}.values():
+            accepted_here = sum(
+                (item.accepted_quantity for item in items if item.order_item_id == order_item.pk),
+                ZERO_QUANTITY,
+            )
+            accepted_posted = (
+                StockMovement.objects.filter(
+                    movement_type=StockMovement.MovementType.RECEIPT,
+                    source_purchase_receipt_item__order_item_id=order_item.pk,
+                )
+                .exclude(source_purchase_receipt_item_id__in=[item.pk for item in items])
+                .aggregate(quantity=Sum('quantity'))['quantity']
+                or ZERO_QUANTITY
+            )
+            if accepted_posted + accepted_here > order_item.quantity:
+                raise ValidationError(
+                    {
+                        'accepted_quantity': 'A quantidade aceita acumulada não pode superar a quantidade do pedido.'
+                    }
+                )
+        for item in items:
+            item.full_clean()
+            if item.receipt_id != self.pk or item.order_item.order_id != self.order_id:
+                raise ValidationError(
+                    {'order_item': 'O item deve pertencer ao pedido do recebimento.'}
+                )
+            if item.unit_id != item.order_item.unit_id or item.unit_id != item.product.unit_id:
+                raise ValidationError({'unit': 'Unidade incompatível; conversão não configurada.'})
+            if item.accepted_quantity + item.rejected_quantity != item.received_quantity:
+                raise ValidationError({'quantity': 'Reconcilie as quantidades aceita e rejeitada.'})
+            if item.accepted_quantity == ZERO_QUANTITY:
+                continue
+            if not item.lot_number.strip():
+                raise ValidationError({'lot_number': 'Informe o lote recebido.'})
+            if (
+                quality_status == StockQualityStatus.APPROVED
+                and item.expiry_date
+                and item.expiry_date < timezone.localdate()
+            ):
+                raise ValidationError(
+                    {'expiry_date': 'Lote vencido não pode entrar como aprovado.'}
+                )
+
+    @transaction.atomic
+    def post_stock(self, warehouse=None, location=None, user=None):
+        from inventory.models import StockMovement, StockQualityStatus
+
+        receipt = type(self).objects.select_for_update().get(pk=self.pk)
+        receipt._validate_stock_entry_status(StockQualityStatus.APPROVED)
+        items = list(receipt.items.select_for_update().order_by('product_id', 'lot_number', 'pk'))
+        if not items:
             raise ValidationError({'items': 'O recebimento precisa de ao menos um item.'})
-        self.status = self.Status.STOCK_POSTED
-        self.stock_entry_status = self.StockEntryStatus.POSTED
-        self.save(update_fields=['status', 'stock_entry_status', 'updated_at'])
+        if not any(item.accepted_quantity > ZERO_QUANTITY for item in items):
+            raise ValidationError(
+                {'accepted_quantity': 'O lançamento exige quantidade aceita positiva.'}
+            )
+        if (
+            receipt.status == self.Status.STOCK_POSTED
+            or receipt.stock_entry_status == self.StockEntryStatus.POSTED
+        ):
+            if (
+                receipt.status != self.Status.STOCK_POSTED
+                or receipt.stock_entry_status != self.StockEntryStatus.POSTED
+                or any(
+                    item.stock_movements.filter(
+                        movement_type=StockMovement.MovementType.RECEIPT
+                    ).count()
+                    != (1 if item.accepted_quantity > ZERO_QUANTITY else 0)
+                    for item in items
+                )
+            ):
+                raise ValidationError(
+                    {
+                        'stock_entry_status': 'Lançamento histórico inconsistente exige reconciliação auditada.'
+                    }
+                )
+        order_items = list(
+            PurchaseOrderItem.objects.select_for_update(no_key=True)
+            .filter(pk__in={item.order_item_id for item in items})
+            .order_by('pk')
+        )
+        order_items_by_id = {item.pk: item for item in order_items}
+        for item in items:
+            item.receipt = receipt
+            item.order_item = order_items_by_id[item.order_item_id]
+        warehouse, location = StockMovement._lock_purchase_address(warehouse, location)
+        if receipt.stock_entry_status == self.StockEntryStatus.POSTED:
+            # Confirm the historical entry, not first-posting limits against an
+            # order quantity legitimately reduced to the accepted amount later.
+            for item in items:
+                if item.accepted_quantity > ZERO_QUANTITY:
+                    StockMovement.receive_purchase_receipt_item(
+                        item,
+                        warehouse,
+                        location,
+                        quality_status=StockQualityStatus.APPROVED,
+                        user=user,
+                    )
+            self.__dict__.update(receipt.__dict__)
+            return
+        receipt._validate_first_stock_entry(items, StockQualityStatus.APPROVED)
+        # Validate the entire receipt before prelocking lots and balances. No sequence
+        # lock may be held while this batch is still acquiring a new balance lock.
+        accepted_items = [item for item in items if item.accepted_quantity > ZERO_QUANTITY]
+        pending_items = [
+            item
+            for item in accepted_items
+            if not item.stock_movements.filter(
+                movement_type=StockMovement.MovementType.RECEIPT
+            ).exists()
+        ]
+        lots = [
+            StockMovement._purchase_receipt_lot(item, StockQualityStatus.APPROVED)
+            for item in pending_items
+        ]
+        StockMovement._lock_receiving_balances(
+            (item.product, lot, warehouse, location, StockQualityStatus.APPROVED, item.unit)
+            for item, lot in zip(pending_items, lots)
+        )
+        for item in accepted_items:
+            StockMovement.receive_purchase_receipt_item(
+                item, warehouse, location, quality_status=StockQualityStatus.APPROVED, user=user
+            )
+        receipt.status = self.Status.STOCK_POSTED
+        receipt.stock_entry_status = self.StockEntryStatus.POSTED
+        receipt.save(
+            update_fields=['status', 'stock_entry_status', 'updated_at'], _stock_posting=True
+        )
+        self.__dict__.update(receipt.__dict__)
 
     def __str__(self):
         return self.receipt_number
 
 
 class PurchaseReceiptItem(SingleInstanceModel):
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        receipt_ids = {self.receipt_id}
+        if self.pk:
+            previous_receipt_id = (
+                type(self).objects.filter(pk=self.pk).values_list('receipt_id', flat=True).first()
+            )
+            receipt_ids.add(previous_receipt_id)
+        receipts = (
+            PurchaseReceipt.objects.select_for_update().filter(pk__in=receipt_ids).order_by('pk')
+        )
+        if any(
+            receipt.stock_entry_status == PurchaseReceipt.StockEntryStatus.POSTED
+            for receipt in receipts
+        ):
+            raise ValidationError({'receipt': 'Itens de recebimento lançado são imutáveis.'})
+        if self.pk and self.stock_movements.exists():
+            raise ValidationError({'receipt': 'Item com movimento de estoque é imutável.'})
+        return super().save(*args, **kwargs)
+
     receipt = models.ForeignKey(
         PurchaseReceipt, on_delete=models.CASCADE, related_name='items', verbose_name='recebimento'
     )
@@ -1035,9 +1253,7 @@ class PurchaseReceiptItem(SingleInstanceModel):
             and self.expiry_date
             and self.manufacturing_date > self.expiry_date
         ):
-            errors['manufacturing_date'] = (
-                'A fabricação não pode ser posterior à data de validade.'
-            )
+            errors['manufacturing_date'] = 'A fabricação não pode ser posterior à data de validade.'
         if errors:
             raise ValidationError(errors)
 

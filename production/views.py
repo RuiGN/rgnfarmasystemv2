@@ -330,7 +330,20 @@ class ProductionOrderViewSet(SingleInstanceProductionViewSet):
         return Response({'cost_capture_id': capture.pk})
 
 
-class MaterialConsumptionViewSet(SingleInstanceProductionViewSet):
+class MaterialConsumptionViewSet(NonDestructiveProductionViewSet):
+    audit_resource_name = 'material_consumption'
+    audit_fields = ('order_id', 'actual_quantity', 'returned_quantity', 'return_movement_id')
+
+    def _save_and_audit(self, serializer, action, before):
+        try:
+            return super()._save_and_audit(serializer, action, before)
+        except DjangoValidationError as error:
+            raise DRFValidationError(
+                error.message_dict
+                if hasattr(error, 'message_dict')
+                else {'non_field_errors': error.messages}
+            ) from error
+
     queryset = MaterialConsumption.objects.select_related(
         'order',
         'component',

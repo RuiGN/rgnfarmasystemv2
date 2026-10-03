@@ -23,6 +23,7 @@ class SingleInstanceFileSerializerMixin(ModelSerializerContractMixin):
             values[field.name] = attrs.get(field.name, getattr(self.instance, field.name))
         instance = model(**values)
         instance.pk = self.instance.pk
+        instance._state.adding = False
         return instance
 
     def _run_model_clean(self, instance):
@@ -61,6 +62,12 @@ class ProtectedFileSerializer(SingleInstanceFileSerializerMixin, serializers.Mod
         )
 
     def validate(self, attrs):
+        if self.instance is not None:
+            from rest_framework.exceptions import PermissionDenied
+
+            user = getattr(self.context.get('request'), 'user', None)
+            if not self.instance.user_can_access(user, permission='manage'):
+                raise PermissionDenied('Alteração de arquivo exige gestão do arquivo.')
         for field_name in (
             'controlled_document',
             'fiscal_document',
@@ -85,6 +92,16 @@ class ProtectedFileAccessRuleSerializer(
         read_only_fields = ('id', 'created_at', 'updated_at')
 
     def validate(self, attrs):
+        from rest_framework.exceptions import PermissionDenied
+
+        request = self.context.get('request')
+        user = getattr(request, 'user', None)
+        targets = [attrs.get('protected_file')]
+        if self.instance is not None:
+            targets.append(self.instance.protected_file)
+        for target in targets:
+            if target is not None and not target.user_can_access(user, permission='manage'):
+                raise PermissionDenied('A gestão da ACL exige permissão manage no arquivo alvo.')
         self._run_model_clean(self._instance_for_clean(attrs))
         return attrs
 

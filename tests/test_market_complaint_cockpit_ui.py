@@ -8,17 +8,13 @@ from django.urls import reverse
 from django.utils import timezone
 
 from capa.models import CapaAction, CapaRecord
-from deviations.models import QualityEvent
-from inventory.models import StockBalance, StockLot, StockQualityStatus, StorageLocation, Warehouse
-from masters.models import BusinessPartner, Product, Site, UnitOfMeasure
-from qa.models import QualityBlock
+from inventory.models import StockLot, StockQualityStatus
+from masters.models import BusinessPartner, Product, UnitOfMeasure
 from quality.models import QualityAnalysis, QualityResult, QualitySample
 from recalls.models import (
     MarketComplaint,
     ProductReturn,
     RecallCampaign,
-    RecallCommunication,
-    RecallEffectivenessReport,
     RecallImpactedCustomer,
 )
 
@@ -78,9 +74,7 @@ class MarketComplaintCockpitUiTests(TestCase):
             reported_by=self.user,
         )
 
-        self.cockpit_url = reverse(
-            'app:market_complaint_cockpit', kwargs={'pk': self.complaint.pk}
-        )
+        self.cockpit_url = reverse('app:market_complaint_cockpit', kwargs={'pk': self.complaint.pk})
 
     def test_anonymous_user_is_redirected_to_login(self):
         self.client.logout()
@@ -224,7 +218,7 @@ class MarketComplaintCockpitUiTests(TestCase):
             status=RecallCampaign.Status.IN_EXECUTION,
         )
 
-        impacted = RecallImpactedCustomer.objects.create(
+        RecallImpactedCustomer.objects.create(
             campaign=campaign,
             customer=self.customer,
             quantity_distributed=Decimal('100.0000'),
@@ -298,9 +292,7 @@ class MarketComplaintCockpitUiTests(TestCase):
         self.assertContains(
             response, 'Investigação de irritação cutânea e revisão da fórmula PA-CREME-01'
         )
-        self.assertContains(
-            response, 'Reforçar testes de compatibilidade dérmica em voluntários'
-        )
+        self.assertContains(response, 'Reforçar testes de compatibilidade dérmica em voluntários')
         self.assertContains(response, 'Checklist Regulatório de Encerramento (Cosmetovigilância)')
 
     def test_resource_detail_has_cockpit_action_button(self):

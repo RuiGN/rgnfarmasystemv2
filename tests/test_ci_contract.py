@@ -108,6 +108,7 @@ def test_quality_gate_runs_every_mandatory_check():
 
 def test_runtime_dependencies_use_audited_compatible_versions():
     requirements = set(REQUIREMENTS.read_text(encoding='utf-8').splitlines())
+    requirements.update(Path('requirements-dev.txt').read_text(encoding='utf-8').splitlines())
 
     required_versions = {
         'Django==6.0.8',
@@ -118,7 +119,7 @@ def test_runtime_dependencies_use_audited_compatible_versions():
         'langgraph-sdk==0.4.3',
         'openai==3.3.1',
         'protobuf==7.36.0',
-        'pypdf==6.16.2',
+        'pypdf==6.19.0',
         'pytest==9.1.1',
         'websockets==16.1.1',
     }

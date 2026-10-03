@@ -202,6 +202,15 @@ class ProgressMetric:
         return not self.required_permission or user.has_perm(self.required_permission)
 
 
+def _deadline_local_date(value: date | datetime) -> date:
+    """Usa o calendário ativo; datas e datetimes naive já são locais."""
+    if isinstance(value, datetime):
+        if timezone.is_aware(value):
+            return timezone.localtime(value).date()
+        return value.date()
+    return value
+
+
 @dataclass(frozen=True)
 class DeadlineItem:
     """Representa um prazo operacional que pode ser exibido no workspace."""
@@ -215,7 +224,7 @@ class DeadlineItem:
 
     @property
     def temporal_label(self) -> str:
-        due_date = self.due_at.date() if isinstance(self.due_at, datetime) else self.due_at
+        due_date = _deadline_local_date(self.due_at)
         today = timezone.localdate()
         if due_date < today:
             return 'Vencido'

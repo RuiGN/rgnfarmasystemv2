@@ -1,0 +1,54 @@
+{
+  "functional": {
+    "passed": true,
+    "security_concerns": [],
+    "logic_errors": [],
+    "delegation": "deleg_2e1669ae",
+    "reviewer": "sa-0-aa6ad818",
+    "directed_tests_reported": 189
+  },
+  "security": {
+    "passed": true,
+    "security_concerns": [],
+    "logic_errors": [],
+    "original_review": "deleg_2e1669ae/sa-1-13000e16",
+    "consistent_verdict": "deleg_145d93b8/sa-0-183eaa65",
+    "directed_tests_verified_from_transcript": [
+      108,
+      205
+    ],
+    "known_limitation": "Persisted NF-e/XML/hash/source links do not distinguish historical manufacturing-date omission from later NULL erasure. Strict known-date checks and zero domain writes remain; no backfill or tamper-provenance certification.",
+    "secret_scans": {
+      "tracked_candidate_diff": {
+        "exit_code": 0,
+        "findings": 0
+      },
+      "expanded_diff_with_generated_untracked": {
+        "exit_code": 1,
+        "findings": 2
+      },
+      "relative_directory": {
+        "exit_code": 1,
+        "findings": 2
+      },
+      "absolute_directory": {
+        "exit_code": 1,
+        "findings": 3
+      },
+      "full_history": {
+        "exit_code": 1,
+        "findings": 3
+      }
+    },
+    "exact_false_positive_classes": [
+      "SHA-256 checked against actual generated schemas",
+      "NF-e validation prose checked against historical and present blobs",
+      "Two historical fake PEM literals rejected by openssl pkey -noout"
+    ],
+    "scanner_policy_changed_for_review": false
+  },
+  "source_manifest_sha256": "034ab77508d9b1d9e01f8aaad2498d613fa0257bca63d486d10faaa960400a22",
+  "candidate_sources": 2164,
+  "global_release_approval_by_reviewers": false,
+  "note": "Individual reviewed scopes only; parent aggregates verified complete suite/build/quality/management-gate results before source publication. Production backup/readiness and remote CI remain separate."
+}

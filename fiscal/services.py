@@ -1,4 +1,7 @@
 import os
+import ipaddress
+import socket
+from urllib.parse import urlsplit
 from dataclasses import dataclass, field
 from datetime import timedelta
 
@@ -13,6 +16,7 @@ from django.utils.dateparse import parse_datetime
 from base.normalized_locations import normalized_city_name, normalized_state_code
 from files.models import ProtectedFile, ProtectedFileAccessRule, SecureFileLink
 from fiscal.models import FiscalDocument, FiscalEmailDelivery, FiscalEmissionEvent
+from integrations.fiscal_security import validate_fiscal_destination
 from integrations.models import IntegrationConnector, IntegrationEvent, sanitize_safe_context
 
 
@@ -39,6 +43,49 @@ class FiscalProviderResponse:
     raw: dict = field(default_factory=dict)
 
 
+class _PinnedFiscalNetworkBackend:
+    """Connect to the checked IP; httpcore keeps the original TLS/SNI hostname."""
+
+    def __init__(self, backend, hostname, address):
+        self.backend = backend
+        self.hostname = hostname
+        self.address = address
+
+    def connect_tcp(self, host, port, **kwargs):
+        if host != self.hostname or port != 443:
+            raise ValidationError({'base_url': 'Conexão fiscal fora do destino autorizado.'})
+        return self.backend.connect_tcp(self.address, port, **kwargs)
+
+    def connect_unix_socket(self, *args, **kwargs):
+        raise ValidationError({'base_url': 'Sockets locais não são destinos fiscais.'})
+
+    def sleep(self, seconds):
+        return self.backend.sleep(seconds)
+
+
+def _fiscal_transport(base_url):
+    hostname = urlsplit(base_url).hostname
+    try:
+        addresses = socket.getaddrinfo(hostname, 443, type=socket.SOCK_STREAM)
+    except OSError as error:
+        raise ValidationError(
+            {'base_url': 'Não foi possível resolver o destino fiscal.'}
+        ) from error
+    if not addresses or any(
+        not ipaddress.ip_address(item[4][0]).is_global
+        or ipaddress.ip_address(item[4][0]).is_multicast
+        for item in addresses
+    ):
+        raise ValidationError({'base_url': 'Destino fiscal resolve para rede não pública.'})
+    transport = httpx.HTTPTransport(trust_env=False, retries=0)
+    # HTTPX exposes no public network_backend argument. Keep this narrow adapter
+    # covered by a transport regression test when upgrading HTTPX/httpcore.
+    transport._pool._network_backend = _PinnedFiscalNetworkBackend(
+        transport._pool._network_backend, hostname, addresses[0][4][0]
+    )
+    return transport
+
+
 class FiscalProviderClient:
     provider_name = 'generic'
 
@@ -59,14 +106,20 @@ class FiscalProviderClient:
             raise ValidationError(
                 {'connector': 'Configure um conector fiscal ativo ou FISCAL_PROVIDER_BASE_URL.'}
             )
+        reference = (connector.secret_reference if connector else '') or getattr(
+            settings, 'FISCAL_PROVIDER_SECRET_REFERENCE', ''
+        )
+        base_url = validate_fiscal_destination(base_url, reference)
+        transport = _fiscal_transport(base_url)
         secret = self._resolve_secret(connector)
         headers = {'Content-Type': 'application/json'}
         if secret:
             headers['Authorization'] = f'Bearer {secret}'
         timeout = getattr(settings, 'FISCAL_PROVIDER_TIMEOUT_SECONDS', 30)
-        response = httpx.post(
-            f'{base_url.rstrip("/")}{path}', json=payload, headers=headers, timeout=timeout
-        )
+        with httpx.Client(transport=transport, trust_env=False, follow_redirects=False) as client:
+            response = client.post(
+                f'{base_url.rstrip("/")}{path}', json=payload, headers=headers, timeout=timeout
+            )
         response.raise_for_status()
         return self._parse_response(response.json())
 
@@ -74,6 +127,10 @@ class FiscalProviderClient:
         secret_reference = (connector.secret_reference if connector else '') or getattr(
             settings, 'FISCAL_PROVIDER_SECRET_REFERENCE', ''
         )
+        base_url = (connector.base_url if connector else '') or getattr(
+            settings, 'FISCAL_PROVIDER_BASE_URL', ''
+        )
+        validate_fiscal_destination(base_url, secret_reference)
         if not secret_reference:
             return ''
         return os.environ.get(secret_reference, '')

@@ -4,9 +4,8 @@ from decimal import Decimal, InvalidOperation
 import hashlib
 import re
 import secrets
-from xml.etree.ElementTree import ParseError
-
 from defusedxml import ElementTree
+from defusedxml.ElementTree import ParseError
 from defusedxml.common import DefusedXmlException
 from django.core.files.storage import default_storage
 from django.db import IntegrityError, models, transaction

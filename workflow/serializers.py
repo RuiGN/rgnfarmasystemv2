@@ -27,6 +27,7 @@ class SingleInstanceWorkflowSerializerMixin(ModelSerializerContractMixin):
             values[field.name] = attrs.get(field.name, getattr(self.instance, field.name))
         instance = model(**values)
         instance.pk = self.instance.pk
+        instance._state.adding = False
         return instance
 
     def _run_model_clean(self, instance):
@@ -88,8 +89,15 @@ class ApprovalTaskSerializer(SingleInstanceWorkflowSerializerMixin, serializers.
         )
 
     def validate(self, attrs):
-        for field_name in ('requested_by', 'assigned_to', 'decided_by'):
-            pass
+        if self.instance is not None:
+            from rest_framework.exceptions import PermissionDenied
+
+            try:
+                self.instance.validate_sensitive_changes(
+                    getattr(self.context.get('request'), 'user', None), attrs
+                )
+            except DjangoValidationError as error:
+                raise PermissionDenied(error.message_dict) from error
         self._run_model_clean(self._instance_for_clean(attrs))
         return attrs
 
@@ -103,8 +111,13 @@ class WorkflowDelegationSerializer(
         read_only_fields = ('id', 'created_at', 'updated_at')
 
     def validate(self, attrs):
-        for field_name in ('from_user', 'to_user'):
-            pass
+        from rest_framework.exceptions import PermissionDenied
+
+        instance = self.instance or WorkflowDelegation(**attrs)
+        try:
+            instance.validate_actor(getattr(self.context.get('request'), 'user', None), attrs)
+        except DjangoValidationError as error:
+            raise PermissionDenied(error.message_dict) from error
         self._run_model_clean(self._instance_for_clean(attrs))
         return attrs
 

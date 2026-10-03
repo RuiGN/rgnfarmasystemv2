@@ -794,28 +794,29 @@ def seeded_report_domains(report_context):
             title_type=FinancialTitle.TitleType.RECEIVABLE,
             partner=customer,
             category=category,
-            status=FinancialTitle.Status.OVERDUE,
+            status=FinancialTitle.Status.PENDING,
             issue_date=today - timedelta(days=20),
             due_date=today - timedelta(days=2),
             original_amount=Decimal('1000.0000'),
             open_amount=Decimal('1000.0000'),
         )
     )
+    receivable.approve(user=report_context.user)
+    receivable.mark_overdue()
     payable = persist(
         FinancialTitle(
             title_number='PAG-REP',
             title_type=FinancialTitle.TitleType.PAYABLE,
             partner=supplier,
             category=category,
-            status=FinancialTitle.Status.APPROVED,
+            status=FinancialTitle.Status.PENDING,
             issue_date=today - timedelta(days=20),
             due_date=today + timedelta(days=2),
             original_amount=Decimal('300.0000'),
             open_amount=Decimal('300.0000'),
-            approved_by=report_context.user,
-            approved_at=now,
         )
     )
+    payable.approve(user=report_context.user)
     persist(
         CashFlowEntry(
             flow_type=CashFlowEntry.FlowType.REALIZED,
@@ -1279,7 +1280,7 @@ def test_finance_executors_enforce_open_types_and_realized_projection_semantics(
 ):
     from dataclasses import replace
 
-    from finance.models import CashFlowEntry, FinancialTitle
+    from finance.models import CashFlowEntry, FinancialSettlement, FinancialTitle
     from reports.executors.finance import (
         cash_flow,
         payables_open_overdue,
@@ -1294,15 +1295,23 @@ def test_finance_executors_enforce_open_types_and_realized_projection_semantics(
         title_type=FinancialTitle.TitleType.RECEIVABLE,
         partner=data['customer'],
         category=data['category'],
-        status=FinancialTitle.Status.SETTLED,
+        status=FinancialTitle.Status.PENDING,
         issue_date=today - timedelta(days=10),
         due_date=today,
         original_amount=Decimal('50.0000'),
-        open_amount=Decimal('0.0000'),
-        paid_amount=Decimal('50.0000'),
+        open_amount=Decimal('50.0000'),
+        paid_amount=Decimal('0.0000'),
     )
     settled.full_clean()
     settled.save()
+    settled.approve(user=report_context.user)
+    settlement = settled.register_settlement(
+        financial_account=data['account'],
+        amount=Decimal('50.0000'),
+        settlement_date=today - timedelta(days=1),
+        method=FinancialSettlement.Method.PIX,
+    )
+    CashFlowEntry.create_from_settlement(settlement)
     planned = CashFlowEntry(
         flow_type=CashFlowEntry.FlowType.PLANNED,
         direction=CashFlowEntry.Direction.OUTFLOW,
@@ -1462,7 +1471,7 @@ def test_open_financial_titles_exclude_zero_balance_and_keep_positive_partial_ba
     report_context,
     seeded_report_domains,
 ):
-    from finance.models import FinancialTitle
+    from finance.models import CashFlowEntry, FinancialSettlement, FinancialTitle
     from reports.executors.finance import payables_open_overdue, receivables_open_overdue
 
     data = seeded_report_domains
@@ -1474,22 +1483,32 @@ def test_open_financial_titles_exclude_zero_balance_and_keep_positive_partial_ba
             title_type=title_type,
             partner=partner,
             category=data['category'],
-            status=status,
+            status=FinancialTitle.Status.PENDING,
             issue_date=today - timedelta(days=10),
             due_date=today,
-            original_amount=Decimal('100.0000'),
-            open_amount=open_amount,
-            paid_amount=paid_amount,
+            original_amount=open_amount + paid_amount,
+            open_amount=open_amount + paid_amount,
+            paid_amount=Decimal('0.0000'),
         )
         title.full_clean()
         title.save()
+        title.approve(user=report_context.user)
+        settlement = title.register_settlement(
+            financial_account=data['account'],
+            amount=paid_amount,
+            settlement_date=today,
+            method=FinancialSettlement.Method.PIX,
+        )
+        CashFlowEntry.create_from_settlement(settlement)
+        if title.status != status or title.open_amount != open_amount:
+            raise ValueError('A baixa deve produzir o estado solicitado pelo preparo.')
         return title
 
     persist_title(
         number='REC-ZERO-OPEN',
         title_type=FinancialTitle.TitleType.RECEIVABLE,
         partner=data['customer'],
-        status=FinancialTitle.Status.PENDING,
+        status=FinancialTitle.Status.SETTLED,
         open_amount=Decimal('0.0000'),
         paid_amount=Decimal('100.0000'),
     )
@@ -1497,7 +1516,7 @@ def test_open_financial_titles_exclude_zero_balance_and_keep_positive_partial_ba
         number='PAG-ZERO-OPEN',
         title_type=FinancialTitle.TitleType.PAYABLE,
         partner=data['supplier'],
-        status=FinancialTitle.Status.PENDING,
+        status=FinancialTitle.Status.SETTLED,
         open_amount=Decimal('0.0000'),
         paid_amount=Decimal('100.0000'),
     )

@@ -1,5 +1,4 @@
 from datetime import timedelta
-from decimal import Decimal
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
@@ -199,7 +198,14 @@ class AuditCockpitUiTests(TestCase):
 
     def _grant_all_permissions(self):
         perms = Permission.objects.filter(
-            content_type__app_label__in=['audits', 'capa', 'deviations', 'changes', 'documents', 'masters']
+            content_type__app_label__in=[
+                'audits',
+                'capa',
+                'deviations',
+                'changes',
+                'documents',
+                'masters',
+            ]
         )
         self.user.user_permissions.add(*perms)
 
@@ -250,20 +256,29 @@ class AuditCockpitUiTests(TestCase):
         self.assertIn('100,0%', content)
 
         # Conteúdo da Aba 1 (Escopo, Cronograma, Local)
-        self.assertIn('Avenida Industrial Farmacêutica, 1500 (Bloco B) - Distrito Industrial', content)
-        self.assertIn('Avaliação de conformidade com as Boas Práticas de Fabricação de insumos cosméticos', content)
+        self.assertIn(
+            'Avenida Industrial Farmacêutica, 1500 (Bloco B) - Distrito Industrial', content
+        )
+        self.assertIn(
+            'Avaliação de conformidade com as Boas Práticas de Fabricação de insumos cosméticos',
+            content,
+        )
         self.assertIn('RDC ANVISA nº 48/2013 e ABNT NBR ISO 22716:2008', content)
         self.assertIn('09:00 - Reunião de Abertura', content)
 
         # Conteúdo da Aba 2 (Checklist de Verificação)
         self.assertIn('1. Sistema de Gestão da Qualidade', content)
-        self.assertIn('Existe procedimento operacional padrão vigente para controle de mudanças', content)
+        self.assertIn(
+            'Existe procedimento operacional padrão vigente para controle de mudanças', content
+        )
         self.assertIn('Procedimento SOP-QA-012 vigente, revisado', content)
         self.assertIn('2. Controle de Qualidade &amp; Laboratório', content)
         self.assertIn('Identificada liberação do lote QC-887 sem ensaio microbiológico', content)
 
         # Conteúdo da Aba 3 (Achados e Evidências ALCOA+)
-        self.assertIn('Ausência de contraprova analítica microbiológica em lote de matéria-prima', content)
+        self.assertIn(
+            'Ausência de contraprova analítica microbiológica em lote de matéria-prima', content
+        )
         self.assertIn('Não conformidade', content)
         self.assertIn('Maior', content)
         self.assertIn('Boletim de Análise Parcial Lote QC-887', content)
@@ -271,7 +286,9 @@ class AuditCockpitUiTests(TestCase):
 
         # Conteúdo da Aba 4 (Ações de Follow-up e Vínculos CAPA)
         self.assertIn('Revisão do protocolo analítico e reanálise do lote de insumo', content)
-        self.assertIn('Ensaio microbiológico de contraprova executado com resultado aprovado', content)
+        self.assertIn(
+            'Ensaio microbiológico de contraprova executado com resultado aprovado', content
+        )
         self.assertIn('b94d27b9934d', content)
         self.assertIn('CAPA-2026-0042', content)
         self.assertIn('Ação Preventiva para Protocolos Analíticos de Insumos Fornecidos', content)
@@ -283,8 +300,12 @@ class AuditCockpitUiTests(TestCase):
         self.assertIn('Gate 3: Evidenciação ALCOA+', content)
         self.assertIn('Gate 4: Planos de Ação & CAPA', content)
         self.assertIn('Gate 5: Relatório & Conclusão', content)
-        self.assertIn('Auditoria sanitária de fornecedor realizada com foco no cumprimento das BPF', content)
-        self.assertIn('Fornecedor aprovado com ressalvas, condicionado ao encerramento e eficácia', content)
+        self.assertIn(
+            'Auditoria sanitária de fornecedor realizada com foco no cumprimento das BPF', content
+        )
+        self.assertIn(
+            'Fornecedor aprovado com ressalvas, condicionado ao encerramento e eficácia', content
+        )
         self.assertIn('Apta para encerramento formal', content)
 
     def test_sod_checklist_tab_permission_segmented(self):
@@ -298,7 +319,9 @@ class AuditCockpitUiTests(TestCase):
         response = self.client.get(self.cockpit_url)
         self.assertEqual(response.status_code, 200)
         content = response.content.decode('utf-8')
-        self.assertIn('Você não possui permissão para visualizar o checklist de auditoria.', content)
+        self.assertIn(
+            'Você não possui permissão para visualizar o checklist de auditoria.', content
+        )
         self.assertNotIn('Procedimento SOP-QA-012 vigente, revisado', content)
 
     def test_sod_findings_tab_permission_segmented(self):
@@ -312,7 +335,9 @@ class AuditCockpitUiTests(TestCase):
         response = self.client.get(self.cockpit_url)
         self.assertEqual(response.status_code, 200)
         content = response.content.decode('utf-8')
-        self.assertIn('Você não possui permissão para visualizar achados e evidências de auditoria.', content)
+        self.assertIn(
+            'Você não possui permissão para visualizar achados e evidências de auditoria.', content
+        )
         self.assertNotIn('Boletim de Análise Parcial Lote QC-887', content)
 
     def test_sod_actions_tab_permission_segmented(self):
@@ -326,7 +351,9 @@ class AuditCockpitUiTests(TestCase):
         response = self.client.get(self.cockpit_url)
         self.assertEqual(response.status_code, 200)
         content = response.content.decode('utf-8')
-        self.assertIn('Você não possui permissão para visualizar planos de ação e vínculos CAPA.', content)
+        self.assertIn(
+            'Você não possui permissão para visualizar planos de ação e vínculos CAPA.', content
+        )
         self.assertNotIn('Revisão do protocolo analítico e reanálise do lote de insumo', content)
 
     def test_sod_report_tab_permission_segmented(self):
@@ -340,7 +367,10 @@ class AuditCockpitUiTests(TestCase):
         response = self.client.get(self.cockpit_url)
         self.assertEqual(response.status_code, 200)
         content = response.content.decode('utf-8')
-        self.assertIn('Você não possui permissão para visualizar o relatório e conclusão da auditoria.', content)
+        self.assertIn(
+            'Você não possui permissão para visualizar o relatório e conclusão da auditoria.',
+            content,
+        )
         self.assertNotIn('Fornecedor aprovado com ressalvas, condicionado ao encerramento', content)
 
     def test_audit_5_gates_evaluation_reporting_vs_closed(self):

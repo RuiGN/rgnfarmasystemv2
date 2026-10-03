@@ -45,8 +45,18 @@ class KnowledgeChunkAdmin(ImmutableAuditAdminMixin, admin.ModelAdmin):
     autocomplete_fields = ('source', 'document')
 
 
+class ChatOwnerAdminMixin(admin.ModelAdmin):
+    owner_lookup = 'created_by'
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        if not request.user.is_authenticated or not request.user.is_active:
+            return queryset.none()
+        return queryset.filter(**{self.owner_lookup: request.user})
+
+
 @admin.register(RAGChatSession)
-class RAGChatSessionAdmin(ImmutableAuditAdminMixin, admin.ModelAdmin):
+class RAGChatSessionAdmin(ChatOwnerAdminMixin, ImmutableAuditAdminMixin, admin.ModelAdmin):
     list_display = ('title', 'created_by', 'status', 'last_question_at')
     list_filter = ('status', 'last_question_at')
     search_fields = ('title', 'created_by__email')
@@ -54,7 +64,8 @@ class RAGChatSessionAdmin(ImmutableAuditAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(RAGChatMessage)
-class RAGChatMessageAdmin(ImmutableAuditAdminMixin, admin.ModelAdmin):
+class RAGChatMessageAdmin(ChatOwnerAdminMixin, ImmutableAuditAdminMixin, admin.ModelAdmin):
+    owner_lookup = 'session__created_by'
     list_display = ('session', 'role', 'status', 'model_name', 'latency_ms', 'created_by')
     list_filter = ('role', 'status', 'model_name')
     search_fields = ('content', 'error_message', 'created_by__email')
@@ -62,7 +73,8 @@ class RAGChatMessageAdmin(ImmutableAuditAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(RAGCitation)
-class RAGCitationAdmin(ImmutableAuditAdminMixin, admin.ModelAdmin):
+class RAGCitationAdmin(ChatOwnerAdminMixin, ImmutableAuditAdminMixin, admin.ModelAdmin):
+    owner_lookup = 'message__session__created_by'
     list_display = ('message', 'title', 'section_reference', 'relevance_score')
     list_filter = ('source', 'document')
     search_fields = ('title', 'excerpt', 'source_url')

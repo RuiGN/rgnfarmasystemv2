@@ -1379,8 +1379,6 @@ def test_receive_outputs_creates_genealogy_and_keeps_output_in_quarantine(
     from production.services import ProductionOrderOperations
 
     order = production_output.order
-    order.status = ProductionOrder.Status.COMPLETED
-    order.save(update_fields=['status', 'updated_at'])
     allocated_consumption.actual_quantity = Decimal('4.0000')
     allocated_consumption.issued_quantity = Decimal('4.0000')
     allocated_consumption.save(update_fields=['actual_quantity', 'issued_quantity', 'updated_at'])
@@ -1391,6 +1389,9 @@ def test_receive_outputs_creates_genealogy_and_keeps_output_in_quarantine(
     )
     allocated_consumption.save(update_fields=['issue_movement', 'updated_at'])
 
+    # Prepare all material evidence before making the order terminal.
+    order.status = ProductionOrder.Status.COMPLETED
+    order.save(update_fields=['status', 'updated_at'])
     outputs = ProductionOrderOperations(order, operations_user).receive_outputs()
 
     output = outputs[0]
@@ -1779,8 +1780,6 @@ def test_receive_outputs_aggregates_same_input_lot_and_is_idempotent(
     from production.services import ProductionOrderOperations
 
     order = production_output.order
-    order.status = ProductionOrder.Status.COMPLETED
-    order.save(update_fields=['status', 'updated_at'])
     allocated_consumption.actual_quantity = Decimal('4.0000')
     allocated_consumption.issued_quantity = Decimal('4.0000')
     allocated_consumption.save(update_fields=['actual_quantity', 'issued_quantity', 'updated_at'])
@@ -1810,6 +1809,9 @@ def test_receive_outputs_aggregates_same_input_lot_and_is_idempotent(
         quantity=Decimal('3.0000'),
     )
     second.save(update_fields=['issue_movement', 'updated_at'])
+    # Prepare all material evidence before making the order terminal.
+    order.status = ProductionOrder.Status.COMPLETED
+    order.save(update_fields=['status', 'updated_at'])
     operations = ProductionOrderOperations(order, operations_user)
 
     first = operations.receive_outputs()
@@ -1861,8 +1863,6 @@ def test_receive_outputs_rejects_mixed_units_for_same_input_lot_before_mutation(
     from production.services import ProductionOrderOperations
 
     order = production_output.order
-    order.status = ProductionOrder.Status.COMPLETED
-    order.save(update_fields=['status', 'updated_at'])
     allocated_consumption.actual_quantity = Decimal('4.0000')
     allocated_consumption.issued_quantity = Decimal('4.0000')
     allocated_consumption.save(update_fields=['actual_quantity', 'issued_quantity', 'updated_at'])
@@ -1898,6 +1898,9 @@ def test_receive_outputs_rejects_mixed_units_for_same_input_lot_before_mutation(
     )
     second.save(update_fields=['issue_movement', 'updated_at'])
 
+    # Prepare all material evidence before making the order terminal.
+    order.status = ProductionOrder.Status.COMPLETED
+    order.save(update_fields=['status', 'updated_at'])
     with pytest.raises(ValidationError) as error:
         ProductionOrderOperations(order, operations_user).receive_outputs()
 
@@ -1922,8 +1925,6 @@ def test_receive_outputs_propagates_reused_lot_validation_without_partial_state(
     from production.services import ProductionOrderOperations
 
     order = production_output.order
-    order.status = ProductionOrder.Status.COMPLETED
-    order.save(update_fields=['status', 'updated_at'])
     conflicting_order = ProductionOrder.objects.create(
         order_number='OP-LOTE-CONFLITANTE',
         product=order.product,
@@ -1943,6 +1944,9 @@ def test_receive_outputs_propagates_reused_lot_validation_without_partial_state(
     )
     _issued_formula_consumption(order=order, output=production_output)
 
+    # Prepare all material evidence before making the order terminal.
+    order.status = ProductionOrder.Status.COMPLETED
+    order.save(update_fields=['status', 'updated_at'])
     with pytest.raises(ValidationError) as error:
         ProductionOrderOperations(order, operations_user).receive_outputs()
 
@@ -2000,8 +2004,6 @@ def test_receive_outputs_rolls_back_earlier_output_when_later_output_fails(
     from production.services import ProductionOrderOperations
 
     order = production_output.order
-    order.status = ProductionOrder.Status.COMPLETED
-    order.save(update_fields=['status', 'updated_at'])
     second = ProductionOutput.objects.create(
         order=order,
         product=order.product,
@@ -2034,6 +2036,9 @@ def test_receive_outputs_rolls_back_earlier_output_when_later_output_fails(
     )
     _issued_formula_consumption(order=order, output=production_output)
 
+    # Prepare all material evidence before making the order terminal.
+    order.status = ProductionOrder.Status.COMPLETED
+    order.save(update_fields=['status', 'updated_at'])
     with pytest.raises(ValidationError):
         ProductionOrderOperations(order, operations_user).receive_outputs()
 
@@ -2101,11 +2106,12 @@ def test_calculate_cost_uses_effective_approved_standard_labor_and_machine_once(
         material_cost=Decimal('200.0000'),
     )
     standard.approve(user=operations_user)
-    production_order.status = ProductionOrder.Status.COMPLETED
-    production_order.save(update_fields=['status', 'updated_at'])
     allocated_consumption.actual_quantity = Decimal('6.0000')
     allocated_consumption.loss_quantity = Decimal('1.0000')
     allocated_consumption.save(update_fields=['actual_quantity', 'loss_quantity', 'updated_at'])
+    # Prepare all material evidence before making the order terminal.
+    production_order.status = ProductionOrder.Status.COMPLETED
+    production_order.save(update_fields=['status', 'updated_at'])
     ProductionLaborEntry.objects.create(
         order=production_order,
         user=operations_user,
@@ -3212,11 +3218,17 @@ def test_receive_outputs_ignores_inactive_component_but_requires_each_active_com
         ProductionOrderOperations(order, operations_user).receive_outputs()
 
     assert 'materials' in error.value.message_dict
+    # Prepare the second snapshot while operational; terminal edits remain forbidden.
+    order.status = ProductionOrder.Status.IN_PROGRESS
+    order.save(update_fields=['status', 'updated_at'])
     _issued_formula_consumption(
         order=order,
         output=production_output,
         component=active_component,
     )
+
+    order.status = ProductionOrder.Status.COMPLETED
+    order.save(update_fields=['status', 'updated_at'])
 
     outputs = ProductionOrderOperations(order, operations_user).receive_outputs()
 
@@ -3403,8 +3415,6 @@ def test_receive_outputs_api_is_idempotent_and_returns_stable_output_ids(
     client = APIClient()
     client.force_authenticate(user)
     order = production_output.order
-    order.status = ProductionOrder.Status.COMPLETED
-    order.save(update_fields=['status', 'updated_at'])
     allocated_consumption.actual_quantity = Decimal('4.0000')
     allocated_consumption.issued_quantity = Decimal('4.0000')
     allocated_consumption.save(update_fields=['actual_quantity', 'issued_quantity', 'updated_at'])
@@ -3414,6 +3424,9 @@ def test_receive_outputs_api_is_idempotent_and_returns_stable_output_ids(
         quantity=Decimal('4.0000'),
     )
     allocated_consumption.save(update_fields=['issue_movement', 'updated_at'])
+    # Prepare all material evidence before making the order terminal.
+    order.status = ProductionOrder.Status.COMPLETED
+    order.save(update_fields=['status', 'updated_at'])
     url = reverse('production:order-receive-outputs', args=[order.pk])
 
     first = client.post(url)
@@ -4167,10 +4180,14 @@ def test_labor_model_rejects_creation_and_change_after_order_is_terminal(
 def test_pending_output_model_rejects_creation_and_change_for_terminal_order(
     production_output,
     terminal_status,
+    operations_user,
 ):
     order = production_output.order
-    order.status = terminal_status
-    order.save(update_fields=['status', 'updated_at'])
+    if terminal_status == ProductionOrder.Status.CANCELLED:
+        order.cancel('Fixture terminal', operations_user)
+    else:
+        order.status = terminal_status
+        order.save(update_fields=['status', 'updated_at'])
 
     production_output.full_clean()
 
@@ -4209,8 +4226,11 @@ def test_labor_model_rejects_creation_outside_operational_order_statuses(
     operations_user,
     invalid_status,
 ):
-    production_order.status = invalid_status
-    production_order.save(update_fields=['status', 'updated_at'])
+    if invalid_status == ProductionOrder.Status.CANCELLED:
+        production_order.cancel('Fixture terminal', operations_user)
+    else:
+        production_order.status = invalid_status
+        production_order.save(update_fields=['status', 'updated_at'])
 
     labor = ProductionLaborEntry(
         order=production_order,
@@ -4312,8 +4332,6 @@ def test_output_patch_revalidates_after_concurrent_receipt(
     from production.views import NonDestructiveProductionViewSet
 
     order = production_output.order
-    order.status = ProductionOrder.Status.COMPLETED
-    order.save(update_fields=['status', 'updated_at'])
     allocated_consumption.actual_quantity = Decimal('4.0000')
     allocated_consumption.issued_quantity = Decimal('4.0000')
     allocated_consumption.save(update_fields=['actual_quantity', 'issued_quantity', 'updated_at'])
@@ -4323,6 +4341,9 @@ def test_output_patch_revalidates_after_concurrent_receipt(
         quantity=Decimal('4.0000'),
     )
     allocated_consumption.save(update_fields=['issue_movement', 'updated_at'])
+    # Prepare all material evidence before making the order terminal.
+    order.status = ProductionOrder.Status.COMPLETED
+    order.save(update_fields=['status', 'updated_at'])
     _production_resource_client(operations_user, 'productionoutput')
     receive_locked = Event()
     update_attempted_order_lock = Event()
@@ -6181,6 +6202,9 @@ def test_map_query_count_is_constant_as_materials_and_movements_grow(
     django_user_model,
     mapped_production_order,
 ):
+    # This scale fixture creates allocations, so use an operational parent state.
+    mapped_production_order.status = ProductionOrder.Status.IN_PROGRESS
+    mapped_production_order.save(update_fields=['status', 'updated_at'])
     existing = mapped_production_order.material_consumptions.select_related(
         'component', 'material', 'stock_lot', 'warehouse', 'location', 'unit'
     ).get()

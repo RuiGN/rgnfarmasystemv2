@@ -1,11 +1,18 @@
 import re
 import unicodedata
+from typing import TYPE_CHECKING, TypeAlias
 
 from django import forms
 from django.contrib.auth import get_user_model
 from django.db.models import URLField
+from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 
 from base.automatic_fields import automatic_generated_fields
+from finance.models import FinancialAccount, FinancialTitle
+
+
+if TYPE_CHECKING:
+    ResourceFormBase: TypeAlias = forms.ModelForm
 
 
 SYSTEM_FIELD_NAMES = {
@@ -472,10 +479,19 @@ def build_resource_form(resource, *, update=False):
             for field in resource.model._meta.fields
             if field.editable and not field.auto_created and field.name not in SYSTEM_FIELD_NAMES
         )
+    financial_metadata_form = resource.model in (FinancialTitle, FinancialAccount)
+    if financial_metadata_form:
+        form_fields = tuple(
+            name for name in form_fields if name not in resource.model.SERVICE_FIELDS
+        )
     User = get_user_model()
     form_base = resource.form_base or forms.ModelForm
 
-    class ResourceForm(form_base):
+    if not TYPE_CHECKING:
+        # Keep the resource's custom form and cooperative MRO unchanged at runtime.
+        ResourceFormBase = form_base
+
+    class ResourceForm(ResourceFormBase):
         def __init__(self, *args, request=None, **kwargs):
             super().__init__(*args, **kwargs)
 
@@ -517,8 +533,38 @@ def build_resource_form(resource, *, update=False):
                 )
             return exclusions
 
+        def resource_save_kwargs(self):
+            if financial_metadata_form and not self.instance._state.adding:
+                # Validation may derive balances on the form's stale instance.
+                # Only submitted editable changes reach the locked model protocol.
+                return {'update_fields': set(self.changed_data) & set(self.fields)}
+            return {}
+
+        def save(self, commit=True):
+            if not financial_metadata_form or not commit:
+                return super().save(commit=commit)
+            instance = super().save(commit=False)
+            instance.save(**self.resource_save_kwargs())
+            self._save_m2m()
+            return instance
+
+        def _update_errors(self, errors):
+            if financial_metadata_form and hasattr(errors, 'error_dict'):
+                normalized = {}
+                for name, error_list in errors.error_dict.items():
+                    target = name if name in self.fields else NON_FIELD_ERRORS
+                    normalized.setdefault(target, []).extend(error_list)
+                errors = ValidationError(normalized)
+            super()._update_errors(errors)
+
         def clean(self):
             cleaned_data = super().clean()
+            if resource.model is FinancialTitle and 'original_amount' in cleaned_data:
+                # Model.clean runs in _post_clean, before save can derive this.
+                # This is validation-only; the locked model derives it again.
+                self.instance.open_amount = (
+                    cleaned_data['original_amount'] - self.instance.paid_amount
+                )
             for name, field in self.fields.items():
                 mask = field.widget.attrs.get('data-validate')
                 if mask not in {'cpf', 'cnpj', 'cpf-cnpj'}:

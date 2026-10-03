@@ -2,7 +2,14 @@
 
 ## Contrato
 
-O catálogo HTML cobre exatamente as 258 ações `POST` descobertas nos ViewSets
+O candidato integrado ao `main` atual contém **234 ações POST: 227 de detalhe e
+sete ações de coleção**, incluindo a importação NF-e multipart. O catálogo e o
+discovery exigem igualdade exata dos conjuntos e cardinalidade congelada. A
+integração preserva o importador atual e a saída explícita de estoque corrigida.
+
+### Contrato histórico
+
+O catálogo HTML cobria exatamente as 258 ações `POST` descobertas nos ViewSets
 DRF: 252 são ações de detalhe e seis ações de coleção. Igualdade de conjuntos,
 e não somente a contagem, impede ação órfã, duplicada ou publicada sem interface.
 

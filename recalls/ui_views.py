@@ -8,7 +8,6 @@ from django.views.generic import TemplateView
 
 from base.ui.actions.context import available_actions
 from base.ui.views import ResourceContextMixin
-from capa.models import CapaRecord
 from deviations.models import QualityEvent
 from inventory.models import StockBalance
 from qa.models import QualityBlock
@@ -17,9 +16,7 @@ from recalls.models import (
     MarketComplaint,
     ProductReturn,
     RecallCampaign,
-    RecallCommunication,
     RecallEffectivenessReport,
-    RecallImpactedCustomer,
 )
 
 
@@ -45,32 +42,29 @@ class MarketComplaintCockpitView(LoginRequiredMixin, ResourceContextMixin, Templ
         resource = self.get_resource()
 
         # Obter a reclamação pós-mercado com otimização de select_related
-        complaint = (
-            MarketComplaint.objects.select_related(
-                'customer',
-                'product',
-                'product__unit',
-                'stock_lot',
-                'sales_order',
-                'fiscal_document',
-                'customer_complaint',
-                'quality_sample',
-                'deviation_event',
-                'capa',
-                'document',
-                'responsible',
-                'reported_by',
-                'triaged_by',
-                'investigation_started_by',
-                'regulatory_communicated_by',
-                'closed_by',
-                'country_ref',
-                'state_ref',
-                'city_ref',
-                'criticality_ref',
-            )
-            .get(pk=self.kwargs['pk'])
-        )
+        complaint = MarketComplaint.objects.select_related(
+            'customer',
+            'product',
+            'product__unit',
+            'stock_lot',
+            'sales_order',
+            'fiscal_document',
+            'customer_complaint',
+            'quality_sample',
+            'deviation_event',
+            'capa',
+            'document',
+            'responsible',
+            'reported_by',
+            'triaged_by',
+            'investigation_started_by',
+            'regulatory_communicated_by',
+            'closed_by',
+            'country_ref',
+            'state_ref',
+            'city_ref',
+            'criticality_ref',
+        ).get(pk=self.kwargs['pk'])
 
         # Segregação de Deveres (SoD) por aba
         can_view_triage = user.has_perm('recalls.view_marketcomplaint')
@@ -166,9 +160,7 @@ class MarketComplaintCockpitView(LoginRequiredMixin, ResourceContextMixin, Templ
                 )
                 .order_by('-created_at')
             )
-            total_return_quantity_requested = sum(
-                (r.quantity for r in returns), Decimal('0.0000')
-            )
+            total_return_quantity_requested = sum((r.quantity for r in returns), Decimal('0.0000'))
             total_return_quantity_received = sum(
                 (r.received_quantity for r in returns), Decimal('0.0000')
             )
@@ -208,7 +200,9 @@ class MarketComplaintCockpitView(LoginRequiredMixin, ResourceContextMixin, Templ
             campaigns = list(
                 RecallCampaign.objects.filter(campaign_query)
                 .distinct()
-                .select_related('product', 'stock_lot', 'responsible', 'approved_by', 'started_by', 'closed_by')
+                .select_related(
+                    'product', 'stock_lot', 'responsible', 'approved_by', 'started_by', 'closed_by'
+                )
                 .order_by('-decision_date', '-created_at')
             )
             main_campaign = campaigns[0] if campaigns else None

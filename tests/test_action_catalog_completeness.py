@@ -22,9 +22,19 @@ def test_html_catalog_exactly_matches_post_actions():
 def test_catalog_has_approved_cardinality():
     configs = action_registry.all()
 
-    assert len(configs) == 233
+    assert len(configs) == 234
     assert sum(config.detail for config in configs) == 227
-    assert sum(not config.detail for config in configs) == 6
+    assert sum(not config.detail for config in configs) == 7
+
+
+def test_integrated_nfe_import_keeps_its_collection_contract():
+    config = action_registry.get('procurement', 'receipts', 'import_xml')
+
+    assert config.detail is False
+    assert config.route_name == 'v1_procurement:receipt-import-xml'
+    assert config.permissions == ('procurement.add_purchasereceipt',)
+    assert config.submission_format.value == 'multipart'
+    assert tuple(field.name for field in config.fields) == ('order_id', 'xml')
 
 
 def test_standard_cost_obsolete_action_has_complete_html_contract():

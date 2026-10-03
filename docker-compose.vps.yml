@@ -27,9 +27,9 @@ services:
       redis: {condition: service_healthy}
       rabbitmq: {condition: service_healthy}
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8000/health/ || exit 1"]
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8000/ready/ || exit 1"]
       interval: 30s
-      timeout: 5s
+      timeout: 10s
       retries: 5
       start_period: 600s
 
@@ -159,10 +159,9 @@ services:
       start_period: 30s
 
   cloudflared:
-    image: cloudflare/cloudflared:2025.7.0
+    image: cloudflare/cloudflared:2026.9.1
     restart: unless-stopped
-    command:
-      ["tunnel", "--no-autoupdate", "--metrics", "127.0.0.1:${TUNNEL_METRICS_PORT:-20242}", "run"]
+    command: ["tunnel", "--no-autoupdate", "--metrics", "${CLOUDFLARED_METRICS_ADDRESS:-127.0.0.1:20249}", "run"]
     environment:
       TUNNEL_TOKEN: ${TUNNEL_TOKEN:?TUNNEL_TOKEN is required}
     network_mode: host
@@ -171,7 +170,7 @@ services:
     depends_on:
       nginx: {condition: service_healthy}
     healthcheck:
-      test: ["CMD", "cloudflared", "--version"]
+      test: ["CMD", "cloudflared", "tunnel", "--metrics", "${CLOUDFLARED_METRICS_ADDRESS:-127.0.0.1:20249}", "ready"]
       interval: 30s
       timeout: 10s
       retries: 5

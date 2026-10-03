@@ -147,6 +147,17 @@ class StockBalanceSerializer(SingleInstanceInventorySerializerMixin, serializers
 
 
 class StockMovementSerializer(SingleInstanceInventorySerializerMixin, serializers.ModelSerializer):
+    def to_internal_value(self, data):
+        raise serializers.ValidationError(
+            {'detail': 'Ledger somente leitura. Utilize as operações de domínio.'}
+        )
+
+    def create(self, validated_data):
+        raise serializers.ValidationError('Utilize as operações de domínio.')
+
+    def update(self, instance, validated_data):
+        raise serializers.ValidationError('Movimentos contabilizados são imutáveis.')
+
     class Meta:
         model = StockMovement
         fields = (
@@ -192,6 +203,85 @@ class StockMovementSerializer(SingleInstanceInventorySerializerMixin, serializer
         ):
             pass
         self._run_model_clean(self._instance_for_clean(attrs))
+        return attrs
+
+
+class StockIssueSerializer(SingleInstanceInventorySerializerMixin, serializers.ModelSerializer):
+    stock_balance = serializers.PrimaryKeyRelatedField(
+        queryset=StockBalance.objects.select_related(
+            'product', 'lot', 'warehouse', 'location', 'unit'
+        ),
+        required=False,
+    )
+    reference = serializers.CharField(max_length=120, required=False, allow_blank=True)
+    notes = serializers.CharField(max_length=4000, required=False, allow_blank=True)
+
+    class Meta:
+        model = StockMovement
+        fields = (
+            'stock_balance',
+            'quantity',
+            'reference',
+            'notes',
+            'product',
+            'lot',
+            'unit',
+            'from_warehouse',
+            'from_location',
+            'reason',
+        )
+        extra_kwargs = {
+            field: {'required': False, 'allow_null': False}
+            for field in ('product', 'lot', 'unit', 'from_warehouse', 'from_location', 'reason')
+        }
+
+    def validate(self, attrs):
+        balance = attrs.pop('stock_balance', None)
+        reference = attrs.pop('reference', '')
+        notes = attrs.pop('notes', '')
+        if balance is not None:
+            if balance.quality_status != 'approved':
+                raise serializers.ValidationError(
+                    {'stock_balance': 'Saída exige o saldo selecionado aprovado.'}
+                )
+            identity_fields = (
+                'product',
+                'lot',
+                'unit',
+                'from_warehouse',
+                'from_location',
+                'reason',
+            )
+            if any(field in attrs for field in identity_fields):
+                raise serializers.ValidationError(
+                    {'stock_balance': 'Informe somente o saldo, sem sobrescrever suas dimensões.'}
+                )
+            attrs.update(
+                product=balance.product,
+                lot=balance.lot,
+                unit=balance.unit,
+                from_warehouse=balance.warehouse,
+                from_location=balance.location,
+                reason=notes or 'Saída operacional',
+            )
+        else:
+            missing = {
+                field: 'Este campo é obrigatório.'
+                for field in ('product', 'lot', 'unit', 'from_warehouse', 'from_location', 'reason')
+                if not attrs.get(field)
+            }
+            if missing:
+                raise serializers.ValidationError(missing)
+        movement = StockMovement(
+            **attrs,
+            document_reference=reference,
+            movement_type=StockMovement.MovementType.ISSUE,
+            quality_status='approved',
+        )
+        self._run_model_clean(movement)
+        attrs['document_reference'] = reference
+        if balance is not None:
+            attrs['stock_balance_id'] = balance.pk
         return attrs
 
 

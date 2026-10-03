@@ -317,6 +317,104 @@ def build_advanced_filters(resource, params):
     return tuple(definitions)
 
 
+def _build_authorized_resource_form(resource, *, update=False):
+    base_form = build_resource_form(resource, update=update)
+
+    class AuthorizationFormMixin(forms.ModelForm):
+        def __init__(self, *args, request=None, **kwargs):
+            kwargs['request'] = request
+            super().__init__(*args, **kwargs)
+            self.authorization_request = request
+            from files.models import (
+                ProtectedFile,
+                ProtectedFileAccessRule,
+                ProtectedFileAuditTrail,
+                SecureFileLink,
+            )
+            from files.selectors import accessible_protected_files
+            from knowledge.models import RAGChatSession, RAGChatMessage
+            from workflow.models import ApprovalTask
+
+            user = getattr(request, 'user', None)
+            for field in self.fields.values():
+                queryset = getattr(field, 'queryset', None)
+                if queryset is None:
+                    continue
+                model = queryset.model
+                if model is ProtectedFile:
+                    permission = 'manage' if resource.model is ProtectedFileAccessRule else 'view'
+                    field.queryset = queryset.filter(
+                        pk__in=accessible_protected_files(user, permission).values('pk')
+                    )
+                elif model in (ProtectedFileAccessRule, ProtectedFileAuditTrail, SecureFileLink):
+                    permission = 'manage' if model is ProtectedFileAccessRule else 'view'
+                    field.queryset = queryset.filter(
+                        protected_file_id__in=accessible_protected_files(user, permission).values(
+                            'pk'
+                        )
+                    )
+                elif model in (RAGChatSession, RAGChatMessage):
+                    owner_field = 'created_by' if model is RAGChatSession else 'session__created_by'
+                    field.queryset = (
+                        queryset.filter(**{owner_field: user}) if user else queryset.none()
+                    )
+            if resource.model is ApprovalTask:
+                for name in ('status', 'decision_comments', 'decided_by', 'decided_at'):
+                    self.fields.pop(name, None)
+                if not self.instance.pk and user:
+                    self.instance.requested_by = user
+
+        def clean(self):
+            cleaned = super().clean()
+            from files.models import ProtectedFileAccessRule
+            from workflow.models import ApprovalTask, WorkflowDelegation
+            from integrations.models import IntegrationConnector
+
+            user = getattr(self.authorization_request, 'user', None)
+            if resource.model is ProtectedFileAccessRule:
+                targets = [cleaned.get('protected_file')]
+                if self.instance.pk:
+                    targets.append(
+                        ProtectedFileAccessRule.objects.get(pk=self.instance.pk).protected_file
+                    )
+                if any(
+                    target is not None and not target.user_can_access(user, permission='manage')
+                    for target in targets
+                ):
+                    raise PermissionDenied('A gestão da ACL exige gestão de ambos os arquivos.')
+            if resource.model is ApprovalTask and self.instance.pk:
+                previous = ApprovalTask.objects.get(pk=self.instance.pk)
+                try:
+                    previous.validate_sensitive_changes(user, cleaned)
+                except ValidationError as error:
+                    raise PermissionDenied(error.message_dict) from error
+            if resource.model is WorkflowDelegation and cleaned.get('from_user'):
+                previous = (
+                    WorkflowDelegation.objects.get(pk=self.instance.pk)
+                    if self.instance.pk
+                    else self.instance
+                )
+                try:
+                    previous.validate_actor(user, cleaned)
+                except ValidationError as error:
+                    raise PermissionDenied(error.message_dict) from error
+            if resource.model is IntegrationConnector:
+                previous = (
+                    IntegrationConnector.objects.get(pk=self.instance.pk)
+                    if self.instance.pk
+                    else self.instance
+                )
+                try:
+                    previous.validate_fiscal_management(user, cleaned)
+                except ValidationError as error:
+                    raise PermissionDenied(error.message_dict) from error
+            return cleaned
+
+    # MRO inserts the generated resource form before ModelForm, preserving its
+    # request-aware initialization and validators without a variable base class.
+    return type('AuthorizedResourceForm', (AuthorizationFormMixin, base_form), {})
+
+
 def _annotate_form_accessibility(form):
     for name, field in form.fields.items():
         bound_field = form[name]
@@ -1558,7 +1656,7 @@ class ResourceCreateView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_class(self):
-        return build_resource_form(self.get_resource())
+        return _build_authorized_resource_form(self.get_resource())
 
     def get_form_initial(self):
         return {}
@@ -1678,7 +1776,7 @@ class ResourceCreateView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
                 locked_order.save()
                 obj = locked_order
             else:
-                obj.save()
+                obj.save(**form.resource_save_kwargs())
             form.instance = obj
             form.save_m2m()
             inline_change_counts = {}
@@ -1871,7 +1969,7 @@ class ResourceUpdateView(ResourceCreateView):
         return super(ResourceCreateView, self).dispatch(request, *args, **kwargs)
 
     def get_form_class(self):
-        return build_resource_form(self.get_resource(), update=True)
+        return _build_authorized_resource_form(self.get_resource(), update=True)
 
     def get_context_data(self, **kwargs):
         obj = self.get_object()
@@ -1914,6 +2012,17 @@ class ResourceUpdateView(ResourceCreateView):
             self.save_object_and_inline_formsets(form, inline_formsets, action='updated')
         except (_InlineRevalidationError, _OrderRevalidationError) as exc:
             _add_validation_error_to_form(exc.form, exc.error)
+            self.annotate_inline_formsets(inline_formsets)
+            return self.render_to_response(
+                self.get_context_data(form=form, inline_formsets=inline_formsets)
+            )
+        except ValidationError as exc:
+            if self.get_resource().app_label != 'finance':
+                raise
+            # The persistence savepoint has already rolled back parent,
+            # relationships and events. Never retry a rejected domain write.
+            _add_validation_error_to_form(form, exc)
+            _annotate_form_accessibility(form)
             self.annotate_inline_formsets(inline_formsets)
             return self.render_to_response(
                 self.get_context_data(form=form, inline_formsets=inline_formsets)
@@ -1967,6 +2076,19 @@ class ResourceExecutionView(ResourceUpdateView):
 
 class ResourceDeleteView(LoginRequiredMixin, ResourceContextMixin, TemplateView):
     template_name = 'app/resource_confirm_delete.html'
+
+    def get_object(self):
+        from integrations.models import IntegrationConnector
+
+        obj = super().get_object()
+        # Both the confirmation GET and destructive POST resolve through this
+        # guard, after the ordinary resource view/delete permission checks.
+        if isinstance(obj, IntegrationConnector):
+            try:
+                obj.validate_fiscal_management(self.request.user, {})
+            except ValidationError as error:
+                raise PermissionDenied(error.message_dict) from error
+        return obj
 
     def dispatch(self, request, *args, **kwargs):
         self.get_module()

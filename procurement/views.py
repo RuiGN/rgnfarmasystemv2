@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -23,6 +24,7 @@ from procurement.serializers import (
     PurchaseOrderSerializer,
     PurchaseReceiptItemSerializer,
     PurchaseReceiptSerializer,
+    PurchaseReceiptStockPostingSerializer,
     PurchaseRequisitionItemSerializer,
     PurchaseRequisitionSerializer,
     QuotationRequestSerializer,
@@ -218,6 +220,16 @@ class PurchaseOrderItemViewSet(SingleInstanceProcurementViewSet):
 
 
 class PurchaseReceiptViewSet(SingleInstanceProcurementViewSet):
+    def perform_create(self, serializer):
+        from rest_framework.exceptions import ValidationError
+
+        try:
+            serializer.save()
+        except DjangoValidationError as error:
+            raise ValidationError(_validation_response_payload(error)) from error
+
+    perform_update = perform_create
+
     queryset = PurchaseReceipt.objects.select_related('order', 'nfe_xml_file').prefetch_related(
         'items__product', 'items__unit'
     )
@@ -244,9 +256,16 @@ class PurchaseReceiptViewSet(SingleInstanceProcurementViewSet):
             lambda receipt: receipt.release_quality(quality_status=quality_status)
         )
 
+    @extend_schema(
+        request=PurchaseReceiptStockPostingSerializer, responses=PurchaseReceiptSerializer
+    )
     @action(detail=True, methods=['post'])
     def post_stock(self, request, pk=None):
-        return self._transition_response(lambda receipt: receipt.post_stock())
+        serializer = PurchaseReceiptStockPostingSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return self._transition_response(
+            lambda receipt: receipt.post_stock(**serializer.validated_data, user=request.user)
+        )
 
     @action(
         detail=False,
@@ -278,6 +297,16 @@ class PurchaseReceiptViewSet(SingleInstanceProcurementViewSet):
 
 
 class PurchaseReceiptItemViewSet(SingleInstanceProcurementViewSet):
+    def perform_create(self, serializer):
+        from rest_framework.exceptions import ValidationError
+
+        try:
+            serializer.save()
+        except DjangoValidationError as error:
+            raise ValidationError(_validation_response_payload(error)) from error
+
+    perform_update = perform_create
+
     queryset = PurchaseReceiptItem.objects.select_related(
         'receipt', 'order_item', 'product', 'unit'
     )

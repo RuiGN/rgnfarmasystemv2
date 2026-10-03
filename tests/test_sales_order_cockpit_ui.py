@@ -17,7 +17,6 @@ from finance.models import (
 )
 from fiscal.models import FiscalCompany, FiscalDocument
 from inventory.models import (
-    StockBalance,
     StockLot,
     StockMovement,
     StockQualityStatus,
@@ -110,7 +109,7 @@ class SalesOrderCockpitUiTests(TestCase):
         self.assertContains(response, 'Faturamento e liquidação')
 
     def test_sod_items_tab_permissions(self):
-        item = SalesOrderItem.objects.create(
+        SalesOrderItem.objects.create(
             order=self.order,
             product=self.product,
             quantity=Decimal('100.0000'),
@@ -121,13 +120,13 @@ class SalesOrderCockpitUiTests(TestCase):
 
         # Sem permissão de itens -> aviso SoD
         response = self.client.get(self.cockpit_url)
-        self.assertContains(response, 'Segregação de deveres: você não possui permissão para visualizar os itens')
+        self.assertContains(
+            response, 'Segregação de deveres: você não possui permissão para visualizar os itens'
+        )
         self.assertNotContains(response, 'PA-SHAMP-01')
 
         # Com permissão de itens -> tabela de itens renderizada
-        perm = Permission.objects.get(
-            content_type__app_label='crm', codename='view_salesorderitem'
-        )
+        perm = Permission.objects.get(content_type__app_label='crm', codename='view_salesorderitem')
         self.user.user_permissions.add(perm)
 
         response = self.client.get(self.cockpit_url)
@@ -137,7 +136,7 @@ class SalesOrderCockpitUiTests(TestCase):
         self.assertContains(response, '50,00')
 
     def test_sod_credit_tab_permissions(self):
-        profile = CustomerProfile.objects.create(
+        CustomerProfile.objects.create(
             customer=self.customer,
             credit_limit=Decimal('50000.0000'),
             credit_hold=False,
@@ -148,7 +147,10 @@ class SalesOrderCockpitUiTests(TestCase):
 
         # Sem permissão -> aviso SoD
         response = self.client.get(self.cockpit_url)
-        self.assertContains(response, 'Segregação de deveres: você não possui permissão para visualizar a análise de crédito')
+        self.assertContains(
+            response,
+            'Segregação de deveres: você não possui permissão para visualizar a análise de crédito',
+        )
 
         # Com permissão -> Limites e régua de crédito
         perm = Permission.objects.get(
@@ -182,18 +184,27 @@ class SalesOrderCockpitUiTests(TestCase):
             manufacturing_date=timezone.now().date() - timedelta(days=10),
             expiry_date=timezone.now().date() + timedelta(days=700),
         )
-        balance = StockBalance.objects.create(
+        adjustment_user = get_user_model().objects.create_user(
+            username='sales-stock-preparer', email='sales-stock@example.com'
+        )
+        adjustment_user.user_permissions.add(
+            Permission.objects.get(
+                content_type__app_label='inventory', codename='add_stockmovement'
+            )
+        )
+        StockMovement.adjust_stock(
             product=self.product,
             lot=lot,
             warehouse=warehouse,
             location=location,
             quality_status=StockQualityStatus.APPROVED,
-            quantity=Decimal('200.0000'),
-            reserved_quantity=Decimal('0.0000'),
+            quantity_delta=Decimal('200.0000'),
             unit=self.unit_un,
+            reason='Saldo inicial para conferência WMS do pedido de venda',
+            user=adjustment_user,
         )
 
-        item = SalesOrderItem.objects.create(
+        SalesOrderItem.objects.create(
             order=self.order,
             product=self.product,
             quantity=Decimal('50.0000'),
@@ -202,7 +213,9 @@ class SalesOrderCockpitUiTests(TestCase):
 
         # Sem permissão de estoque -> aviso SoD
         response = self.client.get(self.cockpit_url)
-        self.assertContains(response, 'Segregação de deveres: você não possui permissão para visualizar o estoque')
+        self.assertContains(
+            response, 'Segregação de deveres: você não possui permissão para visualizar o estoque'
+        )
 
         # Com permissão de estoque -> Tabela WMS de conferência
         perm_stock = Permission.objects.get(
@@ -226,7 +239,7 @@ class SalesOrderCockpitUiTests(TestCase):
             street_number='500',
             neighborhood='Bela Vista',
         )
-        fiscal_doc = FiscalDocument.objects.create(
+        FiscalDocument.objects.create(
             company=fiscal_company,
             partner=self.customer,
             document_type=FiscalDocument.DocumentType.OUTBOUND,
@@ -246,7 +259,10 @@ class SalesOrderCockpitUiTests(TestCase):
 
         # Sem permissão fiscal -> aviso SoD
         response = self.client.get(self.cockpit_url)
-        self.assertContains(response, 'Segregação de deveres: você não possui permissão para visualizar documentos fiscais')
+        self.assertContains(
+            response,
+            'Segregação de deveres: você não possui permissão para visualizar documentos fiscais',
+        )
 
         # Com permissão fiscal -> Dados da NF-e
         perm_fiscal = Permission.objects.get(
@@ -284,25 +300,24 @@ class SalesOrderCockpitUiTests(TestCase):
             category=category,
             financial_account=account,
             sale_reference=self.order.order_number,
-            status=FinancialTitle.Status.PARTIALLY_SETTLED,
+            status=FinancialTitle.Status.PENDING,
             due_date=timezone.now().date() + timedelta(days=30),
             original_amount=Decimal('5000.0000'),
-            paid_amount=Decimal('2500.0000'),
-            open_amount=Decimal('2500.0000'),
         )
-        settlement = FinancialSettlement.objects.create(
-            title=title,
+        title.approve(user=self.user)
+        title.register_settlement(
             financial_account=account,
             settlement_date=timezone.now().date(),
             method=FinancialSettlement.Method.PIX,
             amount=Decimal('2500.0000'),
-            net_amount=Decimal('2500.0000'),
-            status=FinancialSettlement.Status.ACTIVE,
         )
 
         # Sem permissão financeira -> aviso SoD
         response = self.client.get(self.cockpit_url)
-        self.assertContains(response, 'Segregação de deveres: você não possui permissão para visualizar os títulos financeiros')
+        self.assertContains(
+            response,
+            'Segregação de deveres: você não possui permissão para visualizar os títulos financeiros',
+        )
 
         # Com permissão financeira e de baixas
         perm_title = Permission.objects.get(

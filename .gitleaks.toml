@@ -13,3 +13,10 @@ regexes = [
   '''CHANGE_ME_[A-Z0-9_]+''',
   '''example\.invalid''',
 ]
+
+[[allowlists]]
+description = "SHA-256 of the historical generated OpenAPI artifact, not a credential"
+condition = "AND"
+paths = ['''^docs/validation/evidence/corrections/first-frozen-source-artifact-reconciliation\.json$''']
+regexTarget = "line"
+regexes = ['''^\s*"docs/validation/evidence/corrections/final-openapi\.yml": "[0-9a-f]{64}",?$''']

@@ -1,0 +1,14 @@
+{
+  "manifested_files": 2055,
+  "missing": [
+    ".env.development.example"
+  ],
+  "mismatched": [],
+  "requirements_checked": 98,
+  "pin_mismatches": [],
+  "python": "3.14.7",
+  "image": "rgnfarmasystem:corrections-final",
+  "image_id": "sha256:7a5b6d33a5a79cce25336812acac5e31addca90ac8b2766730fed2f273816265",
+  "snapshot": "/home/deploy/.hermes/cache/scratch/rgnfamarsystemv2-final-candidate",
+  "release_approved": false
+}

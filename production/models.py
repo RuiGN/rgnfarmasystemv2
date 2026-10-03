@@ -184,7 +184,27 @@ class ProductionOrder(SingleInstanceModel):
         verbose_name = 'ordem de produção'
         verbose_name_plural = 'ordens de produção'
 
+    @transaction.atomic
     def save(self, *args, **kwargs):
+        cancellation = kwargs.pop('_cancellation', False)
+        persisted = (
+            type(self).objects.select_for_update().filter(pk=self.pk).first() if self.pk else None
+        )
+        if not cancellation and (
+            (
+                self.status == self.Status.CANCELLED
+                and (persisted is None or persisted.status != self.Status.CANCELLED)
+            )
+            or (
+                persisted is not None
+                and persisted.status == self.Status.CANCELLED
+                and any(
+                    getattr(self, name) != getattr(persisted, name)
+                    for name in ('status', 'cancelled_by_id', 'cancelled_at', 'cancel_reason')
+                )
+            )
+        ):
+            raise ValidationError({'status': 'Use cancel para cancelar e liberar reservas.'})
         if not self.order_number:
             self.order_number = self.generate_order_number()
         if not self.batch_number:
@@ -443,23 +463,35 @@ class ProductionOrder(SingleInstanceModel):
     def cancel(self, reason, user):
         user = self._require_lifecycle_actor(user)
         order = self._locked_lifecycle_order()
+        if order.status == order.Status.CANCELLED:
+            if order.cancelled_by_id != user.pk:
+                raise ValidationError({'status': 'A ordem já foi cancelada por outro ator.'})
+            self._sync_lifecycle_state(order)
+            return
         order._require_status(order.CANCELLABLE_STATUSES)
         if not reason:
             raise ValidationError({'cancel_reason': 'Informe a justificativa do cancelamento.'})
+        from production.services import ProductionOrderOperations
+
+        movements = ProductionOrderOperations(order, user)._release_reservations_for_cancellation()
         previous_status = order.status
         order.status = order.Status.CANCELLED
         order.cancel_reason = reason
         order.cancelled_by = user
         order.cancelled_at = timezone.now()
         order.save(
-            update_fields=['status', 'cancel_reason', 'cancelled_by', 'cancelled_at', 'updated_at']
+            update_fields=['status', 'cancel_reason', 'cancelled_by', 'cancelled_at', 'updated_at'],
+            _cancellation=True,
         )
         order._record_lifecycle_audit(
             action='production.order.cancelled',
             message='Ordem de produção cancelada.',
             previous_status=previous_status,
             user=user,
-            safe_context={'reason_recorded': True},
+            safe_context={
+                'reason_recorded': True,
+                **({'release_movement_ids': [m.pk for m in movements]} if movements else {}),
+            },
         )
         self._sync_lifecycle_state(order)
 
@@ -468,6 +500,64 @@ class ProductionOrder(SingleInstanceModel):
 
 
 class MaterialConsumption(SingleInstanceModel):
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        instance = super().from_db(db, field_names, values)
+        instance._loaded_values = dict(zip(field_names, values))
+        return instance
+
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        # Never acquire an allocation lock before its parent order.
+        persisted_order_id = (
+            type(self).objects.filter(pk=self.pk).values_list('order_id', flat=True).first()
+            if self.pk
+            else None
+        )
+        if persisted_order_id is not None and persisted_order_id != self.order_id:
+            raise ValidationError({'order': 'A ordem de uma alocação é imutável.'})
+        order = ProductionOrder.objects.select_for_update().get(pk=self.order_id)
+        if order.status in {order.Status.CANCELLED, order.Status.COMPLETED, order.Status.CLOSED}:
+            raise ValidationError({'order': 'A ordem terminal não permite alterar alocações.'})
+        self.order = order
+        if persisted_order_id is None:
+            result = super().save(*args, **kwargs)
+        else:
+            locked = type(self).objects.select_for_update().get(pk=self.pk)
+            requested = kwargs.get('update_fields')
+            loaded = getattr(self, '_loaded_values', {})
+            fields = [
+                field
+                for field in self._meta.concrete_fields
+                if not field.primary_key and field.name not in {'created_at', 'updated_at'}
+            ]
+            if requested is not None:
+                changed = [
+                    field
+                    for field in fields
+                    if field.name in requested or field.attname in requested
+                ]
+            else:
+                changed = [
+                    field
+                    for field in fields
+                    if getattr(self, field.attname)
+                    != loaded.get(field.attname, getattr(locked, field.attname))
+                ]
+            for field in changed:
+                setattr(locked, field.attname, getattr(self, field.attname))
+            locked.order = order
+            locked.full_clean()
+            result = super(MaterialConsumption, locked).save(
+                *args,
+                **{**kwargs, 'update_fields': [field.name for field in changed] + ['updated_at']},
+            )
+            self.__dict__.update(locked.__dict__)
+        self._loaded_values = {
+            field.attname: getattr(self, field.attname) for field in self._meta.concrete_fields
+        }
+        return result
+
     class QualityStatus(models.TextChoices):
         QUARANTINE = 'quarantine', 'Quarentena'
         APPROVED = 'approved', 'Aprovado'
@@ -664,6 +754,19 @@ class MaterialConsumption(SingleInstanceModel):
         from inventory.models import StockMovement
 
         errors = {}
+        order_status = (
+            ProductionOrder.objects.filter(pk=self.order_id)
+            .values_list('status', flat=True)
+            .first()
+        )
+        if order_status in {
+            ProductionOrder.Status.CANCELLED,
+            ProductionOrder.Status.COMPLETED,
+            ProductionOrder.Status.CLOSED,
+        }:
+            persisted = _persisted_values(self)
+            if persisted is None or _has_persisted_changes(self, persisted):
+                errors['order'] = 'A ordem terminal não permite alterar alocações.'
         if self.component and self.component.formula_id != self.order.formula_id:
             errors['component'] = 'O componente deve pertencer à fórmula da ordem.'
         if self.component and self.component.material_id != self.material_id:

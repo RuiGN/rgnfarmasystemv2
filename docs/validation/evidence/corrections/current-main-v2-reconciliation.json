@@ -1,0 +1,36 @@
+{
+  "candidate": "/home/deploy/.hermes/cache/scratch/rgnfarmasystem-current-main-candidate-v2",
+  "frozen_sources_verified": 2151,
+  "source_differences": [],
+  "process_exit": 0,
+  "pytest_passed": 2418,
+  "pytest_subtests_passed": 42,
+  "junit_suite_totals": [
+    {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "2460",
+      "time": "997.113",
+      "timestamp": "2026-10-02T23:09:13.278173-03:00",
+      "hostname": "e99deb68d911"
+    }
+  ],
+  "serialized_testcases": 2418,
+  "failures": 0,
+  "errors": 0,
+  "skips": 0,
+  "coverage": {
+    "covered": 26442,
+    "total": 30639,
+    "percentage": 86.30177225105258
+  },
+  "artifacts": {
+    "current-main-v2-suite-junit.xml": "3f137fc1bdeced0f74fcb8692c881d2ad87ad33de6aa8f52ba69dbe2114fb322",
+    "current-main-v2-coverage.xml": "381b6dc444cb371d0e5d0fd2e165499753b21aae0a6ff0b913b3f6acea494ba8",
+    "current-main-v2-openapi.yml": "5b88ebf03c17e8bf7d5f72b550bec87d76deacb293e78b75834a31c0c63bc13c"
+  },
+  "release_approved": false,
+  "reason": "MyPy failure and three independently reproduced purchase-stock blockers; later corrections need new complete validation"
+}

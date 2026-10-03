@@ -9,11 +9,11 @@ from production.models import ProductionOrder
 from qa.models import BatchRecordChecklistItem
 from workflow.models import ApprovalTask, WorkflowNotification
 
-from .presentation import DeadlineItem
+from .presentation import DeadlineItem, _deadline_local_date
 
 
 def _deadline_tone(due_at: date | datetime) -> tuple[str, str]:
-    due_date = due_at.date() if isinstance(due_at, datetime) else due_at
+    due_date = _deadline_local_date(due_at)
     if due_date < timezone.localdate():
         return 'danger', 'feather-alert-triangle'
     if due_date == timezone.localdate():

@@ -1,0 +1,28 @@
+{
+  "approved": false,
+  "snapshot": "/home/deploy/.hermes/cache/scratch/rgnfamarsystemv2-final-candidate",
+  "manifest": "/home/deploy/.hermes/cache/scratch/rgnfamarsystemv2-final-candidate-manifest.json",
+  "junit": "docs/validation/evidence/corrections/final-suite-junit.xml",
+  "coverage_xml": "docs/validation/evidence/corrections/final-coverage.xml",
+  "pytest_result": {
+    "passed": 2064,
+    "failed": 4,
+    "errors": 46,
+    "subtests_passed": 42,
+    "normal_test_cases": 2114,
+    "elapsed_seconds": 526.47,
+    "skipped": 0
+  },
+  "coverage": {
+    "lines_covered": 24480,
+    "lines_valid": 28626,
+    "percent": 85.52
+  },
+  "failure_categories": {
+    "demo_finance_idempotency": 1,
+    "stale_action_evidence_hash": 3,
+    "report_fixture_illegal_overdue_creation": 46
+  },
+  "database_state": "available; no restart or OOM kill observed",
+  "original_project_applied": false
+}

@@ -1,0 +1,83 @@
+{
+  "files": [
+    {
+      "path": "tests/test_audit_cockpit_ui.py",
+      "tests": 10,
+      "assertions": 79,
+      "preserved": true
+    },
+    {
+      "path": "tests/test_controlled_document_cockpit_ui.py",
+      "tests": 9,
+      "assertions": 62,
+      "preserved": true
+    },
+    {
+      "path": "tests/test_lot_release_cockpit_ui.py",
+      "tests": 11,
+      "assertions": 51,
+      "preserved": true
+    },
+    {
+      "path": "tests/test_market_complaint_cockpit_ui.py",
+      "tests": 8,
+      "assertions": 47,
+      "preserved": true
+    },
+    {
+      "path": "tests/test_production_order_cockpit_ui.py",
+      "tests": 8,
+      "assertions": 33,
+      "preserved": true
+    },
+    {
+      "path": "tests/test_quality_event_cockpit_ui.py",
+      "tests": 10,
+      "assertions": 54,
+      "preserved": true
+    },
+    {
+      "path": "tests/test_sales_order_cockpit_ui.py",
+      "tests": 10,
+      "assertions": 54,
+      "preserved": true
+    },
+    {
+      "path": "tests/test_supplier_cockpit_ui.py",
+      "tests": 9,
+      "assertions": 56,
+      "preserved": true
+    },
+    {
+      "path": "tests/test_master_formula_cockpit_ui.py",
+      "tests": 7,
+      "assertions": 23,
+      "preserved": true
+    },
+    {
+      "path": "tests/test_auxiliary_reference_data.py",
+      "tests": 10,
+      "assertions": 54,
+      "preserved": true
+    },
+    {
+      "path": "tests/test_master_category_composite_identity.py",
+      "tests": 2,
+      "assertions": 7,
+      "preserved": true
+    },
+    {
+      "path": "tests/test_procurement_nfe_import.py",
+      "tests": 24,
+      "assertions": 108,
+      "preserved": true
+    }
+  ],
+  "tests": 118,
+  "assertions": 628,
+  "runtime_assertions_match_remote_main": true,
+  "assertion_kinds": [
+    "ast.Assert",
+    "self.assert* calls"
+  ]
+}

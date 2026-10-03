@@ -201,3 +201,36 @@ class ResourceActionView(LoginRequiredMixin, ResourceContextMixin, View):
 
 class CollectionResourceActionView(ResourceActionView):
     detail = False
+
+    def _success_url(self):
+        config = self.get_config()
+        if config.key == ('inventory', 'movements', 'issue') and not self.get_resource().can_view(
+            self.request.user
+        ):
+            return reverse(
+                'app:collection_action',
+                kwargs={
+                    'module_slug': config.module_slug,
+                    'resource_slug': config.resource_slug,
+                    'action_name': config.action_name,
+                },
+            )
+        return super()._success_url()
+
+    @method_decorator(csrf_protect)
+    def dispatch(self, request, *args, **kwargs):
+        # An authorized stock operator can issue without being granted generic
+        # ledger viewing/editing rights. Other actions retain their resource gate.
+        if (kwargs.get('module_slug'), kwargs.get('resource_slug'), kwargs.get('action_name')) == (
+            'inventory',
+            'movements',
+            'issue',
+        ):
+            if not request.user.is_authenticated:
+                return self.handle_no_permission()
+            self.get_module()
+            self.get_resource()
+            if not request.user.has_perms(self.get_config().permissions):
+                raise PermissionDenied('Usuário sem permissão para executar esta ação.')
+            return View.dispatch(self, request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)

@@ -1,0 +1,50 @@
+{
+  "release_approved": false,
+  "snapshot": "/home/deploy/.hermes/cache/scratch/rgnfamarsystemv2-final-candidate-v2",
+  "junit_declared_cases": 2189,
+  "junit_serialized_testcases": 2147,
+  "pytest": {
+    "passed": 2145,
+    "failed": 2,
+    "errors": 0,
+    "skipped": 0,
+    "subtests_passed": 42
+  },
+  "coverage": {
+    "covered": 24573,
+    "valid": 28648,
+    "percent": 85.78
+  },
+  "failures": [
+    {
+      "class": "tests.test_workspace_ui.WorkspaceDeadlineBuilderTests",
+      "name": "test_builder_orders_authorized_items_and_excludes_terminal_or_foreign_records",
+      "trace": "tests/test_workspace_ui.py:616: in test_builder_orders_authorized_items_and_excludes_terminal_or_foreign_records\n    assert workflow[0].temporal_label == 'Vencido'\nE   AssertionError: assert 'Vence hoje' == 'Vencido'\nE     \nE     - Vencido\nE     + Vence hoje"
+    },
+    {
+      "class": "tests.test_design_system_components",
+      "name": "test_deadline_item_uses_ptbr_temporal_labels",
+      "trace": "tests/test_design_system_components.py:76: in test_deadline_item_uses_ptbr_temporal_labels\n    assert overdue.temporal_label == 'Vencido'\nE   AssertionError: assert 'Vence hoje' == 'Vencido'\nE     \nE     - Vencido\nE     + Vence hoje"
+    }
+  ],
+  "dependency_audit": {
+    "direct_pins_checked": 98,
+    "vulnerabilities": 0,
+    "scope": "Pinned requirements only; --no-deps --disable-pip, not a fully hashed/transitive lock audit"
+  },
+  "static": {
+    "ruff_check": "passed",
+    "ruff_format": "failed; one new sequential-demo test file required formatting",
+    "mypy": "passed in 385 source files",
+    "bandit": "passed"
+  },
+  "management_gates": "all eight passed",
+  "demo_review": "passed; 9 tests",
+  "clean_build": "passed",
+  "original_applied": false,
+  "remaining": [
+    "Fix preexisting local-date deadline bug reproduced by two tests",
+    "Pure formatting already fixed in workspace with identical AST",
+    "New freeze, full suite, quality and final source reconciliation required"
+  ]
+}

@@ -365,45 +365,65 @@ class StockMovement(SingleInstanceModel):
 
     @classmethod
     def receive_purchase_receipt_item(
-        cls, receipt_item, warehouse, location, quality_status=StockQualityStatus.QUARANTINE
+        cls,
+        receipt_item,
+        warehouse,
+        location,
+        quality_status=StockQualityStatus.QUARANTINE,
+        user=None,
     ):
-        if receipt_item.accepted_quantity <= 0:
-            raise ValidationError({'quantity': 'A quantidade aceita deve ser maior que zero.'})
-        product = receipt_item.product
-        unit = receipt_item.unit
-        cls._validate_address(warehouse, location)
         with transaction.atomic():
-            lot, _created = StockLot.objects.select_for_update().get_or_create(
-                product=product,
-                lot_number=receipt_item.lot_number,
-                sublot_number='',
-                defaults={
-                    'quality_status': quality_status,
-                    'supplier': receipt_item.receipt.order.supplier,
-                    'source_purchase_receipt_item': receipt_item,
-                    'expiry_date': receipt_item.expiry_date,
-                },
+            from procurement.models import PurchaseOrderItem, PurchaseReceipt, PurchaseReceiptItem
+
+            receipt_id = PurchaseReceiptItem.objects.values_list('receipt_id', flat=True).get(
+                pk=receipt_item.pk
             )
-            if lot.quality_status != quality_status:
+            receipt = PurchaseReceipt.objects.select_for_update().get(pk=receipt_id)
+            receipt_item = PurchaseReceiptItem.objects.select_for_update().get(pk=receipt_item.pk)
+            if receipt_item.receipt_id != receipt.pk:
                 raise ValidationError(
-                    {
-                        'quality_status': (
-                            'O status do recebimento deve corresponder à disposição atual do lote.'
-                        )
-                    }
+                    {'receipt': 'O recebimento do item mudou; repita a operação.'}
                 )
-            if lot.supplier_id is None:
-                lot.supplier = receipt_item.receipt.order.supplier
-                lot.source_purchase_receipt_item = receipt_item
-                lot.expiry_date = receipt_item.expiry_date
-                lot.save(
-                    update_fields=[
-                        'supplier',
-                        'source_purchase_receipt_item',
-                        'expiry_date',
-                        'updated_at',
-                    ]
+            order_item = PurchaseOrderItem.objects.select_for_update(no_key=True).get(
+                pk=receipt_item.order_item_id
+            )
+            receipt_item.receipt = receipt
+            receipt_item.order_item = order_item
+            warehouse, location = cls._lock_purchase_address(warehouse, location)
+            if receipt_item.accepted_quantity <= 0:
+                raise ValidationError({'quantity': 'A quantidade aceita deve ser maior que zero.'})
+            receipt._validate_stock_entry_status(quality_status)
+            existing = list(
+                cls.objects.filter(
+                    source_purchase_receipt_item=receipt_item,
+                    movement_type=cls.MovementType.RECEIPT,
                 )
+            )
+            if existing:
+                if len(existing) != 1:
+                    raise ValidationError({'movement': 'Lançamento histórico duplicado.'})
+                existing[0]._confirm_purchase_receipt_retry(
+                    receipt_item, warehouse, location, quality_status
+                )
+                return existing[0]
+            if (
+                receipt.status == PurchaseReceipt.Status.STOCK_POSTED
+                or receipt.stock_entry_status == PurchaseReceipt.StockEntryStatus.POSTED
+            ):
+                raise ValidationError({'movement': 'Lançamento histórico ausente.'})
+            receipt._validate_first_stock_entry([receipt_item], quality_status)
+            product = receipt_item.product
+            unit = receipt_item.unit
+            lot = cls._purchase_receipt_lot(receipt_item, quality_status)
+            cls._increase_balance(
+                product,
+                lot,
+                warehouse,
+                location,
+                quality_status,
+                receipt_item.accepted_quantity,
+                unit,
+            )
             movement = cls.objects.create(
                 movement_type=cls.MovementType.RECEIPT,
                 product=product,
@@ -414,19 +434,106 @@ class StockMovement(SingleInstanceModel):
                 to_warehouse=warehouse,
                 to_location=location,
                 source_purchase_receipt_item=receipt_item,
+                created_by=user,
                 document_reference=receipt_item.receipt.fiscal_document_number,
                 reason='Recebimento de compra',
             )
-            cls._increase_balance(
-                product,
-                lot,
-                warehouse,
-                location,
-                quality_status,
-                receipt_item.accepted_quantity,
-                unit,
-            )
             return movement
+
+    def _confirm_purchase_receipt_retry(self, receipt_item, warehouse, location, quality_status):
+        # The lot's current disposition/balance may have changed legitimately.
+        # Check receipt economics and source metadata without recreating stock.
+        # Older NF-e purchase entry omitted the lot's manufacturing date even
+        # when the imported item supplied it. Existing NF-e/source links scope
+        # this compatibility exception, but cannot prove when/why a date became
+        # NULL (including later erasure). Missing metadata is not confirmed
+        # equality; never backfill it during a retry. Known dates remain strict.
+        missing_nfe_manufacturing_date = (
+            self.lot.manufacturing_date is None
+            and bool(receipt_item.receipt.nfe_access_key)
+            and bool(receipt_item.receipt.nfe_xml_sha256)
+            and receipt_item.receipt.nfe_xml_file_id is not None
+            and self.lot.source_purchase_receipt_item_id == receipt_item.pk
+            and self.lot.source_production_order_id is None
+            and self.lot.sublot_number == ''
+        )
+        if (
+            self.product_id != receipt_item.product_id
+            or self.unit_id != receipt_item.unit_id
+            or self.quantity != receipt_item.accepted_quantity
+            or self.lot.product_id != receipt_item.product_id
+            or self.lot.lot_number != receipt_item.lot_number
+            or self.lot.supplier_id != receipt_item.receipt.order.supplier_id
+            or self.lot.expiry_date != receipt_item.expiry_date
+            or (
+                self.lot.manufacturing_date != receipt_item.manufacturing_date
+                and not missing_nfe_manufacturing_date
+            )
+            or self.document_reference != receipt_item.receipt.fiscal_document_number
+            or self.to_warehouse_id != warehouse.pk
+            or self.to_location_id != location.pk
+            or self.quality_status != quality_status
+            or receipt_item.order_item.order_id != receipt_item.receipt.order_id
+            or receipt_item.order_item.product_id != receipt_item.product_id
+            or receipt_item.order_item.unit_id != receipt_item.unit_id
+            or receipt_item.product.unit_id != receipt_item.unit_id
+            or receipt_item.rejected_quantity < ZERO_QUANTITY
+            or receipt_item.accepted_quantity + receipt_item.rejected_quantity
+            != receipt_item.received_quantity
+        ):
+            raise ValidationError(
+                {'movement': 'O lançamento existente difere do recebimento ou destino.'}
+            )
+
+    @classmethod
+    def _purchase_receipt_lot(cls, receipt_item, quality_status):
+        product = receipt_item.product
+        lot, _created = StockLot.objects.select_for_update(no_key=True).get_or_create(
+            product=product,
+            lot_number=receipt_item.lot_number,
+            sublot_number='',
+            defaults={
+                'quality_status': quality_status,
+                'supplier': receipt_item.receipt.order.supplier,
+                'source_purchase_receipt_item': receipt_item,
+                'manufacturing_date': receipt_item.manufacturing_date,
+                'expiry_date': receipt_item.expiry_date,
+            },
+        )
+        if lot.quality_status != quality_status:
+            raise ValidationError(
+                {
+                    'quality_status': (
+                        'O status do recebimento deve corresponder à disposição atual do lote.'
+                    )
+                }
+            )
+        if lot.source_production_order_id or (
+            lot.supplier_id is not None
+            and (
+                lot.supplier_id != receipt_item.receipt.order.supplier_id
+                or lot.expiry_date != receipt_item.expiry_date
+                or lot.manufacturing_date != receipt_item.manufacturing_date
+            )
+        ):
+            raise ValidationError(
+                {'lot': 'Lote existente com fornecedor, origem ou validade incompatível.'}
+            )
+        if lot.supplier_id is None:
+            lot.supplier = receipt_item.receipt.order.supplier
+            lot.source_purchase_receipt_item = receipt_item
+            lot.expiry_date = receipt_item.expiry_date
+            lot.manufacturing_date = receipt_item.manufacturing_date
+            lot.save(
+                update_fields=[
+                    'supplier',
+                    'source_purchase_receipt_item',
+                    'manufacturing_date',
+                    'expiry_date',
+                    'updated_at',
+                ]
+            )
+        return lot
 
     @classmethod
     def issue_stock(
@@ -439,10 +546,38 @@ class StockMovement(SingleInstanceModel):
         unit,
         reason,
         quality_status=StockQualityStatus.APPROVED,
+        *,
+        stock_balance_id=None,
     ):
         cls._validate_address(warehouse, location)
         with transaction.atomic():
-            balance = cls._get_balance_for_update(product, lot, warehouse, location, quality_status)
+            if stock_balance_id is None:
+                balance = cls._get_balance_for_update(
+                    product, lot, warehouse, location, quality_status
+                )
+            else:
+                try:
+                    balance = StockBalance.objects.select_for_update().get(pk=stock_balance_id)
+                except StockBalance.DoesNotExist as error:
+                    raise ValidationError(
+                        {'stock_balance': 'Saldo selecionado não encontrado.'}
+                    ) from error
+                expected = (product.pk, lot.pk, warehouse.pk, location.pk, quality_status)
+                actual = (
+                    balance.product_id,
+                    balance.lot_id,
+                    balance.warehouse_id,
+                    balance.location_id,
+                    balance.quality_status,
+                )
+                if actual != expected:
+                    raise ValidationError(
+                        {
+                            'stock_balance': 'O saldo selecionado deve manter as dimensões e estar aprovado.'
+                        }
+                    )
+                cls._validate_address(balance.warehouse, balance.location)
+            cls._validate_balance_unit(balance, unit)
             cls._validate_issue(balance, quantity)
             balance.quantity = (balance.quantity - quantity).quantize(QUANTITY_SCALE)
             balance.full_clean()
@@ -723,19 +858,7 @@ class StockMovement(SingleInstanceModel):
         with transaction.atomic():
             if output.stock_movement_id:
                 return output.stock_movement
-            lot, _created = StockLot.objects.select_for_update().get_or_create(
-                product=output.product,
-                lot_number=output.lot_number,
-                sublot_number=output.sublot_number,
-                defaults={
-                    'quality_status': StockQualityStatus.QUARANTINE,
-                    'source_production_order': output.order,
-                    'manufacturing_date': output.manufacturing_date,
-                    'expiry_date': output.expiry_date,
-                },
-            )
-            cls._validate_production_output_lot(lot, output)
-            lot.full_clean()
+            lot = cls._production_output_lot(output)
             cls._increase_balance(
                 output.product,
                 lot,
@@ -759,6 +882,54 @@ class StockMovement(SingleInstanceModel):
                 reason='Recebimento de produto acabado em quarentena',
                 created_by=user,
             )
+
+    @classmethod
+    def _production_output_lot(cls, output):
+        lot, _created = StockLot.objects.select_for_update(no_key=True).get_or_create(
+            product=output.product,
+            lot_number=output.lot_number,
+            sublot_number=output.sublot_number,
+            defaults={
+                'quality_status': StockQualityStatus.QUARANTINE,
+                'source_production_order': output.order,
+                'manufacturing_date': output.manufacturing_date,
+                'expiry_date': output.expiry_date,
+            },
+        )
+        cls._validate_production_output_lot(lot, output)
+        lot.full_clean()
+        return lot
+
+    @classmethod
+    def _lock_receiving_balances(cls, entries):
+        """Prelock every batch balance before allocating any movement identifier."""
+        from django.db.models import Q
+
+        entries = list(entries)
+        if not entries:
+            return
+        lookup = Q()
+        for product, lot, warehouse, location, quality_status, unit in entries:
+            lookup |= Q(
+                product=product,
+                lot=lot,
+                warehouse=warehouse,
+                location=location,
+                quality_status=quality_status,
+            )
+        list(StockBalance.objects.select_for_update(of=('self',)).filter(lookup).order_by('pk'))
+        for product, lot, warehouse, location, quality_status, unit in sorted(
+            entries, key=lambda entry: tuple(getattr(value, 'pk', value) for value in entry)
+        ):
+            balance, _ = StockBalance.objects.select_for_update().get_or_create(
+                product=product,
+                lot=lot,
+                warehouse=warehouse,
+                location=location,
+                quality_status=quality_status,
+                defaults={'unit': unit},
+            )
+            cls._validate_balance_unit(balance, unit)
 
     @classmethod
     def _increase_balance(cls, product, lot, warehouse, location, quality_status, quantity, unit):
@@ -832,9 +1003,31 @@ class StockMovement(SingleInstanceModel):
             raise ValidationError({'quantity': 'Quantidade indisponível para movimentação.'})
 
     @classmethod
+    def _lock_purchase_address(cls, warehouse, location):
+        """Purchase-only lock order: order items -> warehouse -> location -> site.
+
+        Keep these locks until the outer transaction commits, before any lot,
+        balance or sequence lock. Never trust objects cached by form/serializer.
+        """
+        from masters.models import Site
+
+        if warehouse is None or location is None:
+            raise ValidationError({'location': 'Informe almoxarifado e localização.'})
+        try:
+            warehouse = Warehouse.objects.select_for_update(no_key=True).get(pk=warehouse.pk)
+            location = StorageLocation.objects.select_for_update(no_key=True).get(pk=location.pk)
+            warehouse.site = Site.objects.select_for_update(no_key=True).get(pk=warehouse.site_id)
+        except (Warehouse.DoesNotExist, StorageLocation.DoesNotExist, Site.DoesNotExist) as error:
+            raise ValidationError({'location': 'Destino não encontrado.'}) from error
+        cls._validate_address(warehouse, location)
+        return warehouse, location
+
+    @classmethod
     def _validate_address(cls, warehouse, location):
         if warehouse is None or location is None:
             raise ValidationError({'location': 'Informe almoxarifado e localização.'})
+        if not warehouse.is_active or not location.is_active or not warehouse.site.is_active:
+            raise ValidationError({'location': 'O destino deve estar ativo.'})
         if location.warehouse_id != warehouse.id:
             raise ValidationError(
                 {'location': 'A localização deve pertencer ao almoxarifado informado.'}

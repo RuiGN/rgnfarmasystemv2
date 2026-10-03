@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db.models import Q
+from files.selectors import accessible_protected_files
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
@@ -28,31 +28,7 @@ def _validation_payload(error):
 
 
 def _accessible_protected_files(user):
-    queryset = ProtectedFile.objects.exclude(
-        report_executions__status__in=('pending', 'running', 'failed', 'cancelled')
-    )
-    if not user or not user.is_authenticated or not user.is_active:
-        return queryset.none()
-    if user.is_superuser:
-        return queryset
-    roles = [name.casefold() for name in user.groups.values_list('name', flat=True)]
-    direct_access = (
-        Q(responsible=user)
-        | Q(uploaded_by=user)
-        | Q(
-            access_rules__is_active=True,
-            access_rules__rule_type=ProtectedFileAccessRule.RuleType.USER,
-            access_rules__user=user,
-        )
-    )
-    role_access = Q()
-    if roles:
-        role_access = Q(
-            access_rules__is_active=True,
-            access_rules__rule_type=ProtectedFileAccessRule.RuleType.ROLE,
-            access_rules__role__in=roles,
-        )
-    return queryset.filter(direct_access | role_access).distinct()
+    return accessible_protected_files(user)
 
 
 class SingleInstanceFileViewSet(viewsets.ModelViewSet):
@@ -137,8 +113,24 @@ class ProtectedFileViewSet(SingleInstanceFileViewSet):
         )
 
     def get_queryset(self):
-        accessible_ids = _accessible_protected_files(self.request.user).values('pk')
+        permission = 'view'
+        if self.action == 'download':
+            permission = 'download'
+        elif self.action == 'generate_link':
+            permission = (
+                'download' if self.request.data.get('purpose', 'download') == 'download' else 'view'
+            )
+        accessible_ids = accessible_protected_files(self.request.user, permission).values('pk')
         return self.queryset.filter(pk__in=accessible_ids)
+
+    def get_object(self):
+        protected_file = super().get_object()
+        if self.action in {'delete_secure', 'expire', 'replace'}:
+            from rest_framework.exceptions import PermissionDenied
+
+            if not protected_file.user_can_access(self.request.user, permission='manage'):
+                raise PermissionDenied('Alteração de arquivo exige gestão do arquivo.')
+        return protected_file
 
     @action(detail=True, methods=['get'])
     def download(self, request, pk=None):
@@ -234,8 +226,17 @@ class ProtectedFileAccessRuleViewSet(SingleInstanceFileViewSet):
     ordering = ('protected_file__file_number', 'rule_type', 'permission')
 
     def get_queryset(self):
-        accessible_ids = _accessible_protected_files(self.request.user).values('pk')
-        return self.queryset.filter(protected_file_id__in=accessible_ids)
+        manageable_ids = accessible_protected_files(self.request.user, permission='manage').values(
+            'pk'
+        )
+        return self.queryset.filter(protected_file_id__in=manageable_ids)
+
+    def perform_destroy(self, instance):
+        from rest_framework.exceptions import PermissionDenied
+
+        if not instance.protected_file.user_can_access(self.request.user, permission='manage'):
+            raise PermissionDenied('A remoção de ACL exige gestão do arquivo.')
+        instance.delete()
 
 
 class SecureFileLinkViewSet(viewsets.ReadOnlyModelViewSet):
@@ -275,6 +276,10 @@ class SecureFileLinkViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=True, methods=['post'])
     def revoke(self, request, pk=None):
         secure_link = self.get_object()
+        from rest_framework.exceptions import PermissionDenied
+
+        if not secure_link.protected_file.user_can_access(request.user, permission='manage'):
+            raise PermissionDenied('Revogação de link exige gestão do arquivo.')
         try:
             secure_link.revoke(reason=request.data.get('reason', ''), user=request.user)
         except DjangoValidationError as error:

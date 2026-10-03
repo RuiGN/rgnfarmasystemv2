@@ -1,0 +1,33 @@
+{
+  "total_cases": 178,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "by_module": {
+    "tests.test_review_purchase_entrypoints_corrections": 47,
+    "tests.test_procurement.ProcurementModelTests": 5,
+    "tests.test_procurement.TestProcurementApi": 2,
+    "tests.test_inventory.InventoryModelTests": 7,
+    "tests.test_inventory.TestInventoryApi": 7,
+    "tests.test_procurement_nfe_import.NfeImportServiceTests": 7,
+    "tests.test_procurement_nfe_import.NfeImportEndpointTests": 7,
+    "tests.test_procurement_nfe_import.NfeImportSchemaTests": 4,
+    "tests.test_inventory_corrections": 8,
+    "tests.test_purchase_posting_corrections": 26,
+    "tests.test_review_stock_api_corrections": 21,
+    "tests.test_supplier_cockpit_ui.SupplierCockpitUiTests": 9,
+    "tests.test_production_cancellation_corrections": 13,
+    "tests.test_identifier_sequence_concurrency": 1,
+    "tests.test_qa": 1,
+    "tests.test_procurement_nfe_import": 13
+  },
+  "existing_tests_changed_since_start": [],
+  "new_regressions": 47,
+  "missing_requested_file": "tests/test_inventory_http_corrections.py",
+  "replacement_http_coverage": [
+    "tests/test_inventory_corrections.py",
+    "tests/test_review_stock_api_corrections.py",
+    "tests/test_review_purchase_entrypoints_corrections.py"
+  ],
+  "not_release_ready": "External compatibility probe fails for an old NF-e lot with manufacturing_date=None and receipt manufacturing date populated. Third blocker reached two fix cycles; no third fix attempted."
+}

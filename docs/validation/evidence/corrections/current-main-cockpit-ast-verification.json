@@ -1,0 +1,122 @@
+{
+  "files": {
+    "tests/test_audit_cockpit_ui.py": {
+      "test_count": 10,
+      "assertion_count": 79,
+      "test_names_preserved": true,
+      "runtime_assertions_identical": true,
+      "formatting_ast_identical": true,
+      "pure_format_full_ast_identical": null,
+      "allowed_fixture_changes": []
+    },
+    "tests/test_controlled_document_cockpit_ui.py": {
+      "test_count": 9,
+      "assertion_count": 62,
+      "test_names_preserved": true,
+      "runtime_assertions_identical": true,
+      "formatting_ast_identical": true,
+      "pure_format_full_ast_identical": null,
+      "allowed_fixture_changes": []
+    },
+    "tests/test_lot_release_cockpit_ui.py": {
+      "test_count": 11,
+      "assertion_count": 51,
+      "test_names_preserved": true,
+      "runtime_assertions_identical": true,
+      "formatting_ast_identical": true,
+      "pure_format_full_ast_identical": null,
+      "allowed_fixture_changes": []
+    },
+    "tests/test_market_complaint_cockpit_ui.py": {
+      "test_count": 8,
+      "assertion_count": 47,
+      "test_names_preserved": true,
+      "runtime_assertions_identical": true,
+      "formatting_ast_identical": true,
+      "pure_format_full_ast_identical": null,
+      "allowed_fixture_changes": []
+    },
+    "tests/test_production_order_cockpit_ui.py": {
+      "test_count": 8,
+      "assertion_count": 33,
+      "test_names_preserved": true,
+      "runtime_assertions_identical": true,
+      "formatting_ast_identical": true,
+      "pure_format_full_ast_identical": null,
+      "allowed_fixture_changes": []
+    },
+    "tests/test_quality_event_cockpit_ui.py": {
+      "test_count": 10,
+      "assertion_count": 54,
+      "test_names_preserved": true,
+      "runtime_assertions_identical": true,
+      "formatting_ast_identical": true,
+      "pure_format_full_ast_identical": null,
+      "allowed_fixture_changes": []
+    },
+    "tests/test_sales_order_cockpit_ui.py": {
+      "test_count": 10,
+      "assertion_count": 54,
+      "test_names_preserved": true,
+      "runtime_assertions_identical": true,
+      "formatting_ast_identical": true,
+      "pure_format_full_ast_identical": null,
+      "allowed_fixture_changes": [
+        "test_sod_finance_tab_permissions",
+        "test_sod_inventory_tab_permissions"
+      ]
+    },
+    "tests/test_supplier_cockpit_ui.py": {
+      "test_count": 9,
+      "assertion_count": 56,
+      "test_names_preserved": true,
+      "runtime_assertions_identical": true,
+      "formatting_ast_identical": true,
+      "pure_format_full_ast_identical": null,
+      "allowed_fixture_changes": [
+        "setUp"
+      ]
+    },
+    "tests/test_master_formula_cockpit_ui.py": {
+      "test_count": 7,
+      "assertion_count": 23,
+      "test_names_preserved": true,
+      "runtime_assertions_identical": true,
+      "formatting_ast_identical": true,
+      "pure_format_full_ast_identical": null,
+      "allowed_fixture_changes": []
+    },
+    "tests/test_auxiliary_reference_data.py": {
+      "test_count": 10,
+      "assertion_count": 54,
+      "test_names_preserved": true,
+      "runtime_assertions_identical": true,
+      "formatting_ast_identical": true,
+      "pure_format_full_ast_identical": true,
+      "allowed_fixture_changes": []
+    },
+    "tests/test_master_category_composite_identity.py": {
+      "test_count": 2,
+      "assertion_count": 7,
+      "test_names_preserved": true,
+      "runtime_assertions_identical": true,
+      "formatting_ast_identical": true,
+      "pure_format_full_ast_identical": true,
+      "allowed_fixture_changes": []
+    },
+    "tests/test_procurement_nfe_import.py": {
+      "test_count": 24,
+      "assertion_count": 108,
+      "test_names_preserved": true,
+      "runtime_assertions_identical": true,
+      "formatting_ast_identical": true,
+      "pure_format_full_ast_identical": true,
+      "allowed_fixture_changes": []
+    }
+  },
+  "file_count": 12,
+  "test_count": 118,
+  "assertion_count": 628,
+  "cockpit_test_count": 82,
+  "cockpit_assertion_count": 459
+}

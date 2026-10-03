@@ -1,4 +1,5 @@
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+from typing import TYPE_CHECKING, ClassVar, TypeAlias
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -117,8 +118,152 @@ class FinancialCategory(AutoCodeMixin, SingleInstanceModel):
         return f'{self.code} - {self.name}'
 
 
-class FinancialAccount(AutoCodeMixin, SingleInstanceModel):
+class FinanceMetadataQuerySet(models.QuerySet):
+    def _validate_fields(self, fields):
+        protected = set(fields) - self.model.BULK_METADATA_FIELDS
+        if protected:
+            raise ValidationError(
+                {field: 'Use save() ou o serviço financeiro.' for field in protected}
+            )
+
+    def update(self, **kwargs):
+        self._validate_fields(kwargs)
+        return super().update(**kwargs)
+
+    def bulk_update(self, objs, fields, batch_size=None):
+        self._validate_fields(fields)
+        return super().bulk_update(objs, fields, batch_size=batch_size)
+
+    def bulk_create(self, *args, **kwargs):
+        raise ValidationError(
+            {'__all__': 'Crie registros individualmente pelo protocolo financeiro.'}
+        )
+
+
+if TYPE_CHECKING:
+    _FinanceModelBase: TypeAlias = models.Model
+else:
+    # Model capabilities come from the concrete class, not another runtime model.
+    _FinanceModelBase = object
+
+
+class LockedFinanceEditMixin(_FinanceModelBase):
+    """Ordinary saves are field patches, never stale whole-row replacements."""
+
+    SERVICE_FIELDS: ClassVar[frozenset[str]]
+
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        instance = super().from_db(db, field_names, values)
+        instance._remember_finance_values()
+        return instance
+
+    def _remember_finance_values(self):
+        self._finance_values = {
+            field.attname: self.__dict__[field.attname]
+            for field in self._meta.concrete_fields
+            if field.attname in self.__dict__
+        }
+
+    def refresh_from_db(self, using=None, fields=None, from_queryset=None):
+        if fields is not None:
+            fields = set(fields)
+        super().refresh_from_db(using=using, fields=fields, from_queryset=from_queryset)
+        if fields is None:
+            self._remember_finance_values()
+        else:
+            baseline = getattr(self, '_finance_values', {}).copy()
+            for field in self._meta.concrete_fields:
+                if {field.name, field.attname} & fields and field.attname in self.__dict__:
+                    baseline[field.attname] = self.__dict__[field.attname]
+            self._finance_values = baseline
+
+    def _edit_fields(self, update_fields):
+        baseline = getattr(self, '_finance_values', {})
+        return [
+            field
+            for field in self._meta.concrete_fields
+            if not field.primary_key
+            and field.attname in self.__dict__
+            and (
+                (update_fields is not None and {field.name, field.attname} & set(update_fields))
+                or (
+                    update_fields is None
+                    and self.__dict__[field.attname] != baseline.get(field.attname)
+                )
+            )
+        ]
+
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            result = super().save(*args, **kwargs)
+            self._remember_finance_values()
+            return result
+        persisted = type(self).objects.select_for_update().get(pk=self.pk)
+        fields = self._edit_fields(kwargs.get('update_fields'))
+        for field in fields:
+            setattr(persisted, field.attname, getattr(self, field.attname))
+        # The concrete model's domain policy runs on this locked candidate.
+        fields.extend(persisted._validate_finance_edit(fields))
+        kwargs['update_fields'] = {field.name for field in fields} | {'updated_at'}
+        result = super(LockedFinanceEditMixin, persisted).save(*args, **kwargs)
+        persisted._remember_finance_values()
+        self.__dict__.update(persisted.__dict__)
+        return result
+
+    def _validate_finance_edit(self, fields):
+        errors = {
+            field.name: 'Campo controlado pelo serviço financeiro.'
+            for field in fields
+            if field.name in self.SERVICE_FIELDS
+            and getattr(self, field.attname) != self._finance_values.get(field.attname)
+        }
+        if errors:
+            raise ValidationError(errors)
+        return []
+
+    def _save_finance_state(self, fields):
+        """Private persistence for domain operations on freshly locked rows."""
+        super(LockedFinanceEditMixin, self).save(update_fields=set(fields) | {'updated_at'})
+        self._remember_finance_values()
+
+
+class FinancialAccount(LockedFinanceEditMixin, AutoCodeMixin, SingleInstanceModel):
+    objects = FinanceMetadataQuerySet.as_manager()
+    BULK_METADATA_FIELDS = frozenset(
+        {'name', 'bank_name', 'agency_number', 'account_number', 'is_active', 'updated_at'}
+    )
     CODE_PREFIX = 'FA'
+    SERVICE_FIELDS = frozenset({'current_balance', 'created_at'})
+
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            if self.pk is not None:
+                raise ValidationError(
+                    {'id': 'Uma nova conta não pode informar uma chave existente.'}
+                )
+            self.opening_balance = _money(self.opening_balance)
+            if _money(self.current_balance) not in {ZERO_MONEY, self.opening_balance}:
+                raise ValidationError({'current_balance': 'O saldo atual deriva do saldo inicial.'})
+            self.current_balance = self.opening_balance
+        return super().save(*args, **kwargs)
+
+    def _validate_finance_edit(self, fields):
+        super()._validate_finance_edit(fields)
+        if any(field.name == 'opening_balance' for field in fields):
+            if self.opening_balance != self._finance_values['opening_balance']:
+                if self.settlements.exists():
+                    raise ValidationError(
+                        {'opening_balance': 'Saldo inicial imutável após lançamento.'}
+                    )
+                self.current_balance = _money(
+                    self.current_balance
+                    + _money(self.opening_balance)
+                    - self._finance_values['opening_balance']
+                )
+                return [self._meta.get_field('current_balance')]
+        return []
 
     class AccountType(models.TextChoices):
         CASH = 'cash', 'Caixa'
@@ -150,13 +295,16 @@ class FinancialAccount(AutoCodeMixin, SingleInstanceModel):
         verbose_name = 'conta financeira'
         verbose_name_plural = 'contas financeiras'
 
+    @transaction.atomic
     def apply_movement(self, direction, amount):
         amount = _money(amount)
+        account = type(self).objects.select_for_update().get(pk=self.pk)
         if direction == CashFlowEntry.Direction.INFLOW:
-            self.current_balance = _money(self.current_balance + amount)
+            account.current_balance = _money(account.current_balance + amount)
         else:
-            self.current_balance = _money(self.current_balance - amount)
-        self.save(update_fields=['current_balance', 'updated_at'])
+            account.current_balance = _money(account.current_balance - amount)
+        account._save_finance_state(['current_balance'])
+        self.__dict__.update(account.__dict__)
 
     def reverse_movement(self, direction, amount):
         inverse = (
@@ -170,7 +318,9 @@ class FinancialAccount(AutoCodeMixin, SingleInstanceModel):
         return f'{self.code} - {self.name}'
 
 
-class FinancialTitle(SingleInstanceModel):
+class FinancialTitle(LockedFinanceEditMixin, SingleInstanceModel):
+    objects = FinanceMetadataQuerySet.as_manager()
+    BULK_METADATA_FIELDS = frozenset({'notes', 'updated_at'})
     AUTOMATIC_IDENTIFIERS = (IdentifierSpec('title_number', 'FIN'),)
 
     class TitleType(models.TextChoices):
@@ -265,12 +415,73 @@ class FinancialTitle(SingleInstanceModel):
         verbose_name = 'título financeiro'
         verbose_name_plural = 'títulos financeiros'
 
+    SERVICE_FIELDS = frozenset(
+        {'paid_amount', 'open_amount', 'status', 'approved_by', 'approved_at', 'created_at'}
+    )
+    ECONOMIC_FIELDS = frozenset(
+        {
+            'title_type',
+            'source_type',
+            'partner',
+            'category',
+            'financial_account',
+            'purchase_order',
+            'original_amount',
+            'issue_date',
+            'due_date',
+            'fiscal_document_number',
+            'contract_reference',
+            'sale_reference',
+        }
+    )
+
+    def _validate_finance_edit(self, fields):
+        super()._validate_finance_edit(fields)
+        changed = {
+            field.name
+            for field in fields
+            if field.name in self.ECONOMIC_FIELDS
+            and getattr(self, field.attname) != self._finance_values.get(field.attname)
+        }
+        if changed and self.settlements.exists():
+            raise ValidationError(
+                {field: 'Economia do título imutável após lançamento.' for field in changed}
+            )
+        self.open_amount = _money(self.original_amount - self.paid_amount)
+        self.full_clean()
+        return [self._meta.get_field('open_amount')]
+
+    @transaction.atomic
     def save(self, *args, **kwargs):
+        creating = self._state.adding
+        initial_approval = creating and self.status == self.Status.APPROVED
+        if creating:
+            errors = {}
+            if self.pk is not None:
+                errors['id'] = 'Um novo título não pode informar uma chave existente.'
+            if self.status not in {self.Status.PENDING, self.Status.APPROVED}:
+                errors['status'] = 'Crie o título pendente e utilize as transições financeiras.'
+            if _money(self.paid_amount) != ZERO_MONEY:
+                errors['paid_amount'] = 'Um novo título não possui baixas.'
+            if self.open_amount is not None and _money(self.open_amount) != _money(
+                self.original_amount
+            ):
+                errors['open_amount'] = 'O valor em aberto deriva do valor original.'
+            if self.approved_by_id is not None or self.approved_at is not None:
+                errors['approved_at'] = 'A aprovação deve ser registrada pelo serviço.'
+            if errors:
+                raise ValidationError(errors)
+            self.open_amount = _money(self.original_amount)
+            self.status = self.Status.PENDING
         if not self.title_number:
             self.title_number = _sequence_code(FinancialTitle, 'title_number', 'FIN')
-        if self.open_amount is None:
-            self.open_amount = self.original_amount
-        super().save(*args, **kwargs)
+        if creating:
+            self.full_clean()
+        result = super().save(*args, **kwargs)
+        # Compatibility for trusted model callers: approval still runs the domain method.
+        if initial_approval:
+            self.approve()
+        return result
 
     @classmethod
     def create_from_purchase_order(cls, order, category, due_date):
@@ -290,30 +501,44 @@ class FinancialTitle(SingleInstanceModel):
             status=cls.Status.PENDING,
         )
 
+    @transaction.atomic
     def approve(self, user=None):
-        if self.status not in {self.Status.PENDING, self.Status.OVERDUE}:
+        title = type(self).objects.select_for_update().get(pk=self.pk)
+        if title.status not in {self.Status.PENDING, self.Status.OVERDUE}:
             raise ValidationError(
                 {'status': 'Somente títulos pendentes ou vencidos podem ser aprovados.'}
             )
-        self.status = self.Status.APPROVED
-        self.approved_by = user
-        self.approved_at = timezone.now()
-        self.full_clean()
-        self.save(update_fields=['status', 'approved_by', 'approved_at', 'updated_at'])
+        title.status = self.Status.APPROVED
+        title.approved_by = user
+        title.approved_at = timezone.now()
+        title.full_clean()
+        title._save_finance_state(['status', 'approved_by', 'approved_at'])
+        self.__dict__.update(title.__dict__)
 
+    @transaction.atomic
     def cancel(self):
-        if self.status in {self.Status.PARTIALLY_SETTLED, self.Status.SETTLED}:
-            raise ValidationError({'status': 'Títulos baixados não podem ser cancelados.'})
-        self.status = self.Status.CANCELLED
-        self.save(update_fields=['status', 'updated_at'])
-
-    def mark_overdue(self):
+        title = type(self).objects.select_for_update().get(pk=self.pk)
         if (
-            self.status in {self.Status.PENDING, self.Status.APPROVED}
-            and self.due_date < timezone.localdate()
+            title.status not in {self.Status.PENDING, self.Status.APPROVED, self.Status.OVERDUE}
+            or title.settlements.filter(status=FinancialSettlement.Status.ACTIVE).exists()
         ):
-            self.status = self.Status.OVERDUE
-            self.save(update_fields=['status', 'updated_at'])
+            raise ValidationError(
+                {'status': 'Títulos baixados ou cancelados não podem ser cancelados.'}
+            )
+        title.status = self.Status.CANCELLED
+        title._save_finance_state(['status'])
+        self.__dict__.update(title.__dict__)
+
+    @transaction.atomic
+    def mark_overdue(self):
+        title = type(self).objects.select_for_update().get(pk=self.pk)
+        if (
+            title.status in {self.Status.PENDING, self.Status.APPROVED}
+            and title.due_date < timezone.localdate()
+        ):
+            title.status = self.Status.OVERDUE
+            title._save_finance_state(['status'])
+        self.__dict__.update(title.__dict__)
 
     def register_settlement(
         self,
@@ -325,18 +550,23 @@ class FinancialTitle(SingleInstanceModel):
         penalty_amount=ZERO_MONEY,
         discount_amount=ZERO_MONEY,
         reference='',
+        notes='',
     ):
-        if self.status not in {self.Status.APPROVED, self.Status.PARTIALLY_SETTLED}:
-            raise ValidationError({'status': 'A baixa exige título aprovado.'})
         amount = _money(amount)
         interest_amount = _money(interest_amount)
         penalty_amount = _money(penalty_amount)
         discount_amount = _money(discount_amount)
         net_amount = _money(amount + interest_amount + penalty_amount - discount_amount)
         with transaction.atomic():
+            # All ledger operations acquire title -> settlement (if existing) -> account.
+            # Never decide from caller instances: they may predate another transaction.
+            title = type(self).objects.select_for_update().get(pk=self.pk)
+            account = FinancialAccount.objects.select_for_update().get(pk=financial_account.pk)
+            if title.status not in {self.Status.APPROVED, self.Status.PARTIALLY_SETTLED}:
+                raise ValidationError({'status': 'A baixa exige título aprovado.'})
             settlement = FinancialSettlement(
-                title=self,
-                financial_account=financial_account,
+                title=title,
+                financial_account=account,
                 settlement_date=settlement_date,
                 method=method,
                 amount=amount,
@@ -345,18 +575,22 @@ class FinancialTitle(SingleInstanceModel):
                 discount_amount=discount_amount,
                 net_amount=net_amount,
                 reference=reference,
+                notes=notes,
             )
             settlement.full_clean()
-            settlement.save()
-            self.paid_amount = _money(self.paid_amount + amount)
-            self.open_amount = _money(max(self.original_amount - self.paid_amount, ZERO_MONEY))
-            self.status = (
+            # This is the only insertion path; public save() delegates here.
+            super(FinancialSettlement, settlement).save(force_insert=True)
+            title.paid_amount = _money(title.paid_amount + amount)
+            title.open_amount = _money(max(title.original_amount - title.paid_amount, ZERO_MONEY))
+            title.status = (
                 self.Status.SETTLED
-                if self.open_amount == ZERO_MONEY
+                if title.open_amount == ZERO_MONEY
                 else self.Status.PARTIALLY_SETTLED
             )
-            self.save(update_fields=['paid_amount', 'open_amount', 'status', 'updated_at'])
-            financial_account.apply_movement(self.cash_direction, net_amount)
+            title._save_finance_state(['paid_amount', 'open_amount', 'status'])
+            account.apply_movement(title.cash_direction, net_amount)
+            self.__dict__.update(title.__dict__)
+            financial_account.__dict__.update(account.__dict__)
             return settlement
 
     @property
@@ -375,12 +609,16 @@ class FinancialTitle(SingleInstanceModel):
             'purchase_order',
         ):
             pass
-        if self.original_amount <= 0:
+        if self.original_amount is not None and self.original_amount <= 0:
             errors['original_amount'] = 'O valor original deve ser maior que zero.'
         for field_name in ('open_amount', 'paid_amount'):
-            if getattr(self, field_name) < 0:
+            if getattr(self, field_name) is not None and getattr(self, field_name) < 0:
                 errors[field_name] = 'O valor não pode ser negativo.'
-        if self.open_amount > self.original_amount:
+        if (
+            self.open_amount is not None
+            and self.original_amount is not None
+            and self.open_amount > self.original_amount
+        ):
             errors['open_amount'] = 'O valor em aberto não pode superar o valor original.'
         if self.due_date and self.issue_date and self.due_date < self.issue_date:
             errors['due_date'] = 'O vencimento não pode ser anterior à emissão.'
@@ -397,7 +635,43 @@ class FinancialTitle(SingleInstanceModel):
         return self.title_number
 
 
+class FinancialSettlementQuerySet(models.QuerySet):
+    def update(self, **kwargs):
+        protected = set(kwargs) - self.model.EDITABLE_ANNOTATION_FIELDS
+        if protected:
+            raise ValidationError(
+                {
+                    field: 'Baixas lançadas são imutáveis. Utilize as operações de domínio.'
+                    for field in protected
+                }
+            )
+        return super().update(**kwargs)
+
+    def bulk_update(self, objs, fields, batch_size=None):
+        protected = set(fields) - self.model.EDITABLE_ANNOTATION_FIELDS
+        if protected:
+            raise ValidationError(
+                {
+                    field: 'Baixas lançadas são imutáveis. Utilize as operações de domínio.'
+                    for field in protected
+                }
+            )
+        return super().bulk_update(objs, fields, batch_size=batch_size)
+
+    def bulk_create(self, *args, **kwargs):
+        raise ValidationError(
+            {'status': 'Registre baixas individualmente pelo serviço financeiro.'}
+        )
+
+    def delete(self):
+        raise ValidationError(
+            {'status': 'Baixas financeiras não podem ser excluídas. Utilize o estorno.'}
+        )
+
+
 class FinancialSettlement(SingleInstanceModel):
+    objects = FinancialSettlementQuerySet.as_manager()
+
     class Method(models.TextChoices):
         BANK_TRANSFER = 'bank_transfer', 'Transferência'
         PIX = 'pix', 'PIX'
@@ -469,30 +743,82 @@ class FinancialSettlement(SingleInstanceModel):
         verbose_name = 'baixa financeira'
         verbose_name_plural = 'baixas financeiras'
 
-    def save(self, *args, **kwargs):
-        self.net_amount = _money(
-            self.amount + self.interest_amount + self.penalty_amount - self.discount_amount
+    def delete(self, *args, **kwargs):
+        raise ValidationError(
+            {'status': 'Baixas financeiras não podem ser excluídas. Utilize o estorno.'}
         )
+
+    EDITABLE_ANNOTATION_FIELDS = frozenset({'notes', 'updated_at'})
+
+    def validate_immutable_fields(self, persisted, update_fields=None):
+        errors = {}
+        for field in self._meta.concrete_fields:
+            if field.primary_key or field.name in self.EDITABLE_ANNOTATION_FIELDS:
+                continue
+            if update_fields is not None and not {field.name, field.attname} & set(update_fields):
+                continue
+            if getattr(self, field.attname) != getattr(persisted, field.attname):
+                errors[field.name] = (
+                    'Baixas lançadas são imutáveis. Estorne e registre uma nova baixa.'
+                )
+        if errors:
+            raise ValidationError(errors)
+
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            if self.pk is not None:
+                raise ValidationError(
+                    {'id': 'Uma nova baixa não pode informar a chave de outro lançamento.'}
+                )
+            settlement = self.title.register_settlement(
+                financial_account=self.financial_account,
+                amount=self.amount,
+                settlement_date=self.settlement_date,
+                method=self.method,
+                interest_amount=self.interest_amount,
+                penalty_amount=self.penalty_amount,
+                discount_amount=self.discount_amount,
+                reference=self.reference,
+                notes=self.notes,
+            )
+            self.__dict__.update(settlement.__dict__)
+            return
+        persisted = type(self).objects.select_for_update().get(pk=self.pk)
+        self.validate_immutable_fields(persisted, kwargs.get('update_fields'))
         super().save(*args, **kwargs)
 
+    @transaction.atomic
     def reconcile(self, user=None):
-        if self.status == self.Status.REVERSED:
+        settlement = type(self).objects.select_for_update().get(pk=self.pk)
+        if settlement.status == self.Status.REVERSED:
             raise ValidationError({'status': 'Baixas estornadas não podem ser conciliadas.'})
-        self.reconciled_by = user
-        self.reconciled_at = timezone.now()
-        self.full_clean()
-        self.save(update_fields=['reconciled_by', 'reconciled_at', 'net_amount', 'updated_at'])
+        settlement.reconciled_by = user
+        settlement.reconciled_at = timezone.now()
+        settlement.full_clean()
+        super(FinancialSettlement, settlement).save(
+            update_fields=['reconciled_by', 'reconciled_at', 'updated_at']
+        )
+        self.__dict__.update(settlement.__dict__)
 
     def reverse(self, reason, user=None):
-        if self.status == self.Status.REVERSED:
-            raise ValidationError({'status': 'A baixa já está estornada.'})
         if not reason:
             raise ValidationError({'reversal_reason': 'Informe a justificativa do estorno.'})
         with transaction.atomic():
-            title = self.title
-            account = self.financial_account
-            account.reverse_movement(title.cash_direction, self.net_amount)
-            title.paid_amount = _money(max(title.paid_amount - self.amount, ZERO_MONEY))
+            title_id = type(self).objects.values_list('title_id', flat=True).get(pk=self.pk)
+            title = FinancialTitle.objects.select_for_update().get(pk=title_id)
+            settlement = type(self).objects.select_for_update().get(pk=self.pk)
+            if settlement.title_id != title.pk:
+                raise ValidationError(
+                    {'title': 'O título da baixa foi alterado. Recarregue o registro.'}
+                )
+            account = FinancialAccount.objects.select_for_update().get(
+                pk=settlement.financial_account_id
+            )
+            if settlement.status == self.Status.REVERSED:
+                raise ValidationError({'status': 'A baixa já está estornada.'})
+            account.reverse_movement(title.cash_direction, settlement.net_amount)
+            title.paid_amount = _money(max(title.paid_amount - settlement.amount, ZERO_MONEY))
             title.open_amount = _money(
                 min(title.original_amount - title.paid_amount, title.original_amount)
             )
@@ -501,13 +827,13 @@ class FinancialSettlement(SingleInstanceModel):
                 if title.paid_amount == ZERO_MONEY
                 else title.Status.PARTIALLY_SETTLED
             )
-            title.save(update_fields=['paid_amount', 'open_amount', 'status', 'updated_at'])
-            self.status = self.Status.REVERSED
-            self.reversal_reason = reason
-            self.reversed_by = user
-            self.reversed_at = timezone.now()
-            self.full_clean()
-            self.save(
+            title._save_finance_state(['paid_amount', 'open_amount', 'status'])
+            settlement.status = self.Status.REVERSED
+            settlement.reversal_reason = reason
+            settlement.reversed_by = user
+            settlement.reversed_at = timezone.now()
+            settlement.full_clean()
+            super(FinancialSettlement, settlement).save(
                 update_fields=[
                     'status',
                     'reversal_reason',
@@ -517,11 +843,14 @@ class FinancialSettlement(SingleInstanceModel):
                     'updated_at',
                 ]
             )
+            settlement.title = title
+            settlement.financial_account = account
+            self.__dict__.update(settlement.__dict__)
 
     def clean(self):
         super().clean()
         errors = {}
-        if self.amount <= 0:
+        if self.amount is not None and self.amount <= 0:
             errors['amount'] = 'O valor da baixa deve ser maior que zero.'
         for field_name in ('interest_amount', 'penalty_amount', 'discount_amount'):
             if getattr(self, field_name) < 0:
@@ -530,7 +859,8 @@ class FinancialSettlement(SingleInstanceModel):
             errors['net_amount'] = 'O valor líquido não pode ser negativo.'
         if (
             self.pk is None
-            and self.title
+            and self.title_id is not None
+            and self.amount is not None
             and self.status == self.Status.ACTIVE
             and self.amount > self.title.open_amount
         ):

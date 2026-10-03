@@ -5,7 +5,7 @@ from django.views.generic import TemplateView
 
 from base.ui.actions.context import available_actions
 from base.ui.views import ResourceContextMixin
-from capa.models import CapaAction, CapaRecord
+from capa.models import CapaAction
 from deviations.models import (
     DeviationApproval,
     DeviationImpactAssessment,
@@ -229,7 +229,7 @@ class QualityEventCockpitView(LoginRequiredMixin, ResourceContextMixin, Template
                 'detail': (
                     'Sem ações CAPA pendentes'
                     if has_completed_capas
-                    else f"{capa_summary['pending_actions']} ação(ões) pendente(s)"
+                    else f'{capa_summary["pending_actions"]} ação(ões) pendente(s)'
                 ),
                 'icon': 'feather-check-circle',
             },

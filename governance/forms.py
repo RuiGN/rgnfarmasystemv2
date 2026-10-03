@@ -28,9 +28,7 @@ class GovernanceParameterForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         value_type = self._effective_value_type()
         rules = self._effective_rules()
-        self.fields['value'] = self._typed_field(
-            'value', value_type, required=True, rules=rules
-        )
+        self.fields['value'] = self._typed_field('value', value_type, required=True, rules=rules)
         self.fields['default_value'] = self._typed_field(
             'default_value',
             value_type,
@@ -54,7 +52,7 @@ class GovernanceParameterForm(forms.ModelForm):
             raw = self.data.get(self.add_prefix('rules'), '{}')
             try:
                 return json.loads(raw) if isinstance(raw, str) else raw
-            except (TypeError, json.JSONDecodeError):
+            except TypeError, json.JSONDecodeError:
                 return {}
         return self.initial.get('rules') or getattr(self.instance, 'rules', {}) or {}
 

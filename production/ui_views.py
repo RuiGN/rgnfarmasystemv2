@@ -1,19 +1,14 @@
 from decimal import Decimal
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.http import Http404
 from django.views.generic import TemplateView
 
 from base.ui.actions.context import available_actions
 from base.ui.views import ResourceContextMixin
-from costing.models import ProductionCostCapture
 from deviations.models import QualityEvent
 from production.models import (
-    MaterialConsumption,
-    ProductionLaborEntry,
-    ProductionOperationExecution,
     ProductionOrder,
     ProductionOutput,
 )
@@ -49,7 +44,7 @@ class ProductionOrderCockpitView(LoginRequiredMixin, ResourceContextMixin, Templ
 
         # Aba 2: Separação, Pesagem & Consumo de Insumos
         materials = []
-        materials_summary = {
+        materials_summary: dict[str, Decimal | int] = {
             'planned_total': Decimal('0.0000'),
             'actual_total': Decimal('0.0000'),
             'loss_total': Decimal('0.0000'),
@@ -82,7 +77,7 @@ class ProductionOrderCockpitView(LoginRequiredMixin, ResourceContextMixin, Templ
             )
 
         labor_entries = []
-        labor_summary = {
+        labor_summary: dict[str, Decimal | int] = {
             'total_minutes': Decimal('0.00'),
             'total_cost': Decimal('0.0000'),
             'count': 0,

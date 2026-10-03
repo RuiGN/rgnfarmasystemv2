@@ -311,6 +311,28 @@ def _workflow_notification_recipient_scope(
     return queryset.filter(recipient=request.user)
 
 
+def _protected_file_scope(request, queryset):
+    from files.selectors import accessible_protected_files
+
+    return queryset.filter(pk__in=accessible_protected_files(request.user).values('pk'))
+
+
+def _file_related_scope(request, queryset):
+    from files.selectors import accessible_protected_files
+
+    permission = 'manage' if queryset.model is ProtectedFileAccessRule else 'view'
+    return queryset.filter(
+        protected_file_id__in=accessible_protected_files(request.user, permission).values('pk')
+    )
+
+
+def _chat_owner_scope(request, queryset):
+    if not request.user.is_authenticated or not request.user.is_active:
+        return queryset.none()
+    owner_field = 'created_by' if queryset.model is RAGChatSession else 'session__created_by'
+    return queryset.filter(**{owner_field: request.user})
+
+
 @dataclass(frozen=True)
 class ResourceConfig:
     slug: str
@@ -337,6 +359,7 @@ class ResourceConfig:
     view_permission_action: str = 'view'
     advanced_filter_fields: tuple[str, ...] = field(default_factory=tuple)
     queryset_scope: ResourceQuerysetScope = _unscoped_resource_queryset
+    allow_delete: bool = True
 
     @property
     def app_label(self):
@@ -359,7 +382,7 @@ class ResourceConfig:
         return self._can_write(user, 'change')
 
     def can_delete(self, user):
-        if self.app_label in GXP_RETENTION_APP_LABELS:
+        if not self.allow_delete or self.app_label in GXP_RETENTION_APP_LABELS:
             return False
         return self._can_write(user, 'delete')
 
@@ -1307,6 +1330,7 @@ MODULES = (
                     'document_reference',
                     'reason',
                 ),
+                read_only=True,
             ),
             ResourceConfig(
                 'genealogy',
@@ -1483,6 +1507,20 @@ MODULES = (
                     'status',
                 ),
                 ('title__title_number', 'reference', 'notes'),
+                form_fields=(
+                    'title',
+                    'financial_account',
+                    'settlement_date',
+                    'method',
+                    'amount',
+                    'interest_amount',
+                    'penalty_amount',
+                    'discount_amount',
+                    'reference',
+                    'notes',
+                ),
+                update_form_fields=('notes',),
+                allow_delete=False,
             ),
             ResourceConfig(
                 'cash-flow',
@@ -1498,6 +1536,7 @@ MODULES = (
                     'status',
                 ),
                 ('title__title_number', 'description'),
+                read_only=True,
             ),
             ResourceConfig(
                 'period-closings',
@@ -3625,6 +3664,7 @@ MODULES = (
                     'description',
                 ),
                 read_only=True,
+                queryset_scope=_protected_file_scope,
             ),
             ResourceConfig(
                 'access-rules',
@@ -3649,6 +3689,7 @@ MODULES = (
                     'source_record_id',
                     'notes',
                 ),
+                queryset_scope=_file_related_scope,
             ),
             ResourceConfig(
                 'secure-links',
@@ -3670,6 +3711,7 @@ MODULES = (
                     'requested_by__email',
                 ),
                 read_only=True,
+                queryset_scope=_file_related_scope,
             ),
             ResourceConfig(
                 'audit-trail',
@@ -3684,6 +3726,7 @@ MODULES = (
                     'details',
                 ),
                 read_only=True,
+                queryset_scope=_file_related_scope,
             ),
         ),
     ),
@@ -4160,6 +4203,7 @@ MODULES = (
                 ('title', 'created_by', 'status', 'last_question_at'),
                 ('title', 'created_by__email'),
                 read_only=True,
+                queryset_scope=_chat_owner_scope,
             ),
             ResourceConfig(
                 'messages',
@@ -4168,6 +4212,7 @@ MODULES = (
                 ('session', 'role', 'status', 'model_name', 'latency_ms', 'created_by'),
                 ('content', 'model_name', 'error_message', 'created_by__email'),
                 read_only=True,
+                queryset_scope=_chat_owner_scope,
             ),
             ResourceConfig(
                 'ingestion-logs',

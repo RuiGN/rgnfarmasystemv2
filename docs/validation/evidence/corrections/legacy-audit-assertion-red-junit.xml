@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="2" time="5.074" timestamp="2026-10-03T00:11:36.762717-03:00" hostname="f7ec8b5c6b7c"><testcase classname="tests.test_legacy_purchase_retry_compatibility" name="test_v2_nfe_manufacturing_omission_allows_read_only_retry[http]" time="4.367"><failure message="assert ['INSERT INTO...alllog&quot;.&quot;id&quot;'] == []&#10;  &#10;  Left contains one more item: 'INSERT INTO &quot;integrations_apicalllog&quot; (&quot;created_at&quot;, &quot;updated_at&quot;, &quot;request_id&quot;, &quot;api_version&quot;, &quot;method&quot;, &quot;path&quot;, &quot;en... \'success\', 3891, NULL, \'127.0.0.1\'::inet, \'\', 49, \'{}\'::jsonb, \'\') RETURNING &quot;integrations_apicalllog&quot;.&quot;id&quot;'&#10;  Use -v to get more diff">tests/test_legacy_purchase_retry_compatibility.py:405: in test_v2_nfe_manufacturing_omission_allows_read_only_retry
+    _retry_read_only(historical_nfe, 200, entrypoint)
+tests/test_legacy_purchase_retry_compatibility.py:399: in _retry_read_only
+    assert writes == []
+E   assert ['INSERT INTO...alllog"."id"'] == []
+E     
+E     Left contains one more item: 'INSERT INTO "integrations_apicalllog" ("created_at", "updated_at", "request_id", "api_version", "method", "path", "en... \'success\', 3891, NULL, \'127.0.0.1\'::inet, \'\', 49, \'{}\'::jsonb, \'\') RETURNING "integrations_apicalllog"."id"'
+E     Use -v to get more diff</failure></testcase><testcase classname="tests.test_legacy_purchase_retry_compatibility" name="test_v2_nfe_manufacturing_omission_allows_read_only_retry[helper]" time="0.345" /></testsuite></testsuites>

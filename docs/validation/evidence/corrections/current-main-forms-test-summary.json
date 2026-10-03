@@ -1,0 +1,20 @@
+{
+  "declared_tests": 270,
+  "errors": 0,
+  "exit_code": 0,
+  "failures": 0,
+  "serialized_testcases": 263,
+  "skipped": 0,
+  "terminal_passed": 263,
+  "terminal_subtests_passed": 7,
+  "serialized_testcases_by_file": {
+    "test_resource_form_typing_corrections": 19,
+    "test_automatic_fields": 17,
+    "test_action_forms": 5,
+    "test_app_ui": 122,
+    "test_procurement_nfe_import": 31,
+    "test_formula_inline_components_ui": 30,
+    "test_master_formula_cockpit_ui": 7,
+    "test_review_finance_ui_corrections": 32
+  }
+}

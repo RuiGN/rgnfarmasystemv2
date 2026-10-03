@@ -206,8 +206,17 @@ class PurchaseReceiptAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin)
     )
     list_filter = ('status', 'quality_status', 'stock_entry_status')
     search_fields = ('receipt_number', 'order__order_number', 'fiscal_document_number')
-    autocomplete_fields = ('order', 'received_by')
-    readonly_fields = ('created_at', 'updated_at')
+    autocomplete_fields = ('order',)
+    readonly_fields = (
+        'created_at',
+        'updated_at',
+        'status',
+        'quality_status',
+        'stock_entry_status',
+        'received_by',
+        'fiscal_received_at',
+        'physical_received_at',
+    )
     inlines = (PurchaseReceiptItemInline,)
 
 

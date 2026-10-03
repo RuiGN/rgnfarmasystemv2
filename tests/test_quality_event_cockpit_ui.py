@@ -1,5 +1,4 @@
 from datetime import timedelta
-from decimal import Decimal
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
@@ -7,13 +6,12 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from capa.models import CapaAction, CapaRecord, EffectivenessCheck
+from capa.models import CapaAction, CapaRecord
 from deviations.models import (
     DeviationApproval,
     DeviationEvidence,
     DeviationImpactAssessment,
     DeviationInvestigation,
-    DeviationLink,
     QualityEvent,
 )
 from inventory.models import StockLot, StockQualityStatus
@@ -109,7 +107,7 @@ class QualityEventCockpitUiTests(TestCase):
         self.assertContains(response, 'Plano CAPA e ações')
 
     def test_sod_evidence_tab_permissions(self):
-        evidence = DeviationEvidence.objects.create(
+        DeviationEvidence.objects.create(
             event=self.event,
             title='Laudo Analítico Fora de Especificação',
             file_reference='laudos/2026/dev-001-laudo.pdf',
@@ -120,7 +118,10 @@ class QualityEventCockpitUiTests(TestCase):
 
         # Sem permissão de evidência -> Alerta de Segregação de Deveres (SoD)
         response = self.client.get(self.cockpit_url)
-        self.assertContains(response, 'Segregação de deveres: você não possui permissão para visualizar as evidências')
+        self.assertContains(
+            response,
+            'Segregação de deveres: você não possui permissão para visualizar as evidências',
+        )
         self.assertNotContains(response, 'Laudo Analítico Fora de Especificação')
 
         # Com permissão de evidência -> Tabela renderizada com hash ALCOA+
@@ -135,7 +136,7 @@ class QualityEventCockpitUiTests(TestCase):
         self.assertContains(response, 'a1b2c3d4e5f6')
 
     def test_sod_investigation_tab_permissions(self):
-        investigation = DeviationInvestigation.objects.create(
+        DeviationInvestigation.objects.create(
             event=self.event,
             investigator=self.user,
             status=DeviationInvestigation.Status.OPEN,
@@ -145,7 +146,10 @@ class QualityEventCockpitUiTests(TestCase):
 
         # Sem permissão -> Alerta SoD
         response = self.client.get(self.cockpit_url)
-        self.assertContains(response, 'Segregação de deveres: você não possui permissão para visualizar as investigações')
+        self.assertContains(
+            response,
+            'Segregação de deveres: você não possui permissão para visualizar as investigações',
+        )
 
         # Com permissão -> Conteúdo renderizado
         perm = Permission.objects.get(
@@ -158,7 +162,7 @@ class QualityEventCockpitUiTests(TestCase):
         self.assertContains(response, 'Bloqueio físico do pallet')
 
     def test_sod_impact_tab_permissions(self):
-        impact = DeviationImpactAssessment.objects.create(
+        DeviationImpactAssessment.objects.create(
             event=self.event,
             impacts_quality=True,
             impacts_safety=False,
@@ -175,7 +179,10 @@ class QualityEventCockpitUiTests(TestCase):
 
         # Sem permissão -> Alerta SoD
         response = self.client.get(self.cockpit_url)
-        self.assertContains(response, 'Segregação de deveres: você não possui permissão para visualizar a avaliação de impacto')
+        self.assertContains(
+            response,
+            'Segregação de deveres: você não possui permissão para visualizar a avaliação de impacto',
+        )
 
         # Com permissão -> Matriz 8D renderizada
         perm = Permission.objects.get(
@@ -203,7 +210,7 @@ class QualityEventCockpitUiTests(TestCase):
             due_date=timezone.now().date() + timedelta(days=15),
             status=CapaRecord.Status.IN_PROGRESS,
         )
-        action = CapaAction.objects.create(
+        CapaAction.objects.create(
             capa=capa,
             action_type=CapaAction.ActionType.CORRECTIVE,
             title='Substituição do eletrodo de pH',
@@ -215,7 +222,10 @@ class QualityEventCockpitUiTests(TestCase):
 
         # Sem permissão -> Alerta SoD
         response = self.client.get(self.cockpit_url)
-        self.assertContains(response, 'Segregação de deveres: você não possui permissão para visualizar os planos CAPA')
+        self.assertContains(
+            response,
+            'Segregação de deveres: você não possui permissão para visualizar os planos CAPA',
+        )
 
         # Com permissão de CAPA e Ações
         perm_capa = Permission.objects.get(
@@ -233,7 +243,7 @@ class QualityEventCockpitUiTests(TestCase):
         self.assertContains(response, 'Corretiva')
 
     def test_sod_approvals_and_closure_checklist(self):
-        approval = DeviationApproval.objects.create(
+        DeviationApproval.objects.create(
             event=self.event,
             approver=self.user,
             role=DeviationApproval.Role.QA,
@@ -243,7 +253,10 @@ class QualityEventCockpitUiTests(TestCase):
 
         # Sem permissão -> Alerta SoD
         response = self.client.get(self.cockpit_url)
-        self.assertContains(response, 'Segregação de deveres: você não possui permissão para visualizar as aprovações')
+        self.assertContains(
+            response,
+            'Segregação de deveres: você não possui permissão para visualizar as aprovações',
+        )
 
         # Com permissão de aprovações
         perm_appr = Permission.objects.get(
@@ -341,7 +354,9 @@ class QualityEventCockpitUiTests(TestCase):
         self.assertContains(response, 'Encerrar evento de qualidade')
 
         # Agora encerramos o evento formalmente
-        self.event.close(summary='Evento encerrado após conclusão de ações corretivas.', user=self.user)
+        self.event.close(
+            summary='Evento encerrado após conclusão de ações corretivas.', user=self.user
+        )
 
         response = self.client.get(self.cockpit_url)
         self.assertContains(response, 'Evento formalmente encerrado')

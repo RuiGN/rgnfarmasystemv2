@@ -1,0 +1,4 @@
+# Preserve raw rejected-suite evidence, including traceback whitespace.
+# These generated XML files are not source code and remain byte-identical.
+docs/validation/evidence/corrections/first-frozen-suite-junit.xml -diff
+docs/validation/evidence/corrections/v2-suite-junit.xml -diff

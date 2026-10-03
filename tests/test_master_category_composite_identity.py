@@ -45,9 +45,7 @@ def test_master_category_parent_resolves_by_canonical_composite_identity():
     canonical_parent = MasterCategory.objects.get(
         code='CAT-COS-PARENT', kind=MasterCategory.Kind.FAMILY
     )
-    child = MasterCategory.objects.get(
-        code='CAT-COS-CHILD', kind=MasterCategory.Kind.CATEGORY
-    )
+    child = MasterCategory.objects.get(code='CAT-COS-CHILD', kind=MasterCategory.Kind.CATEGORY)
     legacy_parent.refresh_from_db()
     assert child.parent == canonical_parent
     assert legacy_parent.kind == MasterCategory.Kind.GROUP

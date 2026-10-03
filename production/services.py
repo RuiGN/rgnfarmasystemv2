@@ -194,6 +194,80 @@ class ProductionOrderOperations:
         return movements
 
     @transaction.atomic
+    def _release_reservations_for_cancellation(self):
+        from inventory.models import StockMovement, StockQualityStatus
+
+        order = self._locked_order()
+        order._require_status(order.CANCELLABLE_STATUSES)
+        items = list(
+            order.material_consumptions.select_for_update(of=('self',))
+            .select_related(
+                'reservation_movement', 'issue_movement', 'loss_movement', 'return_movement'
+            )
+            .order_by('pk')
+        )
+        balances = _lock_stock_balances(
+            _balance_key(item, StockQualityStatus.APPROVED)
+            for item in items
+            if item.reservation_movement_id
+        )
+        movements = []
+        for item in items:
+            if not item.reservation_movement_id:
+                if item.reserved_quantity != ZERO:
+                    raise ValidationError({'materials': 'Reserva sem movimento vinculado.'})
+                continue
+            errors = {}
+            for field, kind, quantity_field in (
+                (
+                    'reservation_movement',
+                    StockMovement.MovementType.RESERVATION,
+                    'reserved_quantity',
+                ),
+                ('issue_movement', StockMovement.MovementType.ISSUE, 'issued_quantity'),
+                ('loss_movement', StockMovement.MovementType.LOSS, 'loss_quantity'),
+                (
+                    'return_movement',
+                    StockMovement.MovementType.RELEASE_RESERVATION,
+                    'returned_quantity',
+                ),
+            ):
+                item._validate_stock_movement(errors, field, kind, 'from', quantity_field)
+            if errors:
+                raise ValidationError(errors)
+            released = sum(
+                (
+                    movement.quantity
+                    for movement in (item.issue_movement, item.loss_movement, item.return_movement)
+                    if movement is not None
+                ),
+                ZERO,
+            )
+            outstanding = item.reserved_quantity - released
+            if outstanding < ZERO:
+                raise ValidationError({'materials': 'Movimentos excedem a reserva original.'})
+            if outstanding == ZERO:
+                continue
+            if item.return_movement_id:
+                raise ValidationError(
+                    {'materials': 'Liberação parcial inconsistente exige reconciliação.'}
+                )
+            balance = balances.get(_balance_key(item, StockQualityStatus.APPROVED))
+            if balance is None or balance.unit_id != item.unit_id:
+                raise ValidationError(
+                    {'materials': 'Saldo da reserva ausente ou unidade incompatível.'}
+                )
+            item.returned_quantity = outstanding
+            movement = StockMovement.release_reserved_stock(consumption=item, user=self.user)
+            movement.related_movement = item.reservation_movement
+            movement.reason = f'Liberação por cancelamento de {order.order_number}'
+            movement.save(update_fields=['related_movement', 'reason', 'updated_at'])
+            item.return_movement = movement
+            item.save(update_fields=['returned_quantity', 'return_movement', 'updated_at'])
+            movements.append(movement)
+        return movements
+
+    @transaction.atomic
     def issue_materials(self):
         from inventory.models import StockMovement, StockQualityStatus
 
@@ -504,6 +578,22 @@ class ProductionOrderOperations:
                     }
                 )
 
+        pending_outputs = sorted(
+            (output for output in outputs if output.status == output.Status.PENDING),
+            key=lambda output: (output.product_id, output.lot_number, output.sublot_number),
+        )
+        lots = [StockMovement._production_output_lot(output) for output in pending_outputs]
+        StockMovement._lock_receiving_balances(
+            (
+                output.product,
+                lot,
+                output.warehouse,
+                output.location,
+                StockQualityStatus.QUARANTINE,
+                output.unit,
+            )
+            for output, lot in zip(pending_outputs, lots)
+        )
         changed = False
         for output in outputs:
             if output.status == output.Status.PENDING:

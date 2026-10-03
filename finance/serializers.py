@@ -1,7 +1,13 @@
+from typing import TYPE_CHECKING, Protocol, cast
+
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import transaction
 from rest_framework import serializers
 
 from base.serializer_mixins import ModelSerializerContractMixin
+
+if TYPE_CHECKING:
+    from django.db.models import Model
 
 from finance.models import (
     CashFlowEntry,
@@ -26,6 +32,7 @@ class SingleInstanceFinanceSerializerMixin(ModelSerializerContractMixin):
             values[field.name] = attrs.get(field.name, getattr(self.instance, field.name))
         instance = model(**values)
         instance.pk = self.instance.pk
+        instance._state.adding = False
         return instance
 
     def _run_model_clean(self, instance):
@@ -77,7 +84,30 @@ class FinancialCategorySerializer(
         return attrs
 
 
-class FinancialAccountSerializer(SingleInstanceFinanceSerializerMixin, serializers.ModelSerializer):
+class _ModelSerializerCreate(Protocol):
+    def create(self, validated_data: dict[str, object]) -> 'Model': ...
+
+
+class LockedFinanceSerializerMixin(SingleInstanceFinanceSerializerMixin):
+    def create(self, validated_data):
+        try:
+            return cast(_ModelSerializerCreate, super()).create(validated_data)
+        except DjangoValidationError as error:
+            raise serializers.ValidationError(error.message_dict) from error
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        instance = self.Meta.model.objects.select_for_update().get(pk=instance.pk)
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+        try:
+            instance.save(update_fields=set(validated_data) | {'updated_at'})
+        except DjangoValidationError as error:
+            raise serializers.ValidationError(error.message_dict) from error
+        return instance
+
+
+class FinancialAccountSerializer(LockedFinanceSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = FinancialAccount
         fields = (
@@ -94,10 +124,10 @@ class FinancialAccountSerializer(SingleInstanceFinanceSerializerMixin, serialize
             'created_at',
             'updated_at',
         )
-        read_only_fields = ('id', 'created_at', 'updated_at')
+        read_only_fields = ('id', 'current_balance', 'created_at', 'updated_at')
 
 
-class FinancialTitleSerializer(SingleInstanceFinanceSerializerMixin, serializers.ModelSerializer):
+class FinancialTitleSerializer(LockedFinanceSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = FinancialTitle
         fields = (
@@ -127,6 +157,7 @@ class FinancialTitleSerializer(SingleInstanceFinanceSerializerMixin, serializers
         read_only_fields = (
             'id',
             'status',
+            'open_amount',
             'paid_amount',
             'approved_by',
             'approved_at',
@@ -144,7 +175,9 @@ class FinancialTitleSerializer(SingleInstanceFinanceSerializerMixin, serializers
             pass
         if self.instance is None and 'open_amount' not in attrs and 'original_amount' in attrs:
             attrs['open_amount'] = attrs['original_amount']
-        self._run_model_clean(self._instance_for_clean(attrs))
+        candidate = self._instance_for_clean(attrs)
+        candidate.open_amount = candidate.original_amount - candidate.paid_amount
+        self._run_model_clean(candidate)
         return attrs
 
 
@@ -189,23 +222,42 @@ class FinancialSettlementSerializer(
         )
 
     def validate(self, attrs):
-        for field_name in ('title', 'financial_account'):
-            pass
-        self._run_model_clean(self._instance_for_clean(attrs))
+        candidate = self._instance_for_clean(attrs)
+        if self.instance is not None:
+            try:
+                candidate.validate_immutable_fields(self.instance, attrs)
+            except DjangoValidationError as error:
+                raise serializers.ValidationError(error.message_dict) from error
+        self._run_model_clean(candidate)
         return attrs
 
     def create(self, validated_data):
         title = validated_data['title']
-        return title.register_settlement(
-            financial_account=validated_data['financial_account'],
-            amount=validated_data['amount'],
-            settlement_date=validated_data['settlement_date'],
-            method=validated_data['method'],
-            interest_amount=validated_data.get('interest_amount', 0),
-            penalty_amount=validated_data.get('penalty_amount', 0),
-            discount_amount=validated_data.get('discount_amount', 0),
-            reference=validated_data.get('reference', ''),
-        )
+        try:
+            return title.register_settlement(
+                financial_account=validated_data['financial_account'],
+                amount=validated_data['amount'],
+                settlement_date=validated_data['settlement_date'],
+                method=validated_data['method'],
+                interest_amount=validated_data.get('interest_amount', 0),
+                penalty_amount=validated_data.get('penalty_amount', 0),
+                discount_amount=validated_data.get('discount_amount', 0),
+                reference=validated_data.get('reference', ''),
+                notes=validated_data.get('notes', ''),
+            )
+        except DjangoValidationError as error:
+            raise serializers.ValidationError(error.message_dict) from error
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        instance = FinancialSettlement.objects.select_for_update().get(pk=instance.pk)
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+        try:
+            instance.save(update_fields=set(validated_data) | {'updated_at'})
+        except DjangoValidationError as error:
+            raise serializers.ValidationError(error.message_dict) from error
+        return instance
 
 
 class CashFlowEntrySerializer(SingleInstanceFinanceSerializerMixin, serializers.ModelSerializer):

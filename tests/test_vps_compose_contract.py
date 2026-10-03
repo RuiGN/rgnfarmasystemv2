@@ -50,7 +50,7 @@ def test_tunnel_readiness_is_exposed_only_on_the_host_loopback():
 
     assert services['nginx']['ports'] == ['127.0.0.1:8081:80']
     assert tunnel['network_mode'] == 'host'
-    assert '127.0.0.1:${TUNNEL_METRICS_PORT:-20242}' in tunnel['command']
+    assert '${CLOUDFLARED_METRICS_ADDRESS:-127.0.0.1:20249}' in tunnel['command']
     assert 'ports' not in tunnel
 
 

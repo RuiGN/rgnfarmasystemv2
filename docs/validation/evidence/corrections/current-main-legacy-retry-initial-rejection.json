@@ -1,0 +1,228 @@
+{
+  "status": "STOP: authorized single fix cycle used; directed gate FAILED; no second fix",
+  "red": {
+    "declared": 2,
+    "serialized": 2,
+    "groups": {
+      "test_legacy_purchase_retry_compatibility": {
+        "passed": 0,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "total": 2
+      }
+    },
+    "failures": [
+      {
+        "test": "test_v2_nfe_manufacturing_omission_allows_read_only_retry[http]",
+        "message": "AssertionError: {'movement': ['O lan\u00e7amento existente difere do recebimento ou destino.']}\nassert 400 == 200\n +  where 400 = <Response status_code=400, \"application/json\">.status_code"
+      },
+      {
+        "test": "test_v2_nfe_manufacturing_omission_allows_read_only_retry[helper]",
+        "message": "django.core.exceptions.ValidationError: {'movement': ['O lan\u00e7amento existente difere do recebimento ou destino.']}"
+      }
+    ]
+  },
+  "green_attempt": {
+    "declared": 164,
+    "serialized": 164,
+    "groups": {
+      "test_legacy_purchase_retry_compatibility": {
+        "passed": 1,
+        "failed": 30,
+        "errors": 0,
+        "skipped": 0,
+        "total": 31
+      },
+      "test_review_purchase_entrypoints_corrections": {
+        "passed": 47,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "total": 47
+      },
+      "test_procurement_nfe_import": {
+        "passed": 31,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "total": 31
+      },
+      "test_purchase_posting_corrections": {
+        "passed": 26,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "total": 26
+      },
+      "test_review_stock_api_corrections": {
+        "passed": 21,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "total": 21
+      },
+      "test_inventory_corrections": {
+        "passed": 8,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "total": 8
+      }
+    },
+    "failures": [
+      {
+        "test": "test_v2_nfe_manufacturing_omission_allows_read_only_retry[http]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en... \\'success\\', 3771, NULL, \\'127.0.0.1\\'::inet, \\'\\', 93, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_modern_known_manufacturing_date_still_rejects_divergence[different]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3773, NULL, \\'127.0.0.1\\'::inet, \\'\\', 56, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_modern_known_manufacturing_date_still_rejects_divergence[removed]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3774, NULL, \\'127.0.0.1\\'::inet, \\'\\', 42, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_legitimate_nfe_without_manufacturing_date_remains_idempotent",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en... \\'success\\', 3775, NULL, \\'127.0.0.1\\'::inet, \\'\\', 50, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[missing_movement]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3776, NULL, \\'127.0.0.1\\'::inet, \\'\\', 25, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[quantity]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3777, NULL, \\'127.0.0.1\\'::inet, \\'\\', 47, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[zero_quantity]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3778, NULL, \\'127.0.0.1\\'::inet, \\'\\', 23, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[received_quantity]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3779, NULL, \\'127.0.0.1\\'::inet, \\'\\', 91, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[rejected_quantity]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3780, NULL, \\'127.0.0.1\\'::inet, \\'\\', 48, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[unit]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3781, NULL, \\'127.0.0.1\\'::inet, \\'\\', 42, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[product]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3782, NULL, \\'127.0.0.1\\'::inet, \\'\\', 59, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[lot]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3783, NULL, \\'127.0.0.1\\'::inet, \\'\\', 70, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[expiry]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3784, NULL, \\'127.0.0.1\\'::inet, \\'\\', 67, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[supplier]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3785, NULL, \\'127.0.0.1\\'::inet, \\'\\', 47, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[document]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3786, NULL, \\'127.0.0.1\\'::inet, \\'\\', 74, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[quality]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3787, NULL, \\'127.0.0.1\\'::inet, \\'\\', 27, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[movement_quality]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3788, NULL, \\'127.0.0.1\\'::inet, \\'\\', 56, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[destination]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3789, NULL, \\'127.0.0.1\\'::inet, \\'\\', 61, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[inactive_location]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3790, NULL, \\'127.0.0.1\\'::inet, \\'\\', 39, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[inactive_warehouse]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3791, NULL, \\'127.0.0.1\\'::inet, \\'\\', 46, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[inactive_site]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3792, NULL, \\'127.0.0.1\\'::inet, \\'\\', 29, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[wrong_location_warehouse]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3793, NULL, \\'127.0.0.1\\'::inet, \\'\\', 61, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[wrong_order]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3794, NULL, \\'127.0.0.1\\'::inet, \\'\\', 93, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[lot_source]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en..., \\'error\\', 3795, NULL, \\'127.0.0.1\\'::inet, \\'\\', 108, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[production_source]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3796, NULL, \\'127.0.0.1\\'::inet, \\'\\', 57, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[sublot]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3797, NULL, \\'127.0.0.1\\'::inet, \\'\\', 62, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[missing_nfe_key]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3798, NULL, \\'127.0.0.1\\'::inet, \\'\\', 41, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[missing_nfe_xml]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3799, NULL, \\'127.0.0.1\\'::inet, \\'\\', 40, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_historical_nfe_missing_date_does_not_bypass_other_guards[missing_nfe_hash]",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en...0, \\'error\\', 3800, NULL, \\'127.0.0.1\\'::inet, \\'\\', 61, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      },
+      {
+        "test": "test_nfe_null_has_no_provenance_to_distinguish_historical_omission_from_erasure",
+        "message": "assert ['INSERT INTO...alllog\".\"id\"'] == []\n  \n  Left contains one more item: 'INSERT INTO \"integrations_apicalllog\" (\"created_at\", \"updated_at\", \"request_id\", \"api_version\", \"method\", \"path\", \"en... \\'success\\', 3801, NULL, \\'127.0.0.1\\'::inet, \\'\\', 38, \\'{}\\'::jsonb, \\'\\') RETURNING \"integrations_apicalllog\".\"id\"'\n  Use -v to get more diff"
+      }
+    ]
+  },
+  "static_gates": {
+    "ruff": true,
+    "ruff_format": true,
+    "mypy_source_files": 397,
+    "bandit_findings": 0,
+    "bandit_errors": 0,
+    "diff_check": true
+  },
+  "scope": {
+    "changed_methods": [
+      "StockMovement._confirm_purchase_receipt_retry"
+    ],
+    "module_AST_identical_when_owned_method_masked": true,
+    "condition_terms_before": 18,
+    "condition_terms_after": 18,
+    "changed_condition_term_indexes": [
+      7
+    ],
+    "new_methods": [],
+    "imports_and_nonowned_AST_identical": true,
+    "v2_embedded_first_entry_method_AST_identity": {
+      "receive_purchase_receipt_item": true,
+      "_purchase_receipt_lot": true,
+      "post_stock": true
+    },
+    "changed_preexisting_workspace_files": [
+      "inventory/models.py"
+    ],
+    "new_workspace_file": "tests/test_legacy_purchase_retry_compatibility.py",
+    "v2_manifest_changes": [],
+    "existing_tests_preserved_by_hash": true
+  }
+}

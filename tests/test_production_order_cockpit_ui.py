@@ -298,8 +298,21 @@ class ProductionOrderCockpitUiTests(TestCase):
 
         content = response.content.decode('utf-8')
         # Avisos de permissão ausente devem ser renderizados nas abas restritas
-        self.assertIn('Você não possui permissão para consultar os consumos de materiais desta ordem', content)
-        self.assertIn('Você não possui permissão para visualizar as operações e mão de obra desta ordem', content)
-        self.assertIn('Você não possui permissão para consultar as amostras de controle de qualidade desta ordem', content)
-        self.assertIn('Você não possui permissão para consultar os desvios e não conformidades', content)
-        self.assertIn('Você não possui permissão para visualizar as saídas e apropriação de custos desta ordem', content)
+        self.assertIn(
+            'Você não possui permissão para consultar os consumos de materiais desta ordem', content
+        )
+        self.assertIn(
+            'Você não possui permissão para visualizar as operações e mão de obra desta ordem',
+            content,
+        )
+        self.assertIn(
+            'Você não possui permissão para consultar as amostras de controle de qualidade desta ordem',
+            content,
+        )
+        self.assertIn(
+            'Você não possui permissão para consultar os desvios e não conformidades', content
+        )
+        self.assertIn(
+            'Você não possui permissão para visualizar as saídas e apropriação de custos desta ordem',
+            content,
+        )

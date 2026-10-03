@@ -1,3 +1,5 @@
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import transaction
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
@@ -14,6 +16,7 @@ from inventory.label_service import (
 from inventory.models import StockBalance, StockLot, StockLotGenealogy, StockMovement
 from inventory.serializers import (
     StockBalanceSerializer,
+    StockIssueSerializer,
     StockLotGenealogySerializer,
     StockLotSerializer,
     StockMovementSerializer,
@@ -97,6 +100,42 @@ class StockBalanceViewSet(SingleInstanceInventoryViewSet):
 
 
 class StockMovementViewSet(SingleInstanceInventoryViewSet):
+    def create(self, request, *args, **kwargs):
+        return Response(
+            {'detail': 'Ledger somente leitura. Utilize as operações de domínio.'},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED,
+        )
+
+    action_permission_map = {'issue': ('inventory.add_stockmovement',)}
+
+    @action(detail=False, methods=['post'], serializer_class=StockIssueSerializer)
+    def issue(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        try:
+            with transaction.atomic():
+                movement = StockMovement.issue_stock(
+                    product=data['product'],
+                    lot=data['lot'],
+                    warehouse=data['from_warehouse'],
+                    location=data['from_location'],
+                    quantity=data['quantity'],
+                    unit=data['unit'],
+                    reason=data['reason'],
+                    stock_balance_id=data.get('stock_balance_id'),
+                )
+                movement.created_by = request.user
+                movement.document_reference = data['document_reference']
+                movement.save(update_fields=['created_by', 'document_reference', 'updated_at'])
+        except DjangoValidationError as error:
+            return Response(error.message_dict, status=status.HTTP_400_BAD_REQUEST)
+        return Response(StockMovementSerializer(movement).data, status=status.HTTP_201_CREATED)
+
+    update = create
+    partial_update = create
+    destroy = create
+
     queryset = StockMovement.objects.select_related(
         'product',
         'lot',

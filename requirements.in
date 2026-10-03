@@ -1,0 +1,36 @@
+# Direct application dependencies and audited compatibility pins.
+# Resolve on Python 3.14, then freeze the complete environment into requirements.txt.
+babel==2.18.0
+beautifulsoup4==4.15.0
+celery==5.6.3
+cryptography==50.0.1
+defusedxml==0.7.1
+dj-celery-panel==0.6.0
+Django==6.0.8
+django-celery-beat==2.9.0
+django-environ==0.14.0
+django-filter==26.1
+djangorestframework==3.18.0
+drf-spectacular==0.30.0
+gunicorn==26.2.0
+httpx==0.28.1
+langchain==1.3.17
+langchain-core==1.6.1
+langchain-openai==1.6.0
+langgraph==1.2.11
+langgraph-checkpoint==4.2.0
+langgraph-sdk==0.4.3
+numpy==2.5.2
+openai==3.3.1
+openpyxl==3.1.5
+pillow==12.3.0
+protobuf==7.36.0
+psycopg[binary]==3.3.5
+pypdf==6.19.0
+PyYAML==6.0.3
+redis==7.4.1
+reportlab==5.0.1
+requests==2.34.2
+typing_extensions==4.16.0
+websockets==16.1.1
+whitenoise==6.12.0

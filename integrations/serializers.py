@@ -24,6 +24,7 @@ class SingleInstanceIntegrationSerializerMixin(ModelSerializerContractMixin):
             values[field.name] = attrs.get(field.name, getattr(self.instance, field.name))
         instance = model(**values)
         instance.pk = self.instance.pk
+        instance._state.adding = False
         return instance
 
     def _run_model_clean(self, instance):
@@ -65,6 +66,15 @@ class IntegrationConnectorSerializer(
         )
 
     def validate(self, attrs):
+        from rest_framework.exceptions import PermissionDenied
+
+        instance = self.instance or IntegrationConnector(**attrs)
+        try:
+            instance.validate_fiscal_management(
+                getattr(self.context.get('request'), 'user', None), attrs
+            )
+        except DjangoValidationError as error:
+            raise PermissionDenied(error.message_dict) from error
         self._run_model_clean(self._instance_for_clean(attrs))
         return attrs
 

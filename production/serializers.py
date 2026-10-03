@@ -1,3 +1,5 @@
+from collections.abc import Mapping
+
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
@@ -69,6 +71,26 @@ class SingleInstanceProductionSerializerMixin(ModelSerializerContractMixin):
 class ProductionOrderSerializer(
     SingleInstanceProductionSerializerMixin, serializers.ModelSerializer
 ):
+    def to_internal_value(self, data):
+        if not isinstance(data, Mapping):
+            return super().to_internal_value(data)
+        controlled = {'status', 'cancelled_by', 'cancelled_at'}.intersection(data)
+        if controlled:
+            raise serializers.ValidationError(
+                {field: 'Campo controlado pelo fluxo de domínio.' for field in sorted(controlled)}
+            )
+        return super().to_internal_value(data)
+
+    def update(self, instance, validated_data):
+        try:
+            return super().update(instance, validated_data)
+        except DjangoValidationError as error:
+            raise serializers.ValidationError(
+                error.message_dict
+                if hasattr(error, 'message_dict')
+                else {'non_field_errors': error.messages}
+            ) from error
+
     class Meta:
         model = ProductionOrder
         fields = (
@@ -132,6 +154,19 @@ class MaterialConsumptionSerializer(
     SingleInstanceProductionSerializerMixin, serializers.ModelSerializer
 ):
     variance_quantity = serializers.DecimalField(max_digits=14, decimal_places=4, read_only=True)
+
+    def update(self, instance, validated_data):
+        for field_name, value in validated_data.items():
+            setattr(instance, field_name, value)
+        try:
+            instance.save(update_fields=[*validated_data, 'updated_at'])
+        except DjangoValidationError as error:
+            raise serializers.ValidationError(
+                error.message_dict
+                if hasattr(error, 'message_dict')
+                else {'non_field_errors': error.messages}
+            ) from error
+        return instance
 
     class Meta:
         model = MaterialConsumption

@@ -102,8 +102,68 @@ Valide os contratos antes da promoção:
 .venv/bin/python manage.py check_release_readiness --fail-on-error
 ```
 
+## Saúde e dependências do candidato
+
+`/health/` é liveness: verifica somente que o processo HTTP responde. `/ready/`
+verifica PostgreSQL (`SELECT 1`), leitura do cache e conexão com o broker Celery.
+Retorna HTTP 503 se qualquer dependência falhar, sem mensagens ou credenciais;
+a resposta não é cacheável. O healthcheck do app na VPS usa `/ready/`.
+
+Cada probe executa em um subprocesso descartável com limite de **2 segundos**,
+contando importação do driver, conexão, handshake, consulta/leitura e fechamento.
+Os três probes sequenciais têm orçamento de espera de **6 segundos**, com margem
+até 8 segundos para o handler, abaixo dos 10 segundos do healthcheck do app.
+O supervisor mata e recolhe o filho ao vencer o prazo: não deixa threads de
+rede bloqueadas. Isso cobre peers que aceitam TCP mas não respondem ao protocolo
+ou à consulta; `connect_timeout` ou `statement_timeout` isolados não bastam.
+Credenciais/configuração passam como JSON no stdin de código fixo, nunca em
+argumentos, código interpolado ou logs; saída/erros dos filhos são descartados.
+As conexões e configurações operacionais não são alteradas. O cache recebe apenas
+leitura, sem criação de chave. `/health/` permanece leve e sem dependências.
+
+O custo é iniciar três intérpretes e abrir conexões novas por chamada, em vez de
+reusar pools operacionais; não use `/ready/` como polling de alta frequência.
+Os prazos não são uma garantia de tempo real sob suspensão do processo, starvation
+do host ou bloqueio do próprio sistema operacional na criação/recolhimento de
+processos. Os testes isolados exercitam sockets silenciosos PostgreSQL (startup
+e consulta), Redis e AMQP e exigem resposta em menos de 8 segundos com todos os
+filhos recolhidos; sucesso e HTTP 503 preservam `Cache-Control: no-store`.
+
+O healthcheck do túnel usa `cloudflared tunnel --metrics <endereço> ready`, não
+apenas a versão do binário. `CLOUDFLARED_METRICS_ADDRESS` configura o mesmo
+endereço no comando e no healthcheck; o padrão é `127.0.0.1:20249`. Na inspeção
+do host, 20241 e 20243 estavam ocupadas. Como o túnel usa rede host, confirme que
+a porta escolhida está livre imediatamente antes do deploy. Não promova um
+candidato enquanto o túnel estiver reiniciando ou usando uma porta divergente.
+
+As dependências diretas ficam em `requirements.in`; `requirements.txt` fixa o
+runtime completo resolvido em Python 3.14. Ferramentas de teste e qualidade ficam
+em `requirements-dev.txt`. Para validar em ambiente limpo:
+
+```bash
+python3.14 -m venv .venv
+.venv/bin/python -m pip install -r requirements-dev.txt
+.venv/bin/python -m pip check
+.venv/bin/pip-audit -r requirements.txt
+```
+
+A versão de `pypdf` incorpora as correções de negação de serviço identificadas
+na auditoria de dependências. Um build de teste não reinicia nem promove produção.
+
 ## Rollback
+
+O `scripts/deploy-vps.sh` retorna falha de implantação/verificação ao `main`,
+que chama `rollback_release` e termina com código 1. Isso inclui Compose inválido,
+falha no `up`, serviços/containers ausentes, erro de listagem ou `docker inspect`,
+túnel unhealthy, falha de curl na origem/domínio e `check --deploy` malsucedido.
+As funções usadas na condição do `main` verificam explicitamente o retorno de
+cada comando: nesse contexto Bash não aplica `set -e` dentro das funções.
+O helper de readiness apenas registra erro e retorna 1; não usa o `fail()` fatal
+de preflight, pois um `exit` interno impediria o rollback. Falhas antes de promover
+o candidato continuam interrompendo o preflight, sem rollback do candidato.
 
 Reimplante o SHA e a imagem registrados antes da janela. Restaure banco ou
 mídia somente quando uma migration incompatível tiver sido aplicada, depois de
-validar os hashes. Backups não são apagados no rollback.
+validar os hashes. O rollback do script reimplanta a revisão anterior e não
+restaura banco/mídia automaticamente; se a reimplantação falhar, a execução continua
+malsucedida. Backups não são apagados no rollback.

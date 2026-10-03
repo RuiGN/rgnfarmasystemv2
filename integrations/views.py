@@ -67,6 +67,17 @@ class IntegrationConnectorViewSet(SingleInstanceIntegrationViewSet):
     search_fields = ('code', 'name', 'base_url', 'secret_reference', 'responsible__email')
     ordering = ('provider_type', 'code')
 
+    def get_object(self):
+        connector = super().get_object()
+        if self.action in {'activate', 'suspend', 'test_success', 'test_failure', 'destroy'}:
+            from rest_framework.exceptions import PermissionDenied
+
+            try:
+                connector.validate_fiscal_management(self.request.user, {})
+            except DjangoValidationError as error:
+                raise PermissionDenied(_validation_payload(error)) from error
+        return connector
+
     @action(detail=True, methods=['post'])
     def activate(self, request, pk=None):
         return self._domain_action_response(lambda connector: connector.activate(user=request.user))
@@ -89,6 +100,7 @@ class IntegrationConnectorViewSet(SingleInstanceIntegrationViewSet):
     def test_failure(self, request, pk=None):
         error_message = request.data.get('error_message') or ''
         if not error_message:
+            self.get_object()
             return Response(
                 {'error_message': ['Informe a mensagem de erro.']},
                 status=status.HTTP_400_BAD_REQUEST,

@@ -9,17 +9,16 @@ from django.utils import timezone
 
 from audits.models import AuditFinding, AuditPlan, AuditProgram, AuditReport
 from auxiliary.models import City, Country, StateProvince
-from masters.models import BusinessPartner, Product, UnitOfMeasure
+from inventory.models import StorageLocation, Warehouse
+from masters.models import BusinessPartner, Product, Site, UnitOfMeasure
 from procurement.models import (
     PurchaseOrder,
     PurchaseOrderItem,
     PurchaseReceipt,
     PurchaseReceiptItem,
     SupplierQualificationEvent,
-    SupplierQuotation,
 )
 from qa.models import QualityBlock
-from quality.models import LaboratoryInvestigation, QualitySample
 
 
 class SupplierCockpitUiTests(TestCase):
@@ -41,7 +40,9 @@ class SupplierCockpitUiTests(TestCase):
         self.country = Country.objects.create(
             name='Brasil', iso_alpha2='BR', iso_alpha3='BRA', numeric_code='076'
         )
-        self.state = StateProvince.objects.create(name='São Paulo', abbreviation='SP', country=self.country)
+        self.state = StateProvince.objects.create(
+            name='São Paulo', abbreviation='SP', country=self.country
+        )
         self.city = City.objects.create(name='Campinas', state=self.state)
 
         # Unidade de medida e Insumo
@@ -166,13 +167,9 @@ class SupplierCockpitUiTests(TestCase):
         self.purchase_receipt = PurchaseReceipt.objects.create(
             receipt_number='REC-2026-0001',
             order=self.purchase_order,
-            status=PurchaseReceipt.Status.RECEIVED,
             fiscal_document_number='NF-10492',
             nfe_access_key='35260933444555000122550010000104921000104923',
             physical_received_at=timezone.now() - timedelta(days=10),
-            quality_status=PurchaseReceipt.QualityStatus.APPROVED,
-            stock_entry_status=PurchaseReceipt.StockEntryStatus.POSTED,
-            received_by=self.user,
         )
 
         self.receipt_item = PurchaseReceiptItem.objects.create(
@@ -187,6 +184,22 @@ class SupplierCockpitUiTests(TestCase):
             manufacturing_date=timezone.localdate() - timedelta(days=40),
             expiry_date=timezone.localdate() + timedelta(days=700),
         )
+
+        site = Site.objects.create(
+            code='PL-REC-01', name='Planta de Recebimento', site_type=Site.SiteType.PLANT
+        )
+        warehouse = Warehouse.objects.create(
+            site=site,
+            code='ALM-MP-01',
+            name='Almoxarifado de Matérias-Primas',
+            warehouse_type=Warehouse.WarehouseType.RAW_MATERIAL,
+        )
+        location = StorageLocation.objects.create(
+            warehouse=warehouse, code='MP-A01', name='Matérias-Primas Box 1'
+        )
+        self.purchase_receipt.mark_received(user=self.user)
+        self.purchase_receipt.release_quality(PurchaseReceipt.QualityStatus.APPROVED)
+        self.purchase_receipt.post_stock(warehouse=warehouse, location=location, user=self.user)
 
         self.cockpit_url = reverse('app:supplier_cockpit', kwargs={'pk': self.supplier.pk})
 
@@ -290,7 +303,9 @@ class SupplierCockpitUiTests(TestCase):
         response = self.client.get(self.cockpit_url)
         self.assertEqual(response.status_code, 200)
         content = response.content.decode('utf-8')
-        self.assertIn('Você não possui permissão para visualizar auditorias de fornecedor.', content)
+        self.assertIn(
+            'Você não possui permissão para visualizar auditorias de fornecedor.', content
+        )
         self.assertNotIn('AUD-FOR-2026-01', content)
 
     def test_sod_deliveries_tab_permission_segmented(self):
@@ -322,7 +337,7 @@ class SupplierCockpitUiTests(TestCase):
         self.assertEqual(response.context['regulatory_verdict'], 'Apto para fornecimento')
 
         # Aplicar Bloqueio Cautelar da Garantia da Qualidade (QA)
-        qa_block = QualityBlock.objects.create(
+        QualityBlock.objects.create(
             target_type=QualityBlock.TargetType.SUPPLIER,
             supplier=self.supplier,
             reason='Contaminação microbiana detectada em insumo natural; fornecedor sob investigação.',

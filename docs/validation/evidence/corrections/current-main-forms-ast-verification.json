@@ -1,0 +1,34 @@
+{
+  "all_original_method_asts_identical": {
+    "_secure_formfield": true,
+    "_only_digits": true,
+    "_ascii": true,
+    "_field_context": true,
+    "_field_mask": true,
+    "_split_address_group": true,
+    "_address_target": true,
+    "_uses_text_input": true,
+    "_append_widget_class": true,
+    "_field_size": true,
+    "_apply_field_size_metadata": true,
+    "_apply_placeholder_metadata": true,
+    "_apply_widget_metadata": true,
+    "_validate_cpf": true,
+    "_validate_cnpj": true,
+    "_document_is_valid": true,
+    "build_resource_form.ResourceForm.__init__": true,
+    "build_resource_form.ResourceForm._get_validation_exclusions": true,
+    "build_resource_form.ResourceForm.resource_save_kwargs": true,
+    "build_resource_form.ResourceForm.save": true,
+    "build_resource_form.ResourceForm._update_errors": true,
+    "build_resource_form.ResourceForm.clean": true
+  },
+  "whole_file_ast_equal_after_typing_erasure": true,
+  "erasure_scope": [
+    "typing TYPE_CHECKING/TypeAlias import",
+    "conditional alias declaration and runtime assignment",
+    "ResourceForm base alias spelling; direct runtime base remains form_base"
+  ],
+  "original_function_count": 23,
+  "unchanged_non_builder_function_count": 22
+}

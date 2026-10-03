@@ -83,6 +83,8 @@ FIELD_SPECS = {
     ('procurement', 'requisitions', 'reject'): 'rejection_reason:T',
     ('procurement', 'receipts', 'import_xml'): 'order_id:r,xml:f',
     ('procurement', 'receipts', 'release_quality'): 'quality_status:c',
+    ('procurement', 'receipts', 'post_stock'): 'warehouse:r,location:r',
+    ('inventory', 'movements', 'issue'): 'stock_balance:r,quantity:d,reference:t,notes:T',
     ('qa', 'reviews', 'reject'): 'reason:T',
     ('qa', 'checklist-items', 'complete'): 'evidence_reference:t,comments:T',
     ('qa', 'lot-releases', 'approve'): 'decision:c',
@@ -180,6 +182,9 @@ FIELD_LABELS = {
     'next_review_date': 'Data da próxima revisão',
     'notes': 'Observações',
     'order_id': 'Pedido de compra aprovado',
+    'stock_balance': 'Saldo de estoque aprovado',
+    'warehouse': 'Almoxarifado',
+    'location': 'Localização',
     'progress_percent': 'Progresso percentual',
     'protocol_number': 'Número do protocolo',
     'purpose': 'Finalidade',
@@ -247,6 +252,14 @@ def fields_for(module_slug, resource_slug, action_name, model):
             ),
             'queryset_factory': _relation_factory(name) if kind == FieldKind.RELATION else None,
         }
+        if (module_slug, resource_slug, action_name) == ('inventory', 'movements', 'issue'):
+            if name in {'reference', 'notes'}:
+                options['required'] = False
+                options['max_length'] = 120 if name == 'reference' else 4000
+            elif name == 'quantity':
+                from decimal import Decimal
+
+                options['min_value'] = Decimal('0.0001')
         if name == 'expires_in_minutes':
             options.update(min_value=1, max_value=10080)
         elif name in {'score', 'progress_percent'}:
@@ -270,13 +283,51 @@ def _choices_for(module_slug, resource_slug, action_name, model, name):
 def _relation_factory(name):
     def factory(request):
         model = _relation_models()[name]
-        permission = f'{model._meta.app_label}.view_{model._meta.model_name}'
+        permission = (
+            'inventory.add_stockmovement'
+            if name == 'stock_balance'
+            else f'{model._meta.app_label}.view_{model._meta.model_name}'
+        )
         manager = model._default_manager
         if not request.user.has_perm(permission):
             return manager.none()
         if name == 'order_id':
             return manager.filter(status=model.Status.APPROVED)
-        return manager.all()
+        queryset = manager.all()
+        if name == 'stock_balance':
+            from django.db.models import F, Q
+            from django.utils import timezone
+
+            return (
+                queryset.select_related('product', 'lot', 'warehouse', 'location', 'unit')
+                .filter(
+                    quality_status='approved',
+                    quantity__gt=F('reserved_quantity'),
+                    warehouse__is_active=True,
+                    warehouse__site__is_active=True,
+                    location__is_active=True,
+                    location__warehouse_id=F('warehouse_id'),
+                )
+                .filter(
+                    Q(lot__expiry_date__isnull=True) | Q(lot__expiry_date__gte=timezone.localdate())
+                )
+            )
+        if name == 'warehouse':
+            return queryset.filter(is_active=True, site__is_active=True)
+        if name == 'location':
+            queryset = queryset.filter(
+                is_active=True, warehouse__is_active=True, warehouse__site__is_active=True
+            )
+            warehouse_id = (request.POST if request.method == 'POST' else request.GET).get(
+                'warehouse'
+            )
+            if warehouse_id not in (None, ''):
+                try:
+                    warehouse_id = int(warehouse_id)
+                except TypeError, ValueError:
+                    return manager.none()
+                queryset = queryset.filter(warehouse_id=warehouse_id)
+        return queryset
 
     return factory
 
@@ -284,10 +335,14 @@ def _relation_factory(name):
 def _relation_models():
     from finance.models import FinancialCategory, FinancialSettlement, FinancialTitle
     from fiscal.models import FiscalDocument
-    from inventory.models import StockLot
+    from inventory.models import StockBalance, StockLot
+    from masters.models import StorageLocation, Warehouse
     from procurement.models import PurchaseOrder
 
     return {
+        'stock_balance': StockBalance,
+        'warehouse': Warehouse,
+        'location': StorageLocation,
         'category': FinancialCategory,
         'document': FiscalDocument,
         'order_id': PurchaseOrder,

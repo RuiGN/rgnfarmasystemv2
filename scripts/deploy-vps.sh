@@ -82,17 +82,35 @@ check_env_file() {
 }
 
 configure_tunnel_readiness() {
-  local configured_port
-  configured_port="${TUNNEL_METRICS_PORT:-$(read_env_value TUNNEL_METRICS_PORT)}"
-  configured_port="${configured_port:-20242}"
-  if [[ ! "$configured_port" =~ ^[0-9]+$ ]] ||
-    (( configured_port < 1 || configured_port > 65535 )); then
+  local configured_port configured_address
+  # Keep the remote's legacy validation, but the shared Compose address is authoritative.
+  configured_port="${TUNNEL_METRICS_PORT:-}"
+  if [[ -z "$configured_port" && -f "$ENV_FILE" ]]; then
+    configured_port="$(read_env_value TUNNEL_METRICS_PORT)"
+  fi
+  configured_port="${configured_port:-20249}"
+  if [[ ! "$configured_port" =~ ^[0-9]{1,5}$ ]] ||
+    (( 10#$configured_port < 1 || 10#$configured_port > 65535 )); then
     fail "TUNNEL_METRICS_PORT invalida."
   fi
 
+  configured_address="${CLOUDFLARED_METRICS_ADDRESS:-}"
+  if [[ -z "$configured_address" && -f "$ENV_FILE" ]]; then
+    configured_address="$(read_env_value CLOUDFLARED_METRICS_ADDRESS)"
+  fi
+  configured_address="${configured_address:-127.0.0.1:20249}"
+  if [[ ! "$configured_address" =~ ^127\.0\.0\.1:([0-9]{1,5})$ ]]; then
+    fail "CLOUDFLARED_METRICS_ADDRESS invalida; use loopback 127.0.0.1."
+  fi
+  configured_port="${BASH_REMATCH[1]}"
+  if (( 10#$configured_port < 1 || 10#$configured_port > 65535 )); then
+    fail "CLOUDFLARED_METRICS_ADDRESS invalida."
+  fi
+
+  CLOUDFLARED_METRICS_ADDRESS="$configured_address"
   TUNNEL_METRICS_PORT="$configured_port"
-  TUNNEL_READY_URL="${TUNNEL_READY_URL:-http://127.0.0.1:${TUNNEL_METRICS_PORT}/ready}"
-  export TUNNEL_METRICS_PORT
+  TUNNEL_READY_URL="${TUNNEL_READY_URL:-http://${CLOUDFLARED_METRICS_ADDRESS}/ready}"
+  export CLOUDFLARED_METRICS_ADDRESS TUNNEL_METRICS_PORT
 }
 
 check_project_state() {
@@ -141,24 +159,51 @@ promote_revision() {
 }
 
 deploy_compose() {
-  validate_compose
-  compose up -d --build --remove-orphans --wait --wait-timeout "$WAIT_TIMEOUT_SECONDS"
+  # main calls this in a conditional, where Bash disables implicit errexit.
+  validate_compose || { readiness_failure "Configuracao Compose invalida."; return 1; }
+  compose up -d --build --remove-orphans --wait --wait-timeout "$WAIT_TIMEOUT_SECONDS" || {
+    readiness_failure "Falha ao implantar o candidato."; return 1;
+  }
 }
+
+readiness_failure() { log "ERRO: $*" >&2; return 1; }
 
 verify_readiness() {
   local required_services=(
     app nginx celery_worker celery_beat db redis rabbitmq backup_scheduler cloudflared
   )
   local running service
-  running="$(compose ps --status running --services)"
+  running="$(compose ps --status running --services)" || {
+    readiness_failure "Nao foi possivel listar os servicos."; return 1;
+  }
   for service in "${required_services[@]}"; do
-    grep -Fxq "$service" <<<"$running" || fail "Servico nao esta em execucao: $service"
+    grep -Fxq "$service" <<<"$running" || {
+      readiness_failure "Servico nao esta em execucao: $service"; return 1;
+    }
   done
 
-  curl -fsS --max-time 20 -H "Host: $PUBLIC_HOST" "$ORIGIN_URL" >/dev/null
-  curl -fsS --max-time 20 "$TUNNEL_READY_URL" >/dev/null
-  curl -fsS --max-time 20 --retry 3 "https://${PUBLIC_HOST}/health/" >/dev/null
-  compose exec -T app python manage.py check --deploy
+  curl -fsS --max-time 20 -H "Host: $PUBLIC_HOST" "$ORIGIN_URL" >/dev/null || {
+    readiness_failure "Origem HTTP indisponivel."; return 1;
+  }
+  local tunnel_container tunnel_health
+  tunnel_container="$(compose ps -q cloudflared)" || {
+    readiness_failure "Nao foi possivel consultar o container do tunel."; return 1;
+  }
+  [[ -n "$tunnel_container" ]] || {
+    readiness_failure "Container do tunel nao encontrado."; return 1;
+  }
+  tunnel_health="$(docker inspect --format '{{.State.Health.Status}}' "$tunnel_container")" || {
+    readiness_failure "Nao foi possivel inspecionar a saude do tunel."; return 1;
+  }
+  [[ "$tunnel_health" == healthy ]] || {
+    readiness_failure "Tunel sem conexao saudavel: $tunnel_health"; return 1;
+  }
+  curl -fsS --max-time 20 --retry 3 "https://${PUBLIC_HOST}/health/" >/dev/null || {
+    readiness_failure "Dominio publico indisponivel."; return 1;
+  }
+  compose exec -T app python manage.py check --deploy || {
+    readiness_failure "Validacao Django do candidato falhou."; return 1;
+  }
 }
 
 rollback_release() {

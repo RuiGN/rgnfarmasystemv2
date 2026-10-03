@@ -45,9 +45,7 @@ env = environ.Env(
 env.read_env(BASE_DIR / '.env')
 
 # Bandit B105: explicit local-only default rejected by the production profile.
-DEVELOPMENT_SECRET_KEY_DEFAULT = (
-    'django-insecure-local-rgn-farma-system'  # nosec B105
-)
+DEVELOPMENT_SECRET_KEY_DEFAULT = 'django-insecure-local-rgn-farma-system'  # nosec B105
 SECRET_KEY = env('SECRET_KEY', default=DEVELOPMENT_SECRET_KEY_DEFAULT)
 DEBUG = env.bool('DEBUG', default=True)
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
@@ -156,28 +154,16 @@ LOGOUT_REDIRECT_URL = LOGIN_URL
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': (
-            'django.contrib.auth.password_validation.'
-            'UserAttributeSimilarityValidator'
-        ),
+        'NAME': ('django.contrib.auth.password_validation.UserAttributeSimilarityValidator'),
     },
     {
-        'NAME': (
-            'django.contrib.auth.password_validation.'
-            'MinimumLengthValidator'
-        ),
+        'NAME': ('django.contrib.auth.password_validation.MinimumLengthValidator'),
     },
     {
-        'NAME': (
-            'django.contrib.auth.password_validation.'
-            'CommonPasswordValidator'
-        ),
+        'NAME': ('django.contrib.auth.password_validation.CommonPasswordValidator'),
     },
     {
-        'NAME': (
-            'django.contrib.auth.password_validation.'
-            'NumericPasswordValidator'
-        ),
+        'NAME': ('django.contrib.auth.password_validation.NumericPasswordValidator'),
     },
 ]
 
@@ -190,9 +176,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = (
-    [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else []
-)
+STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else []
 STORAGES = {
     'default': {
         'BACKEND': 'django.core.files.storage.FileSystemStorage',
@@ -219,58 +203,39 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
-    'DEFAULT_PAGINATION_CLASS': (
-        'rest_framework.pagination.PageNumberPagination'
-    ),
+    'DEFAULT_PAGINATION_CLASS': ('rest_framework.pagination.PageNumberPagination'),
     'PAGE_SIZE': 50,
 }
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'RGN Farma System API',
-    'DESCRIPTION': (
-        'APIs REST do ERP single-instance para a indústria de '
-        'cosméticos.'
-    ),
+    'DESCRIPTION': ('APIs REST do ERP single-instance para a indústria de cosméticos.'),
     'VERSION': '1.0.0',
     'ENUM_NAME_OVERRIDES': {
         'OperationalRoleEnum': 'base.roles.OperationalRole',
-        'AgentSourceModuleEnum': (
-            'ai_agents.models.AIAgentProfile.SourceModule'
-        ),
+        'AgentSourceModuleEnum': ('ai_agents.models.AIAgentProfile.SourceModule'),
         'AgentRunStatusEnum': 'ai_agents.models.AIAgentRun.Status',
         'ActionStatusEnum': 'capa.models.CapaAction.Status',
         'AssessmentStatusEnum': 'changes.models.ChangeAssessment.Status',
         'StandardCostStatusEnum': 'costing.models.StandardCost.Status',
         'MonthlyClosingStatusEnum': 'costing.models.MonthlyCostClosing.Status',
         'ApprovalDecisionEnum': 'documents.models.DocumentApproval.Decision',
-        'AnalyticalSpecificationStatusEnum': (
-            'fiscal.models.TaxRule.Status'
-        ),
+        'AnalyticalSpecificationStatusEnum': ('fiscal.models.TaxRule.Status'),
         'GovernanceModuleEnum': 'base.modules.OperationalModule',
         'StockQualityStatusEnum': 'inventory.models.StockQualityStatus',
-        'InvestigationStatusEnum': (
-            'quality.models.LaboratoryInvestigation.Status'
-        ),
+        'InvestigationStatusEnum': ('quality.models.LaboratoryInvestigation.Status'),
         'PlanningSourceEnum': 'planning.models.PlanningPolicy.Source',
         'ReportModuleEnum': 'reports.models.ReportDefinition.Module',
         'ReportExecutionStatusEnum': 'reports.models.ReportExecution.Status',
-        'ReportNotificationStatusEnum': (
-            'reports.models.ReportNotification.Status'
-        ),
-        'RecallEffectivenessStatusEnum': (
-            'recalls.models.RecallEffectivenessReport.Status'
-        ),
+        'ReportNotificationStatusEnum': ('reports.models.ReportNotification.Status'),
+        'RecallEffectivenessStatusEnum': ('recalls.models.RecallEffectivenessReport.Status'),
         'NotificationChannelEnum': 'reports.models.ReportNotification.Channel',
         'RiskLevelEnum': 'risks.models.RiskRecord.RiskLevel',
         'AlertStatusEnum': 'risks.models.RiskAlert.Status',
-        'GxpCriticalityEnum': (
-            'deviations.models.QualityEvent.Criticality'
-        ),
+        'GxpCriticalityEnum': ('deviations.models.QualityEvent.Criticality'),
         'GxpSeverityEnum': 'crm.models.CustomerComplaint.Severity',
         'FileSourceModuleEnum': 'files.models.ProtectedFile.SourceModule',
-        'WorkflowSourceModuleEnum': (
-            'workflow.models.WorkflowNotification.SourceModule'
-        ),
+        'WorkflowSourceModuleEnum': ('workflow.models.WorkflowNotification.SourceModule'),
     },
 }
 
@@ -375,6 +340,8 @@ FISCAL_PROVIDER = env('FISCAL_PROVIDER', default='generic')
 FISCAL_ENVIRONMENT = env('FISCAL_ENVIRONMENT', default='homologation')
 FISCAL_PROVIDER_BASE_URL = env('FISCAL_PROVIDER_BASE_URL', default='')
 FISCAL_PROVIDER_SECRET_REFERENCE = env('FISCAL_PROVIDER_SECRET_REFERENCE', default='')
+# Exact HTTPS base URLs mapped to the only environment names usable at each destination.
+FISCAL_PROVIDER_ALLOWED_DESTINATIONS = env.json('FISCAL_PROVIDER_ALLOWED_DESTINATIONS', default={})
 FISCAL_PROVIDER_TIMEOUT_SECONDS = env.int('FISCAL_PROVIDER_TIMEOUT_SECONDS', default=30)
 FISCAL_EMAIL_AUTO_SEND = env.bool('FISCAL_EMAIL_AUTO_SEND', default=True)
 FISCAL_EMAIL_SEND_DELAY_SECONDS = env.int('FISCAL_EMAIL_SEND_DELAY_SECONDS', default=300)
@@ -397,7 +364,7 @@ DATA_ENCRYPTION_KEYS = env('DATA_ENCRYPTION_KEYS', default='')
 DATA_ENCRYPTION_KEY = env('DATA_ENCRYPTION_KEY', default='')
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_REDIRECT_EXEMPT = [r'^health/$']
+SECURE_REDIRECT_EXEMPT = [r'^health/$', r'^ready/$']
 SECURE_SSL_REDIRECT = env.bool('SECURE_SSL_REDIRECT', default=not DEBUG)
 # Security Settings
 SECURE_BROWSER_XSS_FILTER = True

@@ -1,0 +1,22 @@
+{
+  "frozen_source_count": 2164,
+  "source_mismatches": [],
+  "manifest_sha256": "034ab77508d9b1d9e01f8aaad2498d613fa0257bca63d486d10faaa960400a22",
+  "junit_declared_tests": 2563,
+  "serialized_testcases": 2521,
+  "passed_tests": 2521,
+  "passed_subtests": 42,
+  "failures": 0,
+  "errors": 0,
+  "skips": 0,
+  "duration_seconds": 1004.0,
+  "covered_lines": 26482,
+  "valid_lines": 30679,
+  "coverage_percent": 86.32,
+  "generated_artifact_sha256": {
+    "docs/validation/evidence/corrections/current-main-v3-suite-junit.xml": "fedf1f1c28f4740e4d6e12f06f3c93756b581b394662a91d8c4049b3b8427fdc",
+    "docs/validation/evidence/corrections/current-main-v3-coverage.xml": "4768c58cacac13b869ddb1e397822a2d42a17fa8d409a0ec9b194608d295cbb9",
+    "docs/validation/evidence/corrections/current-main-v3-openapi.yml": "5b88ebf03c17e8bf7d5f72b550bec87d76deacb293e78b75834a31c0c63bc13c"
+  },
+  "release_approved": false
+}

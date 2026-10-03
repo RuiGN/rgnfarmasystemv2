@@ -69,7 +69,7 @@ def authorized_nfe_xml(
     inf_key = key if inf_key is None else inf_key
     item = ''
     if include_item:
-        item = f'''
+        item = f"""
         <det nItem="1">
           <prod>
             <cProd>{product_code}</cProd>
@@ -86,7 +86,7 @@ def authorized_nfe_xml(
             </rastro>
           </prod>
           <imposto><vTotTrib>1.25</vTotTrib></imposto>
-        </det>'''
+        </det>"""
     return f'''<?xml version="1.0" encoding="UTF-8"?>
     <nfeProc xmlns="{NFE_NAMESPACE}" versao="4.00">
       <NFe>
@@ -195,10 +195,7 @@ def test_parse_rejects_malformed_and_mismatched_totals():
 
 def test_malicious_doctype_and_entity_are_rejected_before_xml_parsing():
     _max_size, error_class, parse_nfe_xml = nfe_parser_contract()
-    malicious = (
-        b'<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>'
-        + authorized_nfe_xml()
-    )
+    malicious = b'<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>' + authorized_nfe_xml()
 
     with pytest.raises(error_class) as error:
         parse_nfe_xml(malicious)
@@ -213,13 +210,7 @@ def test_size_limit_accepts_exactly_ten_mib_and_rejects_one_extra_byte():
     closing_index = xml.rfind(closing_tag)
     comment_overhead = len(b'<!---->')
     padding_size = max_size - len(xml) - comment_overhead
-    exact_xml = (
-        xml[:closing_index]
-        + b'<!--'
-        + (b'x' * padding_size)
-        + b'-->'
-        + xml[closing_index:]
-    )
+    exact_xml = xml[:closing_index] + b'<!--' + (b'x' * padding_size) + b'-->' + xml[closing_index:]
 
     assert len(exact_xml) == max_size
     assert parse_nfe_xml(exact_xml).access_key == NFE_KEY

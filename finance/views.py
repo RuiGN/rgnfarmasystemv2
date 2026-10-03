@@ -103,6 +103,7 @@ class FinancialTitleViewSet(SingleInstanceFinanceViewSet):
 
 
 class FinancialSettlementViewSet(SingleInstanceFinanceViewSet):
+    http_method_names = ('get', 'post', 'put', 'patch', 'head', 'options')
     queryset = FinancialSettlement.objects.select_related(
         'title', 'financial_account', 'reconciled_by', 'reversed_by'
     )

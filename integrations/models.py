@@ -173,8 +173,28 @@ class IntegrationConnector(SingleInstanceModel):
             errors['secret_reference'] = missing_reference_message
         if self.provider_type != self.ProviderType.EMAIL_PROVIDER and not self.base_url:
             errors['base_url'] = 'Informe a URL base do provedor.'
+        if self.provider_type == self.ProviderType.FISCAL_SYSTEM:
+            from integrations.fiscal_security import validate_fiscal_destination
+
+            try:
+                validate_fiscal_destination(self.base_url, self.secret_reference)
+            except ValidationError as error:
+                errors.update(error.message_dict)
         if errors:
             raise ValidationError(errors)
+
+    def validate_fiscal_management(self, user, attrs):
+        effective_type = attrs.get('provider_type', self.provider_type)
+        fiscal = (
+            self.provider_type == self.ProviderType.FISCAL_SYSTEM
+            or effective_type == self.ProviderType.FISCAL_SYSTEM
+        )
+        if fiscal and not (user and user.is_authenticated and user.is_active and user.is_staff):
+            raise ValidationError(
+                {
+                    'permission': 'Gestão de conectores fiscais exige usuário staff e permissão de modelo.'
+                }
+            )
 
     def activate(self, user=None):
         self.status = self.Status.ACTIVE

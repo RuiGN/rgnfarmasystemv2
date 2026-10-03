@@ -1,0 +1,16 @@
+{
+  "snapshot": "/home/deploy/.hermes/cache/scratch/rgnfamarsystemv2-final-candidate",
+  "manifested_files": 2055,
+  "mismatches": [],
+  "unexpected_unmanifested": [],
+  "excluded_runtime_directories": [".git", "__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache"],
+  "generated_outputs": {
+    ".coverage": "77a7e6d35eb4b9e6d9204db8c3609fef505715ed2e95a181418f7bba7705a4ae",
+    "docs/validation/evidence/corrections/final-coverage.xml": "86c43102a72b1f9396e22ef4293ee6c2430006bdc791022c11486e87bbdb3b26",
+    "docs/validation/evidence/corrections/final-openapi.yml": "c75f07ff5ea84836bdc8c5e28f82e9d651d6fa03947438f9f245dc6b1e4bd3ec",
+    "docs/validation/evidence/corrections/final-suite-junit.xml": "9e4a377cb3e0aa884b5bcdf79e1c0c9aa423f5d7ffa096951fdad691c3400926"
+  },
+  "original_patch_sha256": "2dd51a80b21c1dffe31a810190a2ecfa1087ffa3b76324b62b12e1714f8939ea",
+  "original_patch_matches_preserved_baseline": true,
+  "approved": false
+}

@@ -318,6 +318,7 @@ class GovernanceCommandTests(TestCase):
         from formulations.models import MasterFormula
         from governance.models import DemoScenarioLoad
         from inventory.models import StockLot
+        from integrations.models import ApiClientApplication, IntegrationConnector
         from masters.models import BusinessPartner, Product
         from planning.models import MRPSuggestion
         from procurement.models import PurchaseOrder
@@ -361,7 +362,11 @@ class GovernanceCommandTests(TestCase):
             TrainingSession,
             ApprovalTask,
             ReportDefinition,
+            ApiClientApplication,
+            IntegrationConnector,
         ]
+        # Legacy AI profiles are deliberately no longer created by the demo seeder.
+        assert not AIAgentProfile.objects.exists()
         first_counts = {model: model.objects.count() for model in expected_models}
 
         assert DemoScenarioLoad.objects.filter(

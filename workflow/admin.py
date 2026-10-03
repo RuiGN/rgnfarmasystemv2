@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.core.exceptions import PermissionDenied, ValidationError
 from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin, ImmutableAuditAdminMixin
 from workflow.models import (
     ApprovalQueue,
@@ -68,11 +69,40 @@ class ApprovalTaskAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
         'assigned_to__email',
     )
     autocomplete_fields = ('queue', 'requested_by', 'assigned_to', 'decided_by')
-    readonly_fields = ('task_number', 'decided_at', 'created_at', 'updated_at')
+    readonly_fields = (
+        'task_number',
+        'requested_by',
+        'status',
+        'decided_by',
+        'decided_at',
+        'decision_comments',
+        'created_at',
+        'updated_at',
+    )
+
+    def save_model(self, request, obj, form, change):
+        if change:
+            previous = ApprovalTask.objects.get(pk=obj.pk)
+            attrs = {field.name: getattr(obj, field.name) for field in obj._meta.concrete_fields}
+            try:
+                previous.validate_sensitive_changes(request.user, attrs)
+            except ValidationError as error:
+                raise PermissionDenied(error.message_dict) from error
+        else:
+            obj.requested_by = request.user
+        super().save_model(request, obj, form, change)
 
 
 @admin.register(WorkflowDelegation)
 class WorkflowDelegationAdmin(admin.ModelAdmin):
+    def save_model(self, request, obj, form, change):
+        previous = WorkflowDelegation.objects.get(pk=obj.pk) if change else obj
+        try:
+            previous.validate_actor(request.user, {'from_user': obj.from_user})
+        except ValidationError as error:
+            raise PermissionDenied(error.message_dict) from error
+        super().save_model(request, obj, form, change)
+
     list_display = ('from_user', 'to_user', 'module', 'starts_at', 'ends_at', 'is_active')
     list_filter = ('module', 'starts_at', 'ends_at', 'is_active')
     search_fields = ('from_user__email', 'to_user__email', 'reason')

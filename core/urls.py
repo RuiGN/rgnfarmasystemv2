@@ -3,11 +3,12 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from accounts.views import admin_login_redirect
-from core.views import health_check, home
+from core.views import health_check, home, readiness_check
 
 urlpatterns = [
     path('', home, name='home'),
     path('health/', health_check, name='health'),
+    path('ready/', readiness_check, name='readiness'),
     path('accounts/', include('accounts.urls')),
     path('app/', include('base.ui.urls')),
     path('api/v1/', include('core.api_v1_urls')),

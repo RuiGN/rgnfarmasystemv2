@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
 from base.serializer_mixins import ModelSerializerContractMixin
+from masters.models import StorageLocation, Warehouse
 
 from procurement.models import (
     PurchaseOrder,
@@ -29,6 +30,8 @@ class SingleInstanceProcurementSerializerMixin(ModelSerializerContractMixin):
             values[field.name] = attrs.get(field.name, getattr(self.instance, field.name))
         instance = model(**values)
         instance.pk = self.instance.pk
+        instance._state.adding = False
+        instance._state.db = self.instance._state.db
         return instance
 
     def _run_model_clean(self, instance):
@@ -286,6 +289,16 @@ class PurchaseOrderSerializer(
 class PurchaseOrderItemSerializer(
     SingleInstanceProcurementSerializerMixin, serializers.ModelSerializer
 ):
+    def update(self, instance, validated_data):
+        try:
+            return super().update(instance, validated_data)
+        except DjangoValidationError as error:
+            raise serializers.ValidationError(
+                error.message_dict
+                if hasattr(error, 'message_dict')
+                else {'non_field_errors': error.messages}
+            ) from error
+
     line_subtotal = serializers.DecimalField(max_digits=14, decimal_places=4, read_only=True)
     line_total = serializers.DecimalField(max_digits=14, decimal_places=4, read_only=True)
 
@@ -350,6 +363,11 @@ class PurchaseReceiptItemSerializer(
             pass
         self._run_model_clean(self._instance_for_clean(attrs))
         return attrs
+
+
+class PurchaseReceiptStockPostingSerializer(serializers.Serializer):
+    warehouse = serializers.PrimaryKeyRelatedField(queryset=Warehouse.objects.all())
+    location = serializers.PrimaryKeyRelatedField(queryset=StorageLocation.objects.all())
 
 
 class PurchaseReceiptSerializer(
