@@ -50,7 +50,7 @@ langchain-protocol==0.0.19
 langgraph==1.2.11
 langgraph-checkpoint==4.2.0
 langgraph-prebuilt==1.1.0
-langgraph-sdk==0.4.3
+langgraph-sdk==0.4.4
 langsmith==0.14.4
 numpy==2.5.2
 openai==3.3.1

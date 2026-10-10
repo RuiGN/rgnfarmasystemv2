@@ -116,7 +116,7 @@ def test_runtime_dependencies_use_audited_compatible_versions():
         'langchain-openai==1.6.0',
         'langgraph==1.2.11',
         'langgraph-checkpoint==4.2.0',
-        'langgraph-sdk==0.4.3',
+        'langgraph-sdk==0.4.4',
         'openai==3.3.1',
         'protobuf==7.36.0',
         'pypdf==6.19.0',
