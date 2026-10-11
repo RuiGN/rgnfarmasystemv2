@@ -18,6 +18,21 @@
         </ul>
     </div>
     <div class="page-header-right ms-auto d-flex align-items-center gap-2">
+        {% if can_print_labels and lot %}
+            <form class="d-inline-flex" data-label-print-form>
+                {% csrf_token %}
+                <button
+                    type="button"
+                    class="btn btn-success d-inline-flex align-items-center gap-2"
+                    data-label-print-button
+                    data-label-print-url="{% url 'inventory:lot-print-label' lot.pk %}"
+                    title="Imprimir etiqueta do lote com data de fabricação e validade"
+                >
+                    <i class="feather-printer" aria-hidden="true"></i>
+                    <span>Imprimir etiqueta</span>
+                </button>
+            </form>
+        {% endif %}
         <a class="btn btn-light" href="{% url 'app:resource_detail' 'qa' 'lot-releases' release.pk %}">
             <i class="feather-arrow-left me-1" aria-hidden="true"></i> Voltar à liberação
         </a>
@@ -36,6 +51,14 @@
 {% endblock %}
 
 {% block content %}
+{% if can_print_labels %}
+<div
+    class="alert d-none mb-4"
+    data-label-print-status
+    role="status"
+    aria-live="polite"
+></div>
+{% endif %}
 <!-- Card de Resumo e Identificação Executiva ALCOA+ -->
 <div class="card stretch stretch-full mb-4">
     <div class="card-body">
@@ -1129,4 +1152,9 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script src="{% static 'js/local-printing.js' %}"></script>
 {% endblock %}

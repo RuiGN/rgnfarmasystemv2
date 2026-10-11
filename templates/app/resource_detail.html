@@ -49,8 +49,11 @@
                     <a href="{% url 'app:production_control_map' object.pk %}" class="btn btn-light d-inline-flex align-items-center gap-2"><i class="feather-clipboard" aria-hidden="true"></i>Mapa de controle</a>
                     <a href="{% url 'app:production_results_map' object.pk %}" class="btn btn-light d-inline-flex align-items-center gap-2"><i class="feather-bar-chart-2" aria-hidden="true"></i>Mapa de resultados</a>
                 {% endif %}
+                {% if module.slug == 'formulations' and resource.slug == 'formulas' and can_reuse %}
+                    <a href="{% url 'app:master_formula_reuse' object.pk %}" class="btn btn-warning d-inline-flex align-items-center gap-2"><i class="feather-copy" aria-hidden="true"></i>Reaproveitar fórmula</a>
+                {% endif %}
                 {% if module.slug == 'formulations' and resource.slug == 'formulas' and can_view_formula_cockpit %}
-                    <a href="{% url 'app:master_formula_cockpit' object.pk %}" class="btn btn-warning d-inline-flex align-items-center gap-2"><i class="feather-layers" aria-hidden="true"></i>Ciclo de abastecimento</a>
+                    <a href="{% url 'app:master_formula_cockpit' object.pk %}" class="btn btn-primary d-inline-flex align-items-center gap-2"><i class="feather-layers" aria-hidden="true"></i>Cockpit da fórmula (Abas)</a>
                 {% endif %}
                 {% if module.slug == 'qa' and resource.slug == 'lot-releases' and can_view_lot_release_cockpit %}
                     <a href="{% url 'app:qa_lot_release_cockpit' object.pk %}" class="btn btn-success d-inline-flex align-items-center gap-2"><i class="feather-shield" aria-hidden="true"></i>Dossiê de liberação</a>

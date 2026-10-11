@@ -175,6 +175,7 @@ class MasterFormulaCockpitView(LoginRequiredMixin, ResourceContextMixin, Templat
                 'receipts': receipts,
                 'pending_receipts_count': pending_receipts_count,
                 'can_view_receipts': can_view_receipts,
+                'can_reuse': self.get_resource().can_reuse(self.request.user),
             }
         )
         return context

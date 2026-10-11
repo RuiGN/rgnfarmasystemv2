@@ -293,6 +293,7 @@ class LotReleaseCockpitView(LoginRequiredMixin, ResourceContextMixin, TemplateVi
                 'product': product,
                 'order': order,
                 'available_release_actions': available_release_actions,
+                'can_print_labels': bool(lot and user.has_perm('inventory.view_stocklot')),
                 # Permissões SoD
                 'can_view_inventory': can_view_inventory,
                 'can_view_genealogy': can_view_genealogy,

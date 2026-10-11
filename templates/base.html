@@ -157,11 +157,6 @@
                                     </div>
                                 </div>
                                 <div class="dropdown-divider"></div>
-                                <a href="{% url 'accounts:avatar' %}" class="dropdown-item d-flex align-items-center gap-2">
-                                    <i class="feather-user fs-16"></i>
-                                    <span>Alterar avatar</span>
-                                </a>
-                                <div class="dropdown-divider"></div>
                                 <form method="post" action="{% url 'accounts:logout' %}" class="dropdown-item p-0">
                                     {% csrf_token %}
                                     <button type="submit" class="dropdown-item text-danger d-flex align-items-center gap-2" style="background: none; border: none; width: 100%; text-align: left;">

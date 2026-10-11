@@ -79,15 +79,37 @@
                                 {% endif %}
                             </td>
                         {% endfor %}
-                        <td class="text-end">
+                        <td class="text-end text-nowrap">
+                            {% if module.slug == 'formulations' and resource.slug == 'formulas' %}
+                                <a href="{% url 'app:master_formula_cockpit' row.object.pk %}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1" title="Abrir cockpit em abas da fórmula"><i class="feather-layers" aria-hidden="true"></i>Cockpit</a>
+                            {% elif module.slug == 'production' and resource.slug == 'orders' %}
+                                <a href="{% url 'app:production_order_cockpit' row.object.pk %}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1" title="Abrir cockpit em abas da ordem de produção"><i class="feather-activity" aria-hidden="true"></i>Cockpit</a>
+                            {% elif module.slug == 'qa' and resource.slug == 'lot-releases' %}
+                                <a href="{% url 'app:qa_lot_release_cockpit' row.object.pk %}" class="btn btn-sm btn-success d-inline-flex align-items-center gap-1" title="Abrir dossiê em abas de liberação de lote"><i class="feather-shield" aria-hidden="true"></i>Dossiê</a>
+                            {% elif module.slug == 'inventory' and resource.slug == 'lots' %}
+                                <a href="{% url 'app:stock_lot_dossier' row.object.pk %}" class="btn btn-sm btn-info d-inline-flex align-items-center gap-1" title="Abrir dossiê QA do lote"><i class="feather-shield" aria-hidden="true"></i>Dossiê QA</a>
+                            {% elif module.slug == 'deviations' and resource.slug == 'events' %}
+                                <a href="{% url 'app:quality_event_cockpit' row.object.pk %}" class="btn btn-sm btn-danger d-inline-flex align-items-center gap-1" title="Abrir cockpit do evento de qualidade"><i class="feather-alert-triangle" aria-hidden="true"></i>Cockpit</a>
+                            {% elif module.slug == 'crm' and resource.slug == 'orders' %}
+                                <a href="{% url 'app:sales_order_cockpit' row.object.pk %}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1" title="Abrir cockpit do pedido de venda"><i class="feather-shopping-cart" aria-hidden="true"></i>Cockpit</a>
+                            {% elif module.slug == 'recalls' and resource.slug == 'complaints' %}
+                                <a href="{% url 'app:market_complaint_cockpit' row.object.pk %}" class="btn btn-sm btn-warning d-inline-flex align-items-center gap-1" title="Abrir cockpit da reclamação / recall"><i class="feather-radio" aria-hidden="true"></i>Cockpit</a>
+                            {% elif module.slug == 'masters' and resource.slug == 'partners' %}
+                                <a href="{% url 'app:supplier_cockpit' row.object.pk %}" class="btn btn-sm btn-info d-inline-flex align-items-center gap-1" title="Abrir cockpit 360° do fornecedor"><i class="feather-truck" aria-hidden="true"></i>Cockpit</a>
+                            {% elif module.slug == 'documents' and resource.slug == 'controlled-documents' %}
+                                <a href="{% url 'app:controlled_document_cockpit' row.object.pk %}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1" title="Abrir cockpit do documento controlado"><i class="feather-book-open" aria-hidden="true"></i>Cockpit</a>
+                            {% elif module.slug == 'audits' and resource.slug == 'plans' %}
+                                <a href="{% url 'app:audit_cockpit' row.object.pk %}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1" title="Abrir cockpit da auditoria"><i class="feather-check-square" aria-hidden="true"></i>Cockpit</a>
+                            {% endif %}
                             {% if can_reuse %}
                                 <a href="{% url resource.reuse_route_name row.object.pk %}"
-                                   class="btn btn-sm btn-light-brand d-inline-flex align-items-center gap-2"
-                                   aria-label="Reaproveitar {{ row.object }}">
+                                   class="btn btn-sm btn-warning d-inline-flex align-items-center gap-1"
+                                   aria-label="Reaproveitar {{ row.object }}"
+                                   title="Reaproveitar fórmula">
                                     <i class="feather-copy" aria-hidden="true"></i>Reaproveitar
                                 </a>
                             {% endif %}
-                            <a href="{% url 'app:resource_detail' module.slug resource.slug row.object.pk %}" class="btn btn-sm btn-light-brand d-inline-flex align-items-center gap-2" aria-label="Ver detalhe de {{ row.object }}"><i class="feather-eye" aria-hidden="true"></i>Detalhe</a>
+                            <a href="{% url 'app:resource_detail' module.slug resource.slug row.object.pk %}" class="btn btn-sm btn-light-brand d-inline-flex align-items-center gap-1" aria-label="Ver detalhe de {{ row.object }}"><i class="feather-eye" aria-hidden="true"></i>Detalhe</a>
                         </td>
                     </tr>
                     {% endfor %}
