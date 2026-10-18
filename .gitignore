@@ -164,9 +164,9 @@ activemq-data/
 
 # Environments
 .env
-.env.local
-.env.publication.local
-.env.backup*
+.env.development.example
+.env.example
+.env.local.example
 gen-lang-client-*.json
 .envrc
 .venv
