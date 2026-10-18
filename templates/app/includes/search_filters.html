@@ -1,16 +1,14 @@
 <form method="get" class="row g-3 align-items-end">
     <div class="col-12 col-lg-4">
-        <label class="form-label" for="resource-search">Buscar</label>
+        <label class="form-label fs-12 fw-semibold text-muted text-uppercase mb-1" for="resource-search">Buscar</label>
         <div class="input-group">
-            
             <input id="resource-search" type="search" name="q" value="{{ query }}" class="form-control" placeholder="Buscar em {{ resource.label|lower }}..." autocomplete="off">
         </div>
     </div>
     {% if status_choices %}
     <div class="col-12 col-sm-6 col-lg-2">
-        <label class="form-label" for="resource-status">Status</label>
+        <label class="form-label fs-12 fw-semibold text-muted text-uppercase mb-1" for="resource-status">Status</label>
         <div class="input-group">
-            
             <select id="resource-status" name="status" class="form-select">
                 <option value="">Todos</option>
                 {% for value, label in status_choices %}
@@ -22,9 +20,8 @@
     {% endif %}
     {% if has_active_field %}
     <div class="col-12 col-sm-6 col-lg-2">
-        <label class="form-label" for="resource-active">Ativo</label>
+        <label class="form-label fs-12 fw-semibold text-muted text-uppercase mb-1" for="resource-active">Ativo</label>
         <div class="input-group">
-            
             <select id="resource-active" name="is_active" class="form-select">
                 <option value="">Todos</option>
                 <option value="1"{% if active_filter == '1' %} selected{% endif %}>Sim</option>
@@ -35,24 +32,21 @@
     {% endif %}
     {% if has_created_at_field %}
     <div class="col-12 col-sm-6 col-lg-2">
-        <label class="form-label" for="resource-created-from">Criado de</label>
+        <label class="form-label fs-12 fw-semibold text-muted text-uppercase mb-1" for="resource-created-from">Criado de</label>
         <div class="input-group">
-            
             <input id="resource-created-from" type="date" name="created_from" value="{{ created_from }}" class="form-control" placeholder="dd/mm/aaaa">
         </div>
     </div>
     <div class="col-12 col-sm-6 col-lg-2">
-        <label class="form-label" for="resource-created-to">Criado até</label>
+        <label class="form-label fs-12 fw-semibold text-muted text-uppercase mb-1" for="resource-created-to">Criado até</label>
         <div class="input-group">
-            
             <input id="resource-created-to" type="date" name="created_to" value="{{ created_to }}" class="form-control" placeholder="dd/mm/aaaa">
         </div>
     </div>
     {% endif %}
     <div class="col-12 col-sm-6 col-lg-2">
-        <label class="form-label" for="resource-ordering">Ordenar por</label>
+        <label class="form-label fs-12 fw-semibold text-muted text-uppercase mb-1" for="resource-ordering">Ordenar por</label>
         <div class="input-group">
-            
             <select id="resource-ordering" name="ordering" class="form-select">
                 <option value="">Padrão</option>
                 {% for value, label in ordering_options %}
@@ -77,7 +71,7 @@
     {% if advanced_filters %}
     <div class="col-12">
         <div id="filtros-avancados" class="collapse{% if has_submitted_advanced_filters %} show{% endif %}">
-            <div class="row g-3 rounded border bg-light-subtle p-3">
+            <div class="row g-3 rounded-2 border border-gray-2 bg-light-subtle p-3">
                 {% for filter in advanced_filters %}
                     {% if filter.kind == 'choice' %}
                     <div class="col-12 col-sm-6 col-lg-3">

@@ -19,17 +19,43 @@
 {% endblock %}
 
 {% block content %}
-<section class="card stretch stretch-full" data-ui="delete-confirmation">
-    <div class="card-body">
-        <div class="d-flex align-items-center gap-3 mb-4">
-            <div class="avatar-text avatar-lg bg-soft-danger text-danger"><i class="feather-trash-2" aria-hidden="true"></i></div>
-            <div><h2 class="h5 mb-1">Excluir registro</h2><p class="text-muted mb-0">Esta ação não pode ser desfeita.</p></div>
+<section class="card stretch stretch-full border border-gray-2 mx-auto" style="max-width: 680px;" data-ui="delete-confirmation">
+    <div class="card-header p-4 border-bottom d-flex align-items-center gap-3 bg-soft-danger">
+        <div class="avatar-text avatar-lg bg-danger text-white">
+            <i class="feather-alert-triangle fs-22" aria-hidden="true"></i>
         </div>
-        <p>Confirme a exclusão de <strong>{{ object }}</strong>.</p>
-        <form method="post" class="form-actions">
+        <div>
+            <h5 class="fw-bold text-danger mb-1">Confirmação de Exclusão</h5>
+            <span class="fs-12 text-muted">Atenção: esta operação será registrada na trilha de auditoria e não poderá ser desfeita.</span>
+        </div>
+    </div>
+    <div class="card-body p-4">
+        <p class="fs-15 mb-3">Você está prestes a excluir permanentemente o seguinte registro:</p>
+        
+        <div class="p-3 bg-light border border-gray-2 rounded-2 mb-4">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-soft-primary text-primary">{{ resource.label }}</span>
+                <span class="fs-12 text-muted">Identificador: #{{ object.pk }}</span>
+            </div>
+            <h5 class="fw-bold text-dark mb-0 font-monospace">{{ object }}</h5>
+        </div>
+
+        <div class="alert alert-warning d-flex align-items-start gap-3 mb-4">
+            <i class="feather-info fs-18 text-warning mt-1" aria-hidden="true"></i>
+            <div class="fs-13">
+                <strong>Diretriz Regulatória ALCOA+:</strong>
+                Caso o registro possua vínculos com ordens de produção ativas, laudos ou notas fiscais, a exclusão poderá ser bloqueada pelo sistema por integridade referencial.
+            </div>
+        </div>
+
+        <form method="post" class="d-flex flex-wrap gap-2 justify-content-end pt-3 border-top">
             {% csrf_token %}
-            <button type="submit" class="btn btn-danger"><i class="feather-trash-2 me-2" aria-hidden="true"></i>Excluir</button>
-            <a href="{% url 'app:resource_detail' module.slug resource.slug object.pk %}" class="btn btn-light-brand d-inline-flex align-items-center gap-2"><i class="feather-x" aria-hidden="true"></i>Cancelar</a>
+            <a href="{% url 'app:resource_detail' module.slug resource.slug object.pk %}" class="btn btn-light-brand d-inline-flex align-items-center gap-2">
+                <i class="feather-x" aria-hidden="true"></i>Cancelar
+            </a>
+            <button type="submit" class="btn btn-danger d-inline-flex align-items-center gap-2">
+                <i class="feather-trash-2" aria-hidden="true"></i>Confirmar Exclusão
+            </button>
         </form>
     </div>
 </section>

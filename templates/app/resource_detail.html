@@ -8,12 +8,13 @@
     <div class="page-header-left d-flex align-items-center">
         <div class="page-header-title">
             <h5 class="m-b-10">{{ object }}</h5>
+            <p class="text-muted fs-12 mb-0">Dossiê e detalhamento operacional do registro com conformidade regulatória</p>
         </div>
-        <ul class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
+        <ul class="breadcrumb mb-0 ms-md-4">
+            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Início</a></li>
             <li class="breadcrumb-item"><a href="{% url 'app:module' module.slug %}">{{ module.label }}</a></li>
             <li class="breadcrumb-item"><a href="{% url 'app:resource_list' module.slug resource.slug %}">{{ resource.label }}</a></li>
-            <li class="breadcrumb-item">Detalhe</li>
+            <li class="breadcrumb-item">Dossiê</li>
         </ul>
     </div>
     <div class="page-header-right ms-auto">
@@ -25,74 +26,15 @@
                 </a>
             </div>
             <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
-                {% if can_print_labels %}
-                    <form class="d-inline-flex" data-label-print-form>
-                        {% csrf_token %}
-                        <button
-                            type="button"
-                            class="btn btn-success d-inline-flex align-items-center gap-2"
-                            data-label-print-button
-                            data-label-print-url="{% url 'inventory:lot-print-label' object.pk %}"
-                        >
-                            <i class="feather-printer" aria-hidden="true"></i>
-                            Imprimir etiqueta
-                        </button>
-                    </form>
-                {% endif %}
-                {% if resource.is_executable %}
-                    <a href="{% url 'app:resource_execute' module.slug resource.slug object.pk %}" class="btn btn-success d-inline-flex align-items-center gap-2"><i class="feather-play-circle" aria-hidden="true"></i>Executar</a>
-                {% endif %}
-                {% if module.slug == 'production' and resource.slug == 'orders' and can_view_production_cockpit %}
-                    <a href="{% url 'app:production_order_cockpit' object.pk %}" class="btn btn-primary d-inline-flex align-items-center gap-2"><i class="feather-activity" aria-hidden="true"></i>Cockpit da OP</a>
-                {% endif %}
-                {% if module.slug == 'production' and resource.slug == 'orders' and can_view_production_maps %}
-                    <a href="{% url 'app:production_control_map' object.pk %}" class="btn btn-light d-inline-flex align-items-center gap-2"><i class="feather-clipboard" aria-hidden="true"></i>Mapa de controle</a>
-                    <a href="{% url 'app:production_results_map' object.pk %}" class="btn btn-light d-inline-flex align-items-center gap-2"><i class="feather-bar-chart-2" aria-hidden="true"></i>Mapa de resultados</a>
-                {% endif %}
-                {% if module.slug == 'formulations' and resource.slug == 'formulas' and can_reuse %}
-                    <a href="{% url 'app:master_formula_reuse' object.pk %}" class="btn btn-warning d-inline-flex align-items-center gap-2"><i class="feather-copy" aria-hidden="true"></i>Reaproveitar fórmula</a>
-                {% endif %}
-                {% if module.slug == 'formulations' and resource.slug == 'formulas' and can_view_formula_cockpit %}
-                    <a href="{% url 'app:master_formula_cockpit' object.pk %}" class="btn btn-primary d-inline-flex align-items-center gap-2"><i class="feather-layers" aria-hidden="true"></i>Cockpit da fórmula (Abas)</a>
-                {% endif %}
-                {% if module.slug == 'qa' and resource.slug == 'lot-releases' and can_view_lot_release_cockpit %}
-                    <a href="{% url 'app:qa_lot_release_cockpit' object.pk %}" class="btn btn-success d-inline-flex align-items-center gap-2"><i class="feather-shield" aria-hidden="true"></i>Dossiê de liberação</a>
-                {% endif %}
-                {% if module.slug == 'inventory' and resource.slug == 'lots' and can_view_stock_lot_dossier %}
-                    <a href="{% url 'app:stock_lot_dossier' object.pk %}" class="btn btn-info d-inline-flex align-items-center gap-2"><i class="feather-shield" aria-hidden="true"></i>Dossiê QA / Liberação</a>
-                {% endif %}
-                {% if module.slug == 'deviations' and resource.slug == 'events' and can_view_quality_event_cockpit %}
-                    <a href="{% url 'app:quality_event_cockpit' object.pk %}" class="btn btn-danger d-inline-flex align-items-center gap-2"><i class="feather-alert-triangle" aria-hidden="true"></i>Cockpit do evento / CAPA</a>
-                {% endif %}
-                {% if module.slug == 'crm' and resource.slug == 'orders' and can_view_sales_order_cockpit %}
-                    <a href="{% url 'app:sales_order_cockpit' object.pk %}" class="btn btn-primary d-inline-flex align-items-center gap-2"><i class="feather-shopping-cart" aria-hidden="true"></i>Cockpit do pedido (O2C)</a>
-                {% endif %}
-                {% if module.slug == 'recalls' and resource.slug == 'complaints' and can_view_market_complaint_cockpit %}
-                    <a href="{% url 'app:market_complaint_cockpit' object.pk %}" class="btn btn-warning d-inline-flex align-items-center gap-2"><i class="feather-radio" aria-hidden="true"></i>Cockpit de cosmetovigilância / Recall</a>
-                {% endif %}
-                {% if module.slug == 'masters' and resource.slug == 'partners' and can_view_supplier_cockpit %}
-                    <a href="{% url 'app:supplier_cockpit' object.pk %}" class="btn btn-info d-inline-flex align-items-center gap-2"><i class="feather-truck" aria-hidden="true"></i>Cockpit do fornecedor (360°)</a>
-                {% endif %}
-                {% if module.slug == 'documents' and resource.slug == 'controlled-documents' and can_view_controlled_document_cockpit %}
-                    <a href="{% url 'app:controlled_document_cockpit' object.pk %}" class="btn btn-primary d-inline-flex align-items-center gap-2"><i class="feather-book-open" aria-hidden="true"></i>Cockpit do documento (DMS)</a>
-                {% endif %}
-                {% if module.slug == 'audits' and resource.slug == 'plans' and can_view_audit_cockpit %}
-                    <a href="{% url 'app:audit_cockpit' object.pk %}" class="btn btn-primary d-inline-flex align-items-center gap-2"><i class="feather-check-square" aria-hidden="true"></i>Cockpit da auditoria (360°)</a>
-                {% endif %}
-                {% if resource.has_document_viewer %}
-                    <a href="{% url 'app:resource_viewer' module.slug resource.slug object.pk %}" class="btn btn-dark d-inline-flex align-items-center gap-2"><i class="feather-book-open" aria-hidden="true"></i>Visualizar documento</a>
-                {% endif %}
-                {% if resource.has_chat_view %}
-                    <a href="{% url 'app:resource_chat' module.slug resource.slug object.pk %}" class="btn btn-primary d-inline-flex align-items-center gap-2"><i class="feather-message-square" aria-hidden="true"></i>Iniciar conversa</a>
-                {% endif %}
-                {% if resource.has_tree_view %}
-                    <a href="{% url 'app:resource_tree' module.slug resource.slug object.pk %}" class="btn btn-info d-inline-flex align-items-center gap-2"><i class="feather-git-merge" aria-hidden="true"></i>Árvore / BOM</a>
-                {% endif %}
+                <a href="{% url 'app:resource_list' module.slug resource.slug %}" class="btn btn-sm btn-light-brand d-inline-flex align-items-center gap-2">
+                    <i class="feather-arrow-left"></i>
+                    <span>Listagem</span>
+                </a>
                 {% if can_change %}
-                    <a href="{% url 'app:resource_edit' module.slug resource.slug object.pk %}" class="btn btn-primary d-inline-flex align-items-center gap-2"><i class="feather-edit-2" aria-hidden="true"></i>Editar</a>
-                {% endif %}
-                {% if can_delete %}
-                    <a href="{% url 'app:resource_delete' module.slug resource.slug object.pk %}" class="btn btn-outline-danger d-inline-flex align-items-center gap-2"><i class="feather-trash-2" aria-hidden="true"></i>Excluir</a>
+                    <a href="{% url 'app:resource_edit' module.slug resource.slug object.pk %}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-2">
+                        <i class="feather-edit-2"></i>
+                        <span>Editar</span>
+                    </a>
                 {% endif %}
             </div>
         </div>
@@ -114,42 +56,271 @@
     aria-live="polite"
 ></div>
 {% endif %}
+
 {% include 'app/includes/resource_actions.html' with actions=resource_actions %}
+
 <div class="row g-4" data-ui="detail-layout">
-    <div class="{% if has_detail_sidebar %}col-xl-8{% else %}col-12{% endif %}">
-        <section class="card">
-            <div class="card-body">
-                <div class="d-flex align-items-center gap-3 pb-4 mb-4 border-bottom">
-                    <div class="avatar-text avatar-lg bg-soft-primary text-primary"><i class="feather-file-text" aria-hidden="true"></i></div>
-                    <div>
-                        <span class="text-muted fs-12">{{ resource.label }}</span>
-                        <h2 class="h5 mb-0">{{ object }}</h2>
-                        {% if detail_status and not has_detail_sidebar %}{% include 'includes/components/status_badge.html' with status=detail_status %}{% endif %}
+    <!-- Coluna Esquerda: Resumo do Registro / Cartão Perfil (Duralux Profile Card) -->
+    <div class="col-xxl-4 col-xl-5">
+        <div class="card stretch stretch-full border">
+            <div class="card-body p-4 text-center">
+                <!-- Avatar / Ícone de Destaque -->
+                <div class="avatar-text avatar-xl bg-soft-primary text-primary mx-auto mb-3">
+                    <i class="feather-box fs-24"></i>
+                </div>
+
+                <h2 class="fs-16 fw-bold text-dark mb-1">{{ object }}</h2>
+                <span class="fs-12 text-muted d-block mb-3">{{ resource.label }}</span>
+
+                {% if detail_status %}
+                <div class="mb-3">
+                    {% include 'includes/components/status_badge.html' with status=detail_status %}
+                </div>
+                {% endif %}
+
+                <!-- Métricas em caixas tracejadas estilo Duralux -->
+                <div class="d-flex align-items-center gap-2 mb-4">
+                    <div class="flex-fill py-2 px-3 rounded border border-dashed border-gray-4 text-center">
+                        <span class="fs-10 text-muted text-uppercase d-block">Identificador</span>
+                        <h4 class="fs-13 fw-bold text-dark mb-0">#{{ object.pk }}</h4>
+                    </div>
+                    <div class="flex-fill py-2 px-3 rounded border border-dashed border-gray-4 text-center">
+                        <span class="fs-10 text-muted text-uppercase d-block">Módulo</span>
+                        <h4 class="fs-13 fw-bold text-primary mb-0">{{ module.label }}</h4>
                     </div>
                 </div>
-                <div class="table-responsive" data-ui="resource-detail">
-                    <table class="table table-borderless align-middle mb-0">
-                        <tbody>
-                            {% for label, value in fields %}
-                            <tr>
-                                <th scope="row" class="text-muted fw-semibold w-25">{{ label|capfirst }}</th>
-                                <td>{{ value }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+
+                <!-- Lista de Metadados Principais -->
+                <ul class="list-unstyled text-start mb-4 fs-12 border-top pt-3">
+                    <li class="hstack justify-content-between mb-2">
+                        <span class="text-muted"><i class="feather-database me-2"></i>Recurso:</span>
+                        <span class="fw-semibold text-dark">{{ resource.label }}</span>
+                    </li>
+                    {% for label, value in fields|slice:":4" %}
+                    <li class="hstack justify-content-between mb-2">
+                        <span class="text-muted"><i class="feather-check-circle me-2"></i>{{ label|capfirst }}:</span>
+                        <span class="fw-semibold text-dark text-truncate" style="max-width: 180px;">{{ value|default:"—" }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <!-- Ações Operacionais Diretas -->
+                <div class="pt-3 border-top d-flex flex-column gap-2">
+                    {% if can_print_labels %}
+                        <form class="w-100" data-label-print-form>
+                            {% csrf_token %}
+                            <button
+                                type="button"
+                                class="btn btn-success w-100 d-inline-flex align-items-center justify-content-center gap-2"
+                                data-label-print-button
+                                data-label-print-url="{% url 'inventory:lot-print-label' object.pk %}"
+                            >
+                                <i class="feather-printer" aria-hidden="true"></i>
+                                <span>Imprimir etiqueta do lote</span>
+                            </button>
+                        </form>
+                    {% endif %}
+
+                    {% if module.slug == 'formulations' and resource.slug == 'formulas' and can_reuse %}
+                        <a href="{% url 'app:master_formula_reuse' object.pk %}" class="btn btn-warning w-100 d-inline-flex align-items-center justify-content-center gap-2">
+                            <i class="feather-copy" aria-hidden="true"></i>
+                            <span>Reaproveitar fórmula</span>
+                        </a>
+                    {% endif %}
+
+                    {% if module.slug == 'formulations' and resource.slug == 'formulas' and can_view_formula_cockpit %}
+                        <a href="{% url 'app:master_formula_cockpit' object.pk %}" class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2">
+                            <i class="feather-layers" aria-hidden="true"></i>
+                            <span>Cockpit da fórmula (Abas)</span>
+                        </a>
+                    {% endif %}
+
+                    {% if module.slug == 'production' and resource.slug == 'orders' and can_view_production_cockpit %}
+                        <a href="{% url 'app:production_order_cockpit' object.pk %}" class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2">
+                            <i class="feather-activity" aria-hidden="true"></i>
+                            <span>Cockpit da OP (Abas)</span>
+                        </a>
+                    {% endif %}
+
+                    {% if module.slug == 'qa' and resource.slug == 'lot-releases' and can_view_lot_release_cockpit %}
+                        <a href="{% url 'app:qa_lot_release_cockpit' object.pk %}" class="btn btn-success w-100 d-inline-flex align-items-center justify-content-center gap-2">
+                            <i class="feather-shield" aria-hidden="true"></i>
+                            <span>Dossiê de liberação (QA)</span>
+                        </a>
+                    {% endif %}
+
+                    {% if module.slug == 'inventory' and resource.slug == 'lots' and can_view_stock_lot_dossier %}
+                        <a href="{% url 'app:stock_lot_dossier' object.pk %}" class="btn btn-info w-100 d-inline-flex align-items-center justify-content-center gap-2 text-white">
+                            <i class="feather-shield" aria-hidden="true"></i>
+                            <span>Dossiê QA / Liberação</span>
+                        </a>
+                    {% endif %}
+
+                    {% if module.slug == 'deviations' and resource.slug == 'events' and can_view_quality_event_cockpit %}
+                        <a href="{% url 'app:quality_event_cockpit' object.pk %}" class="btn btn-danger w-100 d-inline-flex align-items-center justify-content-center gap-2">
+                            <i class="feather-alert-triangle" aria-hidden="true"></i>
+                            <span>Cockpit do evento / CAPA</span>
+                        </a>
+                    {% endif %}
+
+                    {% if module.slug == 'crm' and resource.slug == 'orders' and can_view_sales_order_cockpit %}
+                        <a href="{% url 'app:sales_order_cockpit' object.pk %}" class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2">
+                            <i class="feather-shopping-cart" aria-hidden="true"></i>
+                            <span>Cockpit do pedido (O2C)</span>
+                        </a>
+                    {% endif %}
+
+                    {% if module.slug == 'recalls' and resource.slug == 'complaints' and can_view_market_complaint_cockpit %}
+                        <a href="{% url 'app:market_complaint_cockpit' object.pk %}" class="btn btn-warning w-100 d-inline-flex align-items-center justify-content-center gap-2">
+                            <i class="feather-radio" aria-hidden="true"></i>
+                            <span>Cockpit de cosmetovigilância</span>
+                        </a>
+                    {% endif %}
+
+                    {% if module.slug == 'masters' and resource.slug == 'partners' and can_view_supplier_cockpit %}
+                        <a href="{% url 'app:supplier_cockpit' object.pk %}" class="btn btn-info w-100 d-inline-flex align-items-center justify-content-center gap-2 text-white">
+                            <i class="feather-truck" aria-hidden="true"></i>
+                            <span>Cockpit 360° do fornecedor</span>
+                        </a>
+                    {% endif %}
+
+                    {% if module.slug == 'documents' and resource.slug == 'controlled-documents' and can_view_controlled_document_cockpit %}
+                        <a href="{% url 'app:controlled_document_cockpit' object.pk %}" class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2">
+                            <i class="feather-book-open" aria-hidden="true"></i>
+                            <span>Cockpit do documento (DMS)</span>
+                        </a>
+                    {% endif %}
+
+                    {% if module.slug == 'audits' and resource.slug == 'plans' and can_view_audit_cockpit %}
+                        <a href="{% url 'app:audit_cockpit' object.pk %}" class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2">
+                            <i class="feather-check-square" aria-hidden="true"></i>
+                            <span>Cockpit da auditoria (360°)</span>
+                        </a>
+                    {% endif %}
+
+                    {% if resource.is_executable %}
+                        <a href="{% url 'app:resource_execute' module.slug resource.slug object.pk %}" class="btn btn-success w-100 d-inline-flex align-items-center justify-content-center gap-2">
+                            <i class="feather-play-circle" aria-hidden="true"></i>
+                            <span>Executar</span>
+                        </a>
+                    {% endif %}
+
+                    <div class="d-flex align-items-center gap-2 mt-2">
+                        {% if can_change %}
+                            <a href="{% url 'app:resource_edit' module.slug resource.slug object.pk %}" class="btn btn-light-brand flex-fill d-inline-flex align-items-center justify-content-center gap-1">
+                                <i class="feather-edit-2"></i>
+                                <span>Editar</span>
+                            </a>
+                        {% endif %}
+                        {% if can_delete %}
+                            <a href="{% url 'app:resource_delete' module.slug resource.slug object.pk %}" class="btn btn-outline-danger flex-fill d-inline-flex align-items-center justify-content-center gap-1">
+                                <i class="feather-trash-2"></i>
+                                <span>Excluir</span>
+                            </a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
-        </section>
-        {% if resource.audit_trail %}
-            {% include 'app/includes/audit_trail.html' %}
+        </div>
+
+        {% if has_detail_sidebar %}
+        <div class="mt-4">
+            {% include 'includes/components/detail_summary.html' %}
+        </div>
         {% endif %}
     </div>
-    {% if has_detail_sidebar %}
-    <aside class="col-xl-4">
-        {% include 'includes/components/detail_summary.html' %}
-    </aside>
-    {% endif %}
+
+    <!-- Coluna Direita: Abas de Dados & Trilha de Auditoria (Duralux Tabbed View) -->
+    <div class="col-xxl-8 col-xl-7">
+        <div class="card stretch stretch-full border border-top-0">
+            <div class="card-header p-0">
+                <ul class="nav nav-tabs flex-wrap w-100 customers-nav-tabs" id="resourceDetailTabs" role="tablist">
+                    <li class="nav-item flex-fill border-top" role="presentation">
+                        <button class="nav-link active w-100 d-flex align-items-center justify-content-center gap-2" id="fields-tab" data-bs-toggle="tab" data-bs-target="#tab-fields" type="button" role="tab" aria-controls="tab-fields" aria-selected="true">
+                            <i class="feather-file-text"></i>
+                            <span>Dados do Registro</span>
+                        </button>
+                    </li>
+                    {% if resource.audit_trail %}
+                    <li class="nav-item flex-fill border-top" role="presentation">
+                        <button class="nav-link w-100 d-flex align-items-center justify-content-center gap-2" id="audit-tab" data-bs-toggle="tab" data-bs-target="#tab-audit" type="button" role="tab" aria-controls="tab-audit" aria-selected="false">
+                            <i class="feather-shield"></i>
+                            <span>Auditoria &amp; ALCOA+</span>
+                        </button>
+                    </li>
+                    {% endif %}
+                    {% if resource.has_tree_view or resource.has_document_viewer or can_view_production_maps %}
+                    <li class="nav-item flex-fill border-top" role="presentation">
+                        <button class="nav-link w-100 d-flex align-items-center justify-content-center gap-2" id="views-tab" data-bs-toggle="tab" data-bs-target="#tab-views" type="button" role="tab" aria-controls="tab-views" aria-selected="false">
+                            <i class="feather-eye"></i>
+                            <span>Visualizações &amp; Mapas</span>
+                        </button>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <div class="tab-content" id="resourceDetailTabsContent">
+                <!-- Aba 1: Dados do Registro -->
+                <div class="tab-pane fade show active p-0" id="tab-fields" role="tabpanel" aria-labelledby="fields-tab">
+                    <div class="table-responsive" data-ui="resource-detail">
+                        <table class="table table-hover align-middle mb-0">
+                            <tbody>
+                                {% for label, value in fields %}
+                                <tr>
+                                    <th scope="row" class="text-muted fw-semibold w-30 fs-12 py-3 px-4 border-bottom bg-light-subtle">
+                                        {{ label|capfirst }}
+                                    </th>
+                                    <td class="fs-13 text-dark py-3 px-4 border-bottom">
+                                        {{ value|default:"—" }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Aba 2: Trilha de Auditoria -->
+                {% if resource.audit_trail %}
+                <div class="tab-pane fade p-3" id="tab-audit" role="tabpanel" aria-labelledby="audit-tab">
+                    {% include 'app/includes/audit_trail.html' %}
+                </div>
+                {% endif %}
+
+                <!-- Aba 3: Visualizações e Mapas -->
+                {% if resource.has_tree_view or resource.has_document_viewer or can_view_production_maps %}
+                <div class="tab-pane fade p-4" id="tab-views" role="tabpanel" aria-labelledby="views-tab">
+                    <h5 class="fs-14 fw-bold text-dark mb-3">Mapas e Vínculos Técnicos:</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% if module.slug == 'production' and resource.slug == 'orders' and can_view_production_maps %}
+                            <a href="{% url 'app:production_control_map' object.pk %}" class="btn btn-light-brand d-inline-flex align-items-center gap-2">
+                                <i class="feather-clipboard text-primary"></i>
+                                <span>Mapa de Controle</span>
+                            </a>
+                            <a href="{% url 'app:production_results_map' object.pk %}" class="btn btn-light-brand d-inline-flex align-items-center gap-2">
+                                <i class="feather-bar-chart-2 text-success"></i>
+                                <span>Mapa de Resultados</span>
+                            </a>
+                        {% endif %}
+                        {% if resource.has_tree_view %}
+                            <a href="{% url 'app:resource_tree' module.slug resource.slug object.pk %}" class="btn btn-light-brand d-inline-flex align-items-center gap-2">
+                                <i class="feather-git-merge text-info"></i>
+                                <span>Estrutura / Árvore BOM</span>
+                            </a>
+                        {% endif %}
+                        {% if resource.has_document_viewer %}
+                            <a href="{% url 'app:resource_viewer' module.slug resource.slug object.pk %}" class="btn btn-light-brand d-inline-flex align-items-center gap-2">
+                                <i class="feather-book-open text-warning"></i>
+                                <span>Visualizador de Documento</span>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 

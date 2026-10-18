@@ -4,43 +4,60 @@
 
 {% block content %}
 <section aria-labelledby="personal-area-heading">
-    <header class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-4">
-        <div>
-            <span class="text-muted">Pendências e atividades sob sua responsabilidade</span>
-            <h1 id="personal-area-heading" class="h4 mt-1 mb-0">Minha área</h1>
+    <div class="card stretch stretch-full border border-gray-2 mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-user-check" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <span class="fs-11 fw-bold text-uppercase text-muted">Gestão Individual de Tarefas</span>
+                        <h4 class="fw-bold mb-1" id="personal-area-heading">Minha Área de Trabalho</h4>
+                        <p class="text-muted mb-0">Pendências regulatórias, aprovações e atividades sob sua responsabilidade direta.</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-soft-success text-success"><i class="feather-clock me-1"></i>SLA Ativo</span>
+                </div>
+            </div>
         </div>
-    </header>
+    </div>
 
     {% if sections %}
     <div class="row g-4">
         {% for section in sections %}
         <div class="col-12 col-xl-6">
-            <article class="card stretch stretch-full h-100" aria-labelledby="personal-area-{{ section.key }}-heading">
-                <div class="card-header d-flex align-items-center gap-3">
-                    <span class="avatar-text avatar-md bg-soft-primary text-primary" aria-hidden="true">
-                        <i class="{{ section.icon }}"></i>
-                    </span>
-                    <h2 id="personal-area-{{ section.key }}-heading" class="card-title mb-0">{{ section.title }}</h2>
+            <article class="card stretch stretch-full border border-gray-2 h-100" aria-labelledby="personal-area-{{ section.key }}-heading">
+                <div class="card-header p-3 border-bottom d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="avatar-text avatar-md bg-soft-primary text-primary" aria-hidden="true">
+                            <i class="{{ section.icon }}"></i>
+                        </span>
+                        <h5 id="personal-area-{{ section.key }}-heading" class="fw-bold mb-0">{{ section.title }}</h5>
+                    </div>
+                    <span class="badge bg-soft-primary text-primary">{{ section.items|length }}</span>
                 </div>
-                <ul class="list-group list-group-flush">
+                <ul class="list-group list-group-flush mb-0">
                     {% for item in section.items %}
-                    <li class="list-group-item p-3">
+                    <li class="list-group-item p-3 border-bottom">
                         <div class="d-flex align-items-start justify-content-between gap-3">
                             <div class="min-w-0">
-                                <a href="{{ item.url }}" class="fw-semibold text-dark d-block text-truncate">{{ item.title }}</a>
+                                <a href="{{ item.url }}" class="fw-bold text-dark d-block text-truncate hover-primary">{{ item.title }}</a>
                                 <span class="text-muted fs-12 d-block mt-1">{{ item.subtitle }}</span>
                             </div>
                             <span class="badge bg-soft-primary text-primary flex-shrink-0">{{ item.status_label }}</span>
                         </div>
                         {% if item.due_date %}
-                        <div class="text-muted fs-12 mt-2">
-                            <i class="feather-calendar me-1" aria-hidden="true"></i>
-                            Prazo: <time datetime="{{ item.due_date|date:'c' }}">{{ item.due_date|date:'d/m/Y' }}</time>
+                        <div class="text-muted fs-12 mt-2 d-flex align-items-center gap-1">
+                            <i class="feather-calendar text-primary" aria-hidden="true"></i>
+                            <span>Prazo:</span>
+                            <time datetime="{{ item.due_date|date:'c' }}" class="fw-semibold text-dark">{{ item.due_date|date:'d/m/Y' }}</time>
                         </div>
                         {% endif %}
                     </li>
                     {% empty %}
-                    <li class="list-group-item p-4 text-muted text-center">{{ section.empty_message }}</li>
+                    <li class="list-group-item p-4 text-muted text-center fs-13">{{ section.empty_message }}</li>
                     {% endfor %}
                 </ul>
             </article>
@@ -48,13 +65,13 @@
         {% endfor %}
     </div>
     {% else %}
-    <div class="card">
+    <div class="card stretch stretch-full border border-gray-2">
         <div class="card-body p-5 text-center">
             <span class="avatar-text avatar-xl bg-soft-primary text-primary mx-auto mb-3" aria-hidden="true">
-                <i class="feather-check-circle"></i>
+                <i class="feather-check-circle fs-28"></i>
             </span>
-            <h2 class="h5">Nenhuma fila pessoal disponível</h2>
-            <p class="text-muted mb-0">As atividades aparecerão aqui conforme suas permissões e responsabilidades.</p>
+            <h4 class="fw-bold mb-2">Nenhuma fila pessoal pendente</h4>
+            <p class="text-muted mb-0">Todas as suas tarefas operacionais e aprovações estão em dia.</p>
         </div>
     </div>
     {% endif %}

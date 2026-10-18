@@ -33,15 +33,15 @@
 {% include 'includes/components/deadline_list.html' %}
 
 {% if quick_links %}
-<section class="card stretch stretch-full mt-4">
-    <div class="card-header">
-        <h2 class="card-title h5 mb-0">{{ workspace.quick_links_title }}</h2>
+<section class="card stretch stretch-full border border-gray-2 mt-4">
+    <div class="card-header p-3 border-bottom d-flex align-items-center justify-content-between">
+        <h5 class="card-title fw-bold mb-0"><i class="feather-external-link me-2 text-primary"></i>{{ workspace.quick_links_title }}</h5>
     </div>
-    <div class="card-body">
+    <div class="card-body p-4">
         <div class="d-flex flex-wrap gap-2">
             {% for link in quick_links %}
-            <a class="btn btn-light-brand" href="{{ link.url }}">
-                <i class="{{ link.icon }} me-2" aria-hidden="true"></i>{{ link.label }}
+            <a class="btn btn-light-brand d-inline-flex align-items-center gap-2" href="{{ link.url }}">
+                <i class="{{ link.icon }}" aria-hidden="true"></i>{{ link.label }}
             </a>
             {% endfor %}
         </div>

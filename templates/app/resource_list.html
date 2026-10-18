@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ resource.label }} | RGN Farma System{% endblock %}
 
@@ -7,9 +8,10 @@
     <div class="page-header-left d-flex align-items-center">
         <div class="page-header-title">
             <h5 class="m-b-10">{{ resource.label }}</h5>
+            <p class="text-muted fs-12 mb-0">Listagem operacional com rastreabilidade ALCOA+ e integridade de dados</p>
         </div>
-        <ul class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
+        <ul class="breadcrumb mb-0 ms-md-4">
+            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Início</a></li>
             <li class="breadcrumb-item"><a href="{% url 'app:module' module.slug %}">{{ module.label }}</a></li>
             <li class="breadcrumb-item">{{ resource.label }}</li>
         </ul>
@@ -24,13 +26,22 @@
             </div>
             <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
                 {% if resource.has_gantt_view %}
-                    <a href="{% url 'app:resource_gantt' module.slug resource.slug %}" class="btn btn-light-brand d-inline-flex align-items-center gap-2"><i class="feather-bar-chart-2" aria-hidden="true"></i>Ver Gantt</a>
+                    <a href="{% url 'app:resource_gantt' module.slug resource.slug %}" class="btn btn-sm btn-light-brand d-inline-flex align-items-center gap-2">
+                        <i class="feather-bar-chart-2" aria-hidden="true"></i>
+                        <span>Ver Gantt</span>
+                    </a>
                 {% endif %}
                 {% if resource.has_kanban_view %}
-                    <a href="{% url 'app:resource_kanban' module.slug resource.slug %}" class="btn btn-light-brand d-inline-flex align-items-center gap-2"><i class="feather-trello" aria-hidden="true"></i>Ver Kanban</a>
+                    <a href="{% url 'app:resource_kanban' module.slug resource.slug %}" class="btn btn-sm btn-light-brand d-inline-flex align-items-center gap-2">
+                        <i class="feather-trello" aria-hidden="true"></i>
+                        <span>Ver Kanban</span>
+                    </a>
                 {% endif %}
                 {% if can_add %}
-                    <a href="{% url 'app:resource_create' module.slug resource.slug %}" class="btn btn-primary d-inline-flex align-items-center gap-2"><i class="feather-plus" aria-hidden="true"></i>Novo registro</a>
+                    <a href="{% url 'app:resource_create' module.slug resource.slug %}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-2">
+                        <i class="feather-plus" aria-hidden="true"></i>
+                        <span>Novo registro</span>
+                    </a>
                 {% else %}
                     <span class="badge bg-soft-secondary text-secondary">Somente leitura</span>
                 {% endif %}
@@ -46,70 +57,150 @@
 {% endblock %}
 
 {% block content %}
+{% if can_print_labels %}
+<div
+    class="alert d-none mb-4"
+    data-label-print-status
+    role="status"
+    aria-live="polite"
+></div>
+{% endif %}
+
 {% include 'app/includes/resource_actions.html' with actions=collection_actions %}
-<section class="card stretch stretch-full" data-ui="resource-panel">
+
+<section class="card stretch stretch-full border transition-all" data-ui="resource-panel">
+    <!-- Cabeçalho do Card Duralux -->
+    <div class="card-header d-flex flex-wrap align-items-center justify-content-between p-3 border-bottom">
+        <div class="d-flex align-items-center gap-2">
+            <span class="avatar-text avatar-sm bg-soft-primary text-primary">
+                <i class="feather-list"></i>
+            </span>
+            <h5 class="card-title fs-14 fw-bold mb-0 text-dark">{{ resource.label }}</h5>
+            {% if rows %}
+            <span class="badge bg-soft-primary text-primary fs-11">
+                {{ rows|length }} registro{{ rows|length|pluralize }} nesta página
+            </span>
+            {% endif %}
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            {% if not can_add and not can_change and not can_delete %}
+                <span class="badge bg-soft-info text-info"><i class="feather-info me-1"></i>Modo somente leitura</span>
+            {% endif %}
+        </div>
+    </div>
+
     <div class="card-body p-0">
-        {% if not can_add and not can_change and not can_delete %}
-            <div class="alert alert-info">Este recurso está em modo somente leitura na UI operacional.</div>
-        {% endif %}
-        <div class="p-4 border-bottom" data-ui="resource-filters">
+        <!-- Filtros Duralux -->
+        <div class="p-3 border-bottom bg-light-subtle" data-ui="resource-filters">
             {% include 'app/includes/search_filters.html' %}
         </div>
+
         {% if rows %}
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <caption class="px-4 pt-3 pb-0 text-muted fs-12 fw-bold text-start">{{ resource.label }} - listagem operacional</caption>
+                <caption class="sr-only">{{ resource.label }} - listagem operacional</caption>
                 <thead>
-                    <tr>
+                    <tr class="bg-light fs-11 fw-bold text-muted text-uppercase">
                         {% for header in headers %}
-                            <th scope="col">{{ header|capfirst }}</th>
+                            <th scope="col" class="py-3 px-3">{{ header|capfirst }}</th>
                         {% endfor %}
-                        <th scope="col">Ações</th>
+                        <th scope="col" class="py-3 px-3 text-end" style="min-width: 160px;">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for row in rows %}
-                    <tr>
+                    <tr class="transition-all">
                         {% for cell in row.cells %}
-                            <td>
+                            <td class="py-3 px-3 fs-13">
                                 {% if cell.is_status %}
                                     {% include 'includes/components/status_badge.html' with status=cell.status field_name=cell.field %}
                                 {% else %}
-                                    {{ cell.value }}
+                                    <span class="text-dark">{{ cell.value|default:"—" }}</span>
                                 {% endif %}
                             </td>
                         {% endfor %}
-                        <td class="text-end text-nowrap">
-                            {% if module.slug == 'formulations' and resource.slug == 'formulas' %}
-                                <a href="{% url 'app:master_formula_cockpit' row.object.pk %}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1" title="Abrir cockpit em abas da fórmula"><i class="feather-layers" aria-hidden="true"></i>Cockpit</a>
-                            {% elif module.slug == 'production' and resource.slug == 'orders' %}
-                                <a href="{% url 'app:production_order_cockpit' row.object.pk %}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1" title="Abrir cockpit em abas da ordem de produção"><i class="feather-activity" aria-hidden="true"></i>Cockpit</a>
-                            {% elif module.slug == 'qa' and resource.slug == 'lot-releases' %}
-                                <a href="{% url 'app:qa_lot_release_cockpit' row.object.pk %}" class="btn btn-sm btn-success d-inline-flex align-items-center gap-1" title="Abrir dossiê em abas de liberação de lote"><i class="feather-shield" aria-hidden="true"></i>Dossiê</a>
-                            {% elif module.slug == 'inventory' and resource.slug == 'lots' %}
-                                <a href="{% url 'app:stock_lot_dossier' row.object.pk %}" class="btn btn-sm btn-info d-inline-flex align-items-center gap-1" title="Abrir dossiê QA do lote"><i class="feather-shield" aria-hidden="true"></i>Dossiê QA</a>
-                            {% elif module.slug == 'deviations' and resource.slug == 'events' %}
-                                <a href="{% url 'app:quality_event_cockpit' row.object.pk %}" class="btn btn-sm btn-danger d-inline-flex align-items-center gap-1" title="Abrir cockpit do evento de qualidade"><i class="feather-alert-triangle" aria-hidden="true"></i>Cockpit</a>
-                            {% elif module.slug == 'crm' and resource.slug == 'orders' %}
-                                <a href="{% url 'app:sales_order_cockpit' row.object.pk %}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1" title="Abrir cockpit do pedido de venda"><i class="feather-shopping-cart" aria-hidden="true"></i>Cockpit</a>
-                            {% elif module.slug == 'recalls' and resource.slug == 'complaints' %}
-                                <a href="{% url 'app:market_complaint_cockpit' row.object.pk %}" class="btn btn-sm btn-warning d-inline-flex align-items-center gap-1" title="Abrir cockpit da reclamação / recall"><i class="feather-radio" aria-hidden="true"></i>Cockpit</a>
-                            {% elif module.slug == 'masters' and resource.slug == 'partners' %}
-                                <a href="{% url 'app:supplier_cockpit' row.object.pk %}" class="btn btn-sm btn-info d-inline-flex align-items-center gap-1" title="Abrir cockpit 360° do fornecedor"><i class="feather-truck" aria-hidden="true"></i>Cockpit</a>
-                            {% elif module.slug == 'documents' and resource.slug == 'controlled-documents' %}
-                                <a href="{% url 'app:controlled_document_cockpit' row.object.pk %}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1" title="Abrir cockpit do documento controlado"><i class="feather-book-open" aria-hidden="true"></i>Cockpit</a>
-                            {% elif module.slug == 'audits' and resource.slug == 'plans' %}
-                                <a href="{% url 'app:audit_cockpit' row.object.pk %}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1" title="Abrir cockpit da auditoria"><i class="feather-check-square" aria-hidden="true"></i>Cockpit</a>
-                            {% endif %}
-                            {% if can_reuse %}
-                                <a href="{% url resource.reuse_route_name row.object.pk %}"
-                                   class="btn btn-sm btn-warning d-inline-flex align-items-center gap-1"
-                                   aria-label="Reaproveitar {{ row.object }}"
-                                   title="Reaproveitar fórmula">
-                                    <i class="feather-copy" aria-hidden="true"></i>Reaproveitar
+                        <td class="py-3 px-3 text-end text-nowrap">
+                            <div class="d-inline-flex align-items-center justify-content-end gap-1">
+                                {% if module.slug == 'formulations' and resource.slug == 'formulas' %}
+                                    <a href="{% url 'app:master_formula_cockpit' row.object.pk %}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1" title="Abrir cockpit em abas da fórmula">
+                                        <i class="feather-layers fs-11"></i>
+                                        <span class="fs-11">Cockpit</span>
+                                    </a>
+                                {% elif module.slug == 'production' and resource.slug == 'orders' %}
+                                    <a href="{% url 'app:production_order_cockpit' row.object.pk %}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1" title="Abrir cockpit em abas da ordem de produção">
+                                        <i class="feather-activity fs-11"></i>
+                                        <span class="fs-11">Cockpit</span>
+                                    </a>
+                                {% elif module.slug == 'qa' and resource.slug == 'lot-releases' %}
+                                    <a href="{% url 'app:qa_lot_release_cockpit' row.object.pk %}" class="btn btn-sm btn-success d-inline-flex align-items-center gap-1" title="Abrir dossiê em abas de liberação de lote">
+                                        <i class="feather-shield fs-11"></i>
+                                        <span class="fs-11">Dossiê</span>
+                                    </a>
+                                {% elif module.slug == 'inventory' and resource.slug == 'lots' %}
+                                    {% if can_print_labels %}
+                                        <button type="button"
+                                                class="btn btn-sm btn-success d-inline-flex align-items-center gap-1"
+                                                data-label-print-button
+                                                data-label-print-url="{% url 'inventory:lot-print-label' row.object.pk %}"
+                                                title="Imprimir etiqueta do lote com data e validade">
+                                            <i class="feather-printer fs-11"></i>
+                                            <span class="fs-11">Etiqueta</span>
+                                        </button>
+                                    {% endif %}
+                                    <a href="{% url 'app:stock_lot_dossier' row.object.pk %}" class="btn btn-sm btn-info d-inline-flex align-items-center gap-1" title="Abrir dossiê QA do lote">
+                                        <i class="feather-shield fs-11"></i>
+                                        <span class="fs-11">Dossiê QA</span>
+                                    </a>
+                                {% elif module.slug == 'deviations' and resource.slug == 'events' %}
+                                    <a href="{% url 'app:quality_event_cockpit' row.object.pk %}" class="btn btn-sm btn-danger d-inline-flex align-items-center gap-1" title="Abrir cockpit do evento de qualidade">
+                                        <i class="feather-alert-triangle fs-11"></i>
+                                        <span class="fs-11">Cockpit</span>
+                                    </a>
+                                {% elif module.slug == 'crm' and resource.slug == 'orders' %}
+                                    <a href="{% url 'app:sales_order_cockpit' row.object.pk %}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1" title="Abrir cockpit do pedido de venda">
+                                        <i class="feather-shopping-cart fs-11"></i>
+                                        <span class="fs-11">Cockpit</span>
+                                    </a>
+                                {% elif module.slug == 'recalls' and resource.slug == 'complaints' %}
+                                    <a href="{% url 'app:market_complaint_cockpit' row.object.pk %}" class="btn btn-sm btn-warning d-inline-flex align-items-center gap-1" title="Abrir cockpit da reclamação / recall">
+                                        <i class="feather-radio fs-11"></i>
+                                        <span class="fs-11">Cockpit</span>
+                                    </a>
+                                {% elif module.slug == 'masters' and resource.slug == 'partners' %}
+                                    <a href="{% url 'app:supplier_cockpit' row.object.pk %}" class="btn btn-sm btn-info d-inline-flex align-items-center gap-1" title="Abrir cockpit 360° do fornecedor">
+                                        <i class="feather-truck fs-11"></i>
+                                        <span class="fs-11">Cockpit</span>
+                                    </a>
+                                {% elif module.slug == 'documents' and resource.slug == 'controlled-documents' %}
+                                    <a href="{% url 'app:controlled_document_cockpit' row.object.pk %}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1" title="Abrir cockpit do documento controlado">
+                                        <i class="feather-book-open fs-11"></i>
+                                        <span class="fs-11">Cockpit</span>
+                                    </a>
+                                {% elif module.slug == 'audits' and resource.slug == 'plans' %}
+                                    <a href="{% url 'app:audit_cockpit' row.object.pk %}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1" title="Abrir cockpit da auditoria">
+                                        <i class="feather-check-square fs-11"></i>
+                                        <span class="fs-11">Cockpit</span>
+                                    </a>
+                                {% endif %}
+
+                                {% if can_reuse %}
+                                    <a href="{% url resource.reuse_route_name row.object.pk %}"
+                                       class="btn btn-sm btn-warning d-inline-flex align-items-center gap-1"
+                                       aria-label="Reaproveitar {{ row.object }}"
+                                       title="Reaproveitar fórmula">
+                                        <i class="feather-copy fs-11"></i>
+                                        <span class="fs-11">Reaproveitar</span>
+                                    </a>
+                                {% endif %}
+
+                                <a href="{% url 'app:resource_detail' module.slug resource.slug row.object.pk %}"
+                                   class="btn btn-sm btn-light-brand d-inline-flex align-items-center gap-1"
+                                   aria-label="Ver detalhe de {{ row.object }}"
+                                   title="Ver detalhe">
+                                    <i class="feather-eye fs-11"></i>
+                                    <span class="fs-11">Detalhe</span>
                                 </a>
-                            {% endif %}
-                            <a href="{% url 'app:resource_detail' module.slug resource.slug row.object.pk %}" class="btn btn-sm btn-light-brand d-inline-flex align-items-center gap-1" aria-label="Ver detalhe de {{ row.object }}"><i class="feather-eye" aria-hidden="true"></i>Detalhe</a>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -118,8 +209,15 @@
         </div>
         {% include 'app/includes/pagination.html' %}
         {% else %}
-            {% include 'app/includes/empty_state.html' with title='Nenhum registro encontrado' message='Crie um registro ou ajuste a busca para ver resultados.' %}
+            {% include 'app/includes/empty_state.html' with title='Nenhum registro encontrado' message='Crie um novo registro ou ajuste os parâmetros de busca para visualizar os dados operacionais.' %}
         {% endif %}
     </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+{% if can_print_labels %}
+<script src="{% static 'js/local-printing.js' %}" defer></script>
+{% endif %}
 {% endblock %}

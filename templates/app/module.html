@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ module.label }} | RGN Farma System{% endblock %}
 
@@ -7,55 +8,123 @@
     <div class="page-header-left d-flex align-items-center">
         <div class="page-header-title">
             <h5 class="m-b-10">{{ module.label }}</h5>
+            <p class="text-muted fs-12 mb-0">Visão geral do módulo e catálogo de recursos autorizados</p>
         </div>
-        <ul class="breadcrumb mb-0">
+        <ul class="breadcrumb mb-0 ms-md-4">
+            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Início</a></li>
             <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
             <li class="breadcrumb-item">{{ module.label }}</li>
         </ul>
+    </div>
+    <div class="page-header-right ms-auto">
+        <a href="{% url 'app:index' %}" class="btn btn-sm btn-light-brand d-inline-flex align-items-center gap-2">
+            <i class="feather-arrow-left"></i>
+            <span>Voltar aos Aplicativos</span>
+        </a>
     </div>
 </div>
 {% endblock %}
 
 {% block content %}
-<section class="card stretch stretch-full">
-    <div class="card-body">
-        <div class="d-flex align-items-center gap-3 mb-4">
-            <div class="avatar-text avatar-lg bg-soft-primary text-primary"><i class="{{ module.icon }}" aria-hidden="true"></i></div>
-            <div><h2 class="h5 mb-1">Recursos disponíveis</h2><p class="text-muted mb-0">Acesse os registros permitidos para este módulo.</p></div>
-        </div>
-        <p class="text-muted">{{ module.description }}</p>
-        {% if resources or show_report_catalog %}
-            <div class="row g-4">
+<!-- [ Banner de Identificação do Módulo ] start -->
+<div class="card stretch stretch-full mb-4">
+    <div class="card-body p-4">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+            <div class="d-flex align-items-center gap-3">
+                <div class="avatar-text avatar-xl bg-soft-primary text-primary">
+                    <i class="{{ module.icon }}"></i>
+                </div>
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <h1 class="h4 mb-0 text-dark">{{ module.label }}</h1>
+                        <span class="badge bg-soft-success text-success fs-11">Ativo</span>
+                    </div>
+                    <p class="text-muted fs-13 mb-0">{{ module.description }}</p>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="border border-dashed border-gray-4 rounded p-3 text-center min-w-120">
+                    <h3 class="fs-18 fw-bold text-dark mb-0">{{ resources|length }}</h3>
+                    <span class="fs-11 text-muted text-uppercase">Recursos</span>
+                </div>
                 {% if show_report_catalog %}
-                <div class="col-12 col-md-6 col-xl-4">
-                    <article class="card border h-100">
-                        <div class="card-body d-flex flex-column">
-                            <span class="badge bg-soft-primary text-primary align-self-start mb-3">Operacional</span>
-                            <h2 class="h5 mb-2">Catálogo de relatórios</h2>
-                            <p class="text-muted mb-4">Consulte e gere relatórios autorizados para sua área.</p>
-                            <a href="{% url 'app:report_catalog' %}" class="btn btn-primary mt-auto"><i class="feather-file-text me-2" aria-hidden="true"></i>Abrir catálogo</a>
-                        </div>
-                    </article>
+                <div class="border border-dashed border-gray-4 rounded p-3 text-center min-w-120">
+                    <h3 class="fs-18 fw-bold text-primary mb-0"><i class="feather-file-text"></i></h3>
+                    <span class="fs-11 text-muted text-uppercase">Relatórios</span>
                 </div>
                 {% endif %}
-                {% for resource in resources %}
-                <div class="col-12 col-md-6 col-xl-4">
-                    <article class="card border h-100">
-                        <div class="card-body d-flex flex-column">
-                        {% if resource.read_only %}
-                            <span class="badge badge-muted align-self-start mb-3">Somente leitura</span>
-                        {% endif %}
-                        <h2 class="h5 mb-2">{{ resource.label }}</h2>
-                        <p class="text-muted mb-4">{% if resource.read_only %}Listagem e detalhe disponíveis para consulta controlada.{% else %}Listagem, detalhe e operações disponíveis para este recurso.{% endif %}</p>
-                        <a href="{% url 'app:resource_list' module.slug resource.slug %}" class="btn btn-primary mt-auto"><i class="feather-arrow-right me-2" aria-hidden="true"></i>Abrir recurso</a>
-                        </div>
-                    </article>
-                </div>
-                {% endfor %}
             </div>
-        {% else %}
-            {% include 'app/includes/empty_state.html' with title='Módulo planejado' message='Os templates deste módulo serão entregues nas próximas sprints do roadmap.' %}
-        {% endif %}
+        </div>
     </div>
-</section>
+</div>
+<!-- [ Banner de Identificação do Módulo ] end -->
+
+<!-- [ Grid de Recursos do Módulo ] start -->
+{% if resources or show_report_catalog %}
+    <div class="row g-4">
+        {% if show_report_catalog %}
+        <div class="col-12 col-md-6 col-xl-4">
+            <article class="card stretch stretch-full h-100 border border-primary-subtle">
+                <div class="card-header d-flex align-items-center justify-content-between p-3 border-bottom">
+                    <span class="badge bg-soft-primary text-primary">Operacional &amp; BI</span>
+                    <i class="feather-file-text text-primary"></i>
+                </div>
+                <div class="card-body d-flex flex-column p-4">
+                    <div class="avatar-text avatar-md bg-soft-primary text-primary mb-3">
+                        <i class="feather-printer"></i>
+                    </div>
+                    <h2 class="fs-16 fw-bold text-dark mb-2">Catálogo de Relatórios</h2>
+                    <p class="text-muted fs-12 mb-4">Consulte, configure e execute relatórios controlados e exportações autorizadas para sua área.</p>
+                    <a href="{% url 'app:report_catalog' %}" class="btn btn-sm btn-primary mt-auto d-inline-flex align-items-center justify-content-center gap-2">
+                        <i class="feather-play fs-12"></i>
+                        <span>Abrir Catálogo de Relatórios</span>
+                    </a>
+                </div>
+            </article>
+        </div>
+        {% endif %}
+
+        {% for resource in resources %}
+        <div class="col-12 col-md-6 col-xl-4">
+            <article class="card stretch stretch-full h-100 border transition-all hover-shadow-sm">
+                <div class="card-header d-flex align-items-center justify-content-between p-3 border-bottom">
+                    {% if resource.read_only %}
+                        <span class="badge bg-soft-secondary text-secondary">Somente leitura</span>
+                    {% else %}
+                        <span class="badge bg-soft-success text-success">Operação autorizada</span>
+                    {% endif %}
+                    <span class="text-muted fs-11">#{{ forloop.counter }}</span>
+                </div>
+                <div class="card-body d-flex flex-column p-4">
+                    <div class="avatar-text avatar-md bg-soft-primary text-primary mb-3">
+                        <i class="feather-database"></i>
+                    </div>
+                    <h2 class="fs-16 fw-bold text-dark mb-2">{{ resource.label }}</h2>
+                    <p class="text-muted fs-12 mb-4">
+                        {% if resource.read_only %}
+                            Listagem e detalhamento sob controle regulatório e integridade referencial.
+                        {% else %}
+                            Cadastros, edições, histórico de auditoria e fluxos operacionais completos.
+                        {% endif %}
+                    </p>
+                    <div class="d-flex align-items-center gap-2 mt-auto">
+                        <a href="{% url 'app:resource_list' module.slug resource.slug %}" class="btn btn-sm btn-primary flex-fill d-inline-flex align-items-center justify-content-center gap-1">
+                            <i class="feather-list fs-12"></i>
+                            <span>Listagem</span>
+                        </a>
+                        {% if not resource.read_only %}
+                        <a href="{% url 'app:resource_create' module.slug resource.slug %}" class="btn btn-sm btn-light-brand d-inline-flex align-items-center justify-content-center" title="Novo {{ resource.label }}">
+                            <i class="feather-plus fs-12"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    {% include 'app/includes/empty_state.html' with title='Nenhum recurso disponível' message='Não há recursos ativos configurados para este módulo ou seu perfil atual não possui acessos associados.' %}
+{% endif %}
+<!-- [ Grid de Recursos do Módulo ] end -->
 {% endblock %}

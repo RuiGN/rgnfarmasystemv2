@@ -22,20 +22,49 @@
 {% endblock %}
 
 {% block content %}
-<section class="card stretch stretch-full">
-    <div class="card-body">
-        <form method="post" class="resource-form" data-ui="resource-form">
+<section class="card stretch stretch-full border border-gray-2">
+    <div class="card-header p-4 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="avatar-text avatar-md bg-soft-primary text-primary">
+                <i class="{% if form_mode == 'edit' %}feather-edit-3{% else %}feather-plus-circle{% endif %}" aria-hidden="true"></i>
+            </div>
+            <div>
+                <h5 class="fw-bold mb-1">{% if form_mode == 'edit' %}Editar {{ resource.label }}{% else %}Novo Registro em {{ resource.label }}{% endif %}</h5>
+                <span class="fs-12 text-muted">Controle de integridade e boas práticas de fabricação (BPF / GMP & ALCOA+)</span>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-soft-primary text-primary"><i class="feather-tag me-1"></i>{{ resource.label }}</span>
+            <span class="badge bg-soft-info text-info"><i class="feather-shield me-1"></i>Conformidade BPF</span>
+        </div>
+    </div>
+    <div class="card-body p-4">
+        <form method="post" class="resource-form" data-ui="resource-form"{% if form.is_multipart %} enctype="multipart/form-data"{% endif %}>
             {% csrf_token %}
             {% if form.non_field_errors %}
-                <div class="alert alert-danger" id="{{ resource.slug }}-form-errors" role="alert">{{ form.non_field_errors }}</div>
+                <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" id="{{ resource.slug }}-form-errors" role="alert">
+                    <i class="feather-alert-triangle fs-18"></i>
+                    <div>{{ form.non_field_errors }}</div>
+                </div>
             {% endif %}
+
+            <div class="mb-4 d-flex align-items-center justify-content-between border-bottom pb-3">
+                <h6 class="fw-bold mb-0">
+                    <span class="d-block mb-1">Campos do Registro</span>
+                    <span class="fs-12 fw-normal text-muted">Preencha os campos obrigatórios com precisão técnica e documental.</span>
+                </h6>
+            </div>
+
             <div class="form-grid">
                 {% for field in form %}
                 <div class="form-field {{ field.field.rgn_layout_class }}{% if field.field.widget.input_type == 'checkbox' %} form-field-inline{% endif %}">
-                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    <label for="{{ field.id_for_label }}" class="form-label fw-semibold text-dark">
+                        {{ field.label }}
+                        {% if field.field.required %}<span class="text-danger ms-1" title="Campo obrigatório">*</span>{% endif %}
+                    </label>
                     {{ field }}
                     {% if field.help_text %}
-                        <span class="field-help" id="{{ field.id_for_label }}_help">{{ field.help_text }}</span>
+                        <span class="form-text fs-11 text-muted" id="{{ field.id_for_label }}_help">{{ field.help_text }}</span>
                     {% endif %}
                     {% if field.errors %}
                         <span class="invalid-feedback d-block field-error" id="{{ field.id_for_label }}_errors" role="alert">{{ field.errors }}</span>
@@ -46,13 +75,13 @@
             {% if has_inline_formsets %}
                 {% for inline in inline_formsets %}
                     {% if not inline.available %}
-                        <section class="card border mt-4 resource-inline-formset" data-inline-formset="{{ inline.key }}">
-                            <div class="card-header bg-light">
-                                <h2 class="h5 mb-1">{{ inline.title }}</h2>
+                        <section class="card border border-gray-2 mt-4 resource-inline-formset" data-inline-formset="{{ inline.key }}">
+                            <div class="card-header bg-light p-3 border-bottom">
+                                <h6 class="fw-bold mb-0">{{ inline.title }}</h6>
                             </div>
-                            <div class="card-body">
+                            <div class="card-body p-4">
                                 <div class="alert alert-secondary mb-0" role="status">
-                                    Você não possui permissão para visualizar estes registros.
+                                    <i class="feather-lock me-2"></i>Você não possui permissão para visualizar estes registros.
                                 </div>
                             </div>
                         </section>

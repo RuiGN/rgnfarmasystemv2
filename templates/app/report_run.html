@@ -5,35 +5,64 @@
 {% block page_header %}
 <div class="page-header" id="section-0">
     <div class="page-header-left d-flex align-items-center">
-        <div class="page-header-title"><h5 class="m-b-10">Gerar relatório</h5></div>
+        <div class="page-header-title"><h5 class="m-b-10">Gerar Relatório</h5></div>
         <ul class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
             <li class="breadcrumb-item"><a href="{% url 'app:report_catalog' %}">Catálogo de relatórios</a></li>
-            <li class="breadcrumb-item">{{ definition.title }}</li>
+            <li class="breadcrumb-item active">{{ definition.title }}</li>
         </ul>
+    </div>
+    <div class="page-header-right ms-auto d-flex align-items-center gap-2">
+        <a href="{% url 'app:report_catalog' %}" class="btn btn-light-brand d-inline-flex align-items-center gap-2">
+            <i class="feather-arrow-left" aria-hidden="true"></i>Voltar ao Catálogo
+        </a>
     </div>
 </div>
 {% endblock %}
 
 {% block content %}
-<section class="card stretch stretch-full">
-    <div class="card-body">
-        <div class="d-flex align-items-start justify-content-between gap-3 mb-4">
+<section class="card stretch stretch-full border border-gray-2">
+    <div class="card-header p-4 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="avatar-text avatar-md bg-soft-primary text-primary">
+                <i class="feather-printer" aria-hidden="true"></i>
+            </div>
             <div>
-                <span class="badge bg-soft-primary text-primary mb-2">{{ definition.code }}</span>
-                <h1 class="h4 mb-1">{{ definition.title }}</h1>
-                <p class="text-muted mb-0">{{ definition.description }}</p>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="badge bg-soft-primary text-primary font-monospace">{{ definition.code }}</span>
+                    <h5 class="fw-bold mb-0">{{ definition.title }}</h5>
+                </div>
+                <p class="fs-12 text-muted mb-0">{{ definition.description }}</p>
             </div>
         </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-soft-info text-info"><i class="feather-shield me-1"></i>Trilha de Auditoria</span>
+        </div>
+    </div>
+    <div class="card-body p-4">
         <form method="post" class="resource-form" data-ui="report-run-form" novalidate>
             {% csrf_token %}
             {% if form.non_field_errors %}
-                <div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>
+                <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
+                    <i class="feather-alert-triangle fs-18"></i>
+                    <div>{{ form.non_field_errors }}</div>
+                </div>
             {% endif %}
+
+            <div class="mb-4 d-flex align-items-center justify-content-between border-bottom pb-3">
+                <h6 class="fw-bold mb-0">
+                    <span class="d-block mb-1">Parâmetros de Execução</span>
+                    <span class="fs-12 fw-normal text-muted">Defina o período e filtros técnicos para geração do lote de dados.</span>
+                </h6>
+            </div>
+
             <div class="form-grid">
                 {% for field in form %}
                 <div class="form-field">
-                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    <label for="{{ field.id_for_label }}" class="form-label fw-semibold text-dark">
+                        {{ field.label }}
+                        {% if field.field.required %}<span class="text-danger ms-1" title="Campo obrigatório">*</span>{% endif %}
+                    </label>
                     {{ field }}
                     {% if field.errors %}
                         <span class="invalid-feedback d-block field-error" id="{{ field.id_for_label }}_errors" role="alert">{{ field.errors }}</span>
@@ -41,11 +70,14 @@
                 </div>
                 {% endfor %}
             </div>
-            <div class="d-flex flex-wrap gap-2 mt-4">
-                <button type="submit" class="btn btn-primary">
-                    <i class="feather-play me-2" aria-hidden="true"></i>Gerar relatório
+
+            <div class="d-flex flex-wrap gap-2 justify-content-end pt-4 mt-4 border-top">
+                <a href="{% url 'app:report_catalog' %}" class="btn btn-light-brand d-inline-flex align-items-center gap-2">
+                    <i class="feather-x" aria-hidden="true"></i>Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2">
+                    <i class="feather-play" aria-hidden="true"></i>Executar Relatório
                 </button>
-                <a href="{% url 'app:report_catalog' %}" class="btn btn-light-brand">Cancelar</a>
             </div>
         </form>
     </div>

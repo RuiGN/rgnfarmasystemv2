@@ -1,9 +1,9 @@
                     <section class="card border border-primary mt-4 resource-inline-formset qc-grid-section" data-inline-formset="{{ inline.key }}">
-                        <div class="card-header bg-soft-primary d-flex align-items-center justify-content-between">
+                        <div class="card-header bg-soft-primary p-3 border-bottom d-flex align-items-center justify-content-between">
                             <div>
-                                <h2 class="h5 mb-1 text-primary"><i class="feather-grid me-2"></i>{{ inline.title }}</h2>
+                                <h6 class="fw-bold mb-0 text-primary"><i class="feather-grid me-2"></i>{{ inline.title }}</h6>
                                 {% if inline.description %}
-                                    <p class="text-primary mb-0 opacity-75">{{ inline.description }}</p>
+                                    <p class="text-primary mb-0 fs-12 opacity-75">{{ inline.description }}</p>
                                 {% endif %}
                             </div>
                             {% if inline.can_add %}
@@ -18,8 +18,8 @@
                                 <div class="alert alert-danger m-3" role="alert">{{ inline.formset.non_form_errors }}</div>
                             {% endif %}
                             <div class="table-responsive">
-                                <table class="table table-hover mb-0 qc-grid-table">
-                                    <thead class="table-light">
+                                <table class="table table-hover align-middle mb-0 qc-grid-table">
+                                    <thead class="bg-light fs-11 fw-bold text-muted text-uppercase">
                                         <tr>
                                             {% for field in inline.formset.empty_form.visible_fields %}
                                                 {% if field.name == 'DELETE' %}
