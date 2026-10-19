@@ -159,7 +159,7 @@ services:
       start_period: 30s
 
   cloudflared:
-    image: cloudflare/cloudflared:2026.9.1
+    image: cloudflare/cloudflared:2026.10.1
     restart: unless-stopped
     command: ["tunnel", "--no-autoupdate", "--metrics", "${CLOUDFLARED_METRICS_ADDRESS:-127.0.0.1:20249}", "run"]
     environment:
