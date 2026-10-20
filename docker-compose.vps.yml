@@ -127,7 +127,7 @@ services:
     volumes: [rabbitmq_data:/var/lib/rabbitmq]
     networks: [backend]
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      test: ["CMD", "su-exec", "rabbitmq", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
       timeout: 5s
       retries: 10

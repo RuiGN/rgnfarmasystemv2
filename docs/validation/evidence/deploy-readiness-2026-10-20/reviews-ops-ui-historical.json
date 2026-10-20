@@ -1,0 +1,63 @@
+{
+  "schema_version": "independent_review_receipts/v1",
+  "delegation_id": "deleg_3124ba4e",
+  "base_sha": "d8b179c77787806f463d1d637a526bbdf0436d22",
+  "head_sha": "d8b179c77787806f463d1d637a526bbdf0436d22",
+  "boundary": "Late reviews of historical uncommitted operational and UI/readiness deltas. Neither is approval of the current999-source candidate or deployment. Parent checked required report fields; execution claims below remain attributed to the reviewers or named parent evidence.",
+  "reviews": [
+    {
+      "scope": "Backup scheduler and isolated shell harness",
+      "declared_snapshot": "source-sha256:2e3e2f4570352c7ed769e879ace40a88425b599bd1efce023feb79122a826e02",
+      "verdict": "ship",
+      "confidence": "medium",
+      "findings": [],
+      "spec_axis": "Static delta and existing directed receipts support the claim: conditional Bash calls propagate producer/publication failures without publishing a new success. No P0/P1/material requirement failure found; not deploy approval.",
+      "checked_clean": [
+        "Reviewer read diff against the exact BASE and reported source hashes matching the declared historical snapshot.",
+        "Explicit return handling covers directories, previous-health removal, temporary creation, artifact selection, timestamp and producer failure; publication uses checked chained operations and cleanup.",
+        "RETURN trap handles the cycle marker, and previous last-success timestamp is not replaced on failed production.",
+        "Regular-file harness preserves BASH_SOURCE and conditional-call regression; Linux/direct Bash and isolated no-network-container paths reviewed.",
+        "Native deployment tests source a checked regular copy without main and use synthetic key/port fixtures.",
+        "Reviewer counted33 GREEN cases and two individual RED receipts without independently running tests."
+      ],
+      "could_not_assess": [
+        "No independent test/script/DB/Docker/network execution or current full-suite coverage assessment.",
+        "No fault injection for second marker rename, printf, mkdir, mktemp, date or cleanup; these branches were inspected statically.",
+        "Production image GNU tools were not independently observed by reviewer.",
+        "JUnit alone does not prove retrospective source-byte lineage.",
+        "Real restore/storage/permissions/disk failure/rollback and atomicity across sequential marker writes remain operational risks.",
+        "Prior P1/tabs/printing deltas were not re-reviewed."
+      ]
+    },
+    {
+      "scope": "Historical UI and readiness corrections",
+      "verdict": "ship",
+      "confidence": "medium",
+      "findings": [],
+      "spec_axis": "Static UI/readiness claim met within the reviewed delta.8s healthy invariance test does not establish healthy real dependencies within the unchanged2s production probe deadline. HOLD remains applicable.",
+      "checked_clean": [
+        "Reviewer inspected exact HEAD/noncommitted diff and reported sources matching the then-current manifest.",
+        "Avatar route and own-user edit boundary, personal-area heading, report permissions and POST/CSRF preserved.",
+        "Detail/list table semantics, conditional columns, tab markers and updated value/order assertions reviewed without weakening the examined permission checks.",
+        "Production readiness source unchanged at2s; only settings/cache invariance test uses8s; silent-peer deadline/process-cleanup cases retain real limits.",
+        "Existing UI18/readiness6/replay28 receipts inspected with no failures/errors/skips; not independent re-execution."
+      ],
+      "could_not_assess": [
+        "No rendered browser layout, contrast, keyboard or assistive-technology observation in that review.",
+        "No healthy real PostgreSQL/Redis/RabbitMQ success within2s proved by the mocked healthy test.",
+        "Retrospective JUnit/source linkage not established solely by current matching hashes.",
+        "Full suite/coverage, production profile, other deltas, physical printing, target infrastructure/restore/rollback and formal sign-offs excluded."
+      ],
+      "open_questions": [
+        "Which evidence establishes readiness200 with real healthy dependencies and real timeout, including cold startup on target infrastructure?",
+        "Will browser evidence cover details with/without sidebar and keyboard activation of tabs?"
+      ]
+    }
+  ],
+  "parent_followup": {
+    "image_tools": "Observed directly in the immutable current image using a no-network ephemeral container: Bash5.2.37, flock/util-linux2.41.5, GNU date/coreutils9.7 and GNU findutils4.10.0. Version commands all exited0. Receipt: candidate-shell-tools.log.",
+    "current_visual_qa": "Current-source24 captures/12 states and11 browser observations plus two image-review PASS verdicts address rendered details with/without sidebar and mouse tab transitions. A complete keyboard-tab/screen-reader audit is not claimed.",
+    "healthy_real_deadline": "Earlier image has historical readiness200 observations. Current image first integration failed while the full suite ran: all services ready, diagnostic probes exceeded2s. Repeat without concurrency remains open; no production deadline relaxed.",
+    "unchanged_scope": "No code changes made in response to these historical no-finding reviews; current source freeze retained."
+  }
+}

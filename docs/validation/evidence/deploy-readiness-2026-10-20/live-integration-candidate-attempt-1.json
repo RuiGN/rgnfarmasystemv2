@@ -1,0 +1,38 @@
+{
+  "passed": false,
+  "attempt_owner": "fd7912f65e10",
+  "image_id": "sha256:2b3211d4c19535b92332928d5990470f8d1b6d8bf545330949d334c0bae28cc3",
+  "source_revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+  "ready_backends": [
+    "db",
+    "rabbitmq",
+    "redis"
+  ],
+  "endpoint_status": "unavailable",
+  "endpoint_checks": {
+    "database": false,
+    "cache": false,
+    "broker": false
+  },
+  "diagnostic_probe_exit_codes": {
+    "database": 0,
+    "cache": 0,
+    "broker": 0
+  },
+  "diagnostic_probe_seconds": {
+    "database": 3.194,
+    "cache": 2.226,
+    "broker": 2.359
+  },
+  "production_probe_deadline_seconds": 2,
+  "cleanup_readback_verified": {
+    "app": true,
+    "db": true,
+    "redis": true,
+    "rabbitmq": true,
+    "network": true
+  },
+  "observed_context": "Full coverage suite running concurrently; diagnostic probe startup exceeded2s. Concurrency is a hypothesis, not a proven root cause.",
+  "next_verification": "Repeat isolated integration after the full suite finishes, with the same image and unchanged2s production deadline. If persistent, investigate startup latency/resources without weakening readiness.",
+  "raw_diagnostics_retained_private": "/Users/rgnsystems/.hermes/cache/scratch/rgn-release-fd7912f65e10/last-failed-operation.log"
+}

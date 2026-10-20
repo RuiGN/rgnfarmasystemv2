@@ -1,0 +1,33 @@
+{
+  "schema": "publication_secret_triage_review/v1",
+  "delegation_id": "deleg_41865217",
+  "verdict": "PUBLICATION_SAFE",
+  "boundary": "Publication privacy review of the authorized allowlist, not CI/merge/deploy approval. Reviewer verified existing findings, did not rerun Gitleaks.",
+  "reported_counts": {
+    "findings": 103,
+    "files_with_findings": 6,
+    "verified_json_sha256_records": 83,
+    "verified_embedded_source_map_hashes": 20,
+    "unknown_findings": 0,
+    "distinct_referenced_files_rehashed": 23,
+    "source_snapshot_entries": 999,
+    "original_allowlist_paths": 327,
+    "operational_metadata_files_reviewed": 19
+  },
+  "observations": [
+    "Exact finding columns correspond to public file SHA256 values, not credentials.",
+    "Embedded source map equals the999-source candidate snapshot and all999 current source hashes match.",
+    "Original327 paths equal scanned bytes; index at review time contained those plus.gitattributes.",
+    "Only three explicit RED JUnit paths gained -diff; raw bytes preserved and staged whitespace check0.",
+    "No sensitive payload fields, private key pattern, credential URL or JWT identified within the reviewed operational metadata.",
+    "Gitleaks policy and historical ignore contracts unchanged."
+  ],
+  "raw_gitleaks_exit_status": 1,
+  "raw_gitleaks_finding_count": 103,
+  "policy_relaxed": false,
+  "limits": [
+    "No new scanner execution by independent reviewer.",
+    "No dotenv, credentials, private data or full history examined.",
+    "Four later recovery metadata/documentation paths were handled by parent checks, not this earlier review snapshot."
+  ]
+}

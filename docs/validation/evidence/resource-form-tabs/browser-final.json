@@ -1,0 +1,293 @@
+[
+  {
+    "check": "final-responsive",
+    "panel": "product",
+    "width": 1440,
+    "result": {
+      "viewport": 1440,
+      "page": 1440,
+      "pane": "resource-pane-product",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "inline-components",
+    "width": 320,
+    "result": {
+      "viewport": 320,
+      "page": 315,
+      "pane": "resource-pane-inline-components",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "product",
+    "width": 320,
+    "result": {
+      "viewport": 320,
+      "page": 320,
+      "pane": "resource-pane-product",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "product",
+    "width": 768,
+    "result": {
+      "viewport": 768,
+      "page": 768,
+      "pane": "resource-pane-product",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "product",
+    "width": 1024,
+    "result": {
+      "viewport": 1024,
+      "page": 1024,
+      "pane": "resource-pane-product",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "formula",
+    "width": 320,
+    "result": {
+      "viewport": 320,
+      "page": 315,
+      "pane": "resource-pane-formula",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "formula",
+    "width": 768,
+    "result": {
+      "viewport": 768,
+      "page": 763,
+      "pane": "resource-pane-formula",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "formula",
+    "width": 1024,
+    "result": {
+      "viewport": 1024,
+      "page": 1019,
+      "pane": "resource-pane-formula",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "formula",
+    "width": 1440,
+    "result": {
+      "viewport": 1440,
+      "page": 1435,
+      "pane": "resource-pane-formula",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "inline-components",
+    "width": 768,
+    "result": {
+      "viewport": 768,
+      "page": 763,
+      "pane": "resource-pane-inline-components",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "inline-components",
+    "width": 1024,
+    "result": {
+      "viewport": 1024,
+      "page": 1019,
+      "pane": "resource-pane-inline-components",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "inline-components",
+    "width": 1440,
+    "result": {
+      "viewport": 1440,
+      "page": 1435,
+      "pane": "resource-pane-inline-components",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-server-error-after-new-row-delete",
+    "result": {
+      "active": "resource-tab-inline-components",
+      "error": "A quantidade deve ser maior que zero.",
+      "value": "0"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-save-after-discard-readback",
+    "result": {
+      "quantity": "6.0000",
+      "initial": 1,
+      "errors": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-no-javascript",
+    "result": {
+      "header": "none",
+      "visiblePanels": 3,
+      "ready": false,
+      "noValidate": false,
+      "viewport": 320,
+      "page": 315,
+      "nativeVisible": true,
+      "actionHidden": true
+    },
+    "passed": true
+  },
+  {
+    "check": "final-keyboard",
+    "key": "ArrowRight",
+    "result": {
+      "selected": "resource-tab-formula",
+      "focus": "resource-tab-formula",
+      "active": "resource-pane-formula"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-keyboard",
+    "key": "End",
+    "result": {
+      "selected": "resource-tab-inline-components",
+      "focus": "resource-tab-inline-components",
+      "active": "resource-pane-inline-components"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-keyboard",
+    "key": "Home",
+    "result": {
+      "selected": "resource-tab-product",
+      "focus": "resource-tab-product",
+      "active": "resource-pane-product"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-keyboard",
+    "key": "ArrowLeft",
+    "result": {
+      "selected": "resource-tab-inline-components",
+      "focus": "resource-tab-inline-components",
+      "active": "resource-pane-inline-components"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-client-parent-invalid",
+    "result": {
+      "active": "resource-tab-formula",
+      "focus": "id_batch_unit",
+      "overlayHidden": true
+    },
+    "passed": true
+  },
+  {
+    "check": "final-client-component-invalid",
+    "result": {
+      "active": "resource-tab-inline-components",
+      "focus": "id_components-0-quantity",
+      "overlayHidden": true
+    },
+    "passed": true
+  },
+  {
+    "check": "final-console-and-tab-names",
+    "result": {
+      "tabs": [
+        {
+          "role": "tab",
+          "name": "Produto"
+        },
+        {
+          "role": "tab",
+          "name": "Fórmula mestra"
+        },
+        {
+          "role": "tab",
+          "name": "Componentes"
+        }
+      ],
+      "counts": {
+        "error": 0,
+        "warn": 0,
+        "unhandled": 0
+      }
+    },
+    "passed": true
+  },
+  {
+    "check": "final-progressive-delete",
+    "result": {
+      "ready": true,
+      "fallback": "none",
+      "button": "flex"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-no-js-native-delete-readback",
+    "result": {
+      "initial": 0,
+      "errors": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-bootstrap-missing-delete-readback",
+    "result": {
+      "tabMissing": true,
+      "ready": false,
+      "visiblePanels": 3,
+      "noValidate": false,
+      "disabled": true,
+      "deleteChecked": true,
+      "identityEnabled": true,
+      "valid": true,
+      "readbackInitialForms": 1
+    },
+    "passed": true
+  }
+]

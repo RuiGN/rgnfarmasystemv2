@@ -265,6 +265,9 @@ def test_real_healthy_probes_do_not_change_operational_settings_or_write_cache(t
     before = deepcopy(settings.DATABASES)
     with (
         override_settings(CACHES=cache_config),
+        # This case verifies read-only behavior, not cold interpreter startup.
+        # Silent-peer tests above retain the real production deadline.
+        patch.object(views, 'READINESS_PROBE_TIMEOUT', 8),
         patch.object(
             views.celery_app,
             'connection_for_read',

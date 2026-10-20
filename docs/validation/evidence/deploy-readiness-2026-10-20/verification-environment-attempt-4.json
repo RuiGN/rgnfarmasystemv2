@@ -1,0 +1,10 @@
+{
+  "source_revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+  "source_count": 999,
+  "bootstrap_sha256": "a0d08d2fd9e61a01beea2f5803325134440ca3d32c031d882edbb5dda23c2e47",
+  "bootstrap_policy": "Only explicit pytest-managed synthetic dotenv paths under scratch are allowed; operational/default/symlink-escaped paths blocked.",
+  "production_code_changed": false,
+  "deadline_tests_changed": false,
+  "replay_passed": 9,
+  "resource_policy": "Next full run without concurrent Docker builds/integration or other test runs."
+}

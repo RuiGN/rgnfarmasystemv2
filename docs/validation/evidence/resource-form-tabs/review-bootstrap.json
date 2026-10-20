@@ -1,0 +1,26 @@
+{
+  "delegation_id": "deleg_9328f9b7",
+  "model": "gpt-6.1-sol",
+  "scope": "Final deletion-handler move for missing bootstrap.Tab",
+  "code_fingerprint": "86c46fa1572cce481eba73ececffc347287be8a7205c975f1398775d4da622a8",
+  "report": {
+    "verdict": "ship",
+    "confidence": "high",
+    "findings": [],
+    "spec_axis": "Atende ao delta solicitado: exclusão de linha inválida independente de bootstrap.Tab. Parecer restrito a essa alteração, sem aprovação da release geral.",
+    "checked_clean": [
+      "resource_form.html:84-98: guard deleteField && !deleteField.disabled preserva o bloqueio de somente leitura, sem marcar DELETE ou ocultar a linha desabilitada.",
+      "resource_form.html:91-95: desabilita controles visíveis antes de marcar DELETE e ocultar a linha; preserva hidden e DELETE, sem reabilitar controles antes desabilitados.",
+      "Listener delegado registrado pelo script inline independentemente do controlador defer; operação síncrona de botão type=button e cobertura de linhas adicionadas dinamicamente.",
+      "resource-form-tabs.js:1-69: handler de exclusão duplicado removido, mantendo a validação de abas separada.",
+      "Artefatos conferidos, sem reexecução: 102 testes verdes e 25 checks de navegador aprovados.",
+      "Cenário sem Tab confirma três painéis, validação HTML ativa, descarte desabilitado, DELETE marcado, identidade habilitada e readbackInitialForms=1.",
+      "HEAD e hashes dos três arquivos conferidos contra o manifest; revisão somente leitura sem arquivos modificados."
+    ],
+    "could_not_assess": [
+      "Não executou testes, navegador ou banco; conferiu artefatos fornecidos.",
+      "Revisão ampla, backend, permissões, transações e release geral fora deste parecer restrito."
+    ]
+  },
+  "parent_validation": "Return shape checked against the requested contract; original functional observations and current hashes separately verified by the parent."
+}

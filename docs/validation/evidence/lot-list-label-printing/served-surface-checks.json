@@ -1,0 +1,87 @@
+[
+  {
+    "check": "served-layout",
+    "width": 1440,
+    "passed": true,
+    "result": {
+      "viewport": 1440,
+      "page": 1440,
+      "tableScrollable": true,
+      "buttons": [
+        {
+          "text": "Etiqueta",
+          "name": "Imprimir etiqueta do lote QA-ETIQUETA-1",
+          "width": 105.484375,
+          "height": 30,
+          "fullyInTableViewport": true,
+          "form": true
+        },
+        {
+          "text": "Etiqueta",
+          "name": "Imprimir etiqueta do lote QA-ETIQUETA-2",
+          "width": 105.484375,
+          "height": 29,
+          "fullyInTableViewport": true,
+          "form": true
+        }
+      ]
+    }
+  },
+  {
+    "check": "served-layout",
+    "width": 320,
+    "passed": true,
+    "result": {
+      "viewport": 320,
+      "page": 315,
+      "tableScrollable": true,
+      "buttons": [
+        {
+          "text": "Etiqueta",
+          "name": "Imprimir etiqueta do lote QA-ETIQUETA-1",
+          "width": 105.484375,
+          "height": 30,
+          "fullyInTableViewport": true,
+          "form": true
+        },
+        {
+          "text": "Etiqueta",
+          "name": "Imprimir etiqueta do lote QA-ETIQUETA-2",
+          "width": 105.484375,
+          "height": 29,
+          "fullyInTableViewport": true,
+          "form": true
+        }
+      ]
+    }
+  },
+  {
+    "check": "served-cancel-no-request",
+    "passed": true,
+    "result": {
+      "count": 0,
+      "confirmations": 1
+    }
+  },
+  {
+    "check": "served-second-row-interaction",
+    "passed": true,
+    "pending": {
+      "selectedDisabled": true,
+      "otherEnabled": true
+    },
+    "result": {
+      "count": 1,
+      "request": {
+        "url": "/api/inventory/lots/170/print_label/",
+        "method": "POST",
+        "csrfPresent": true,
+        "xhr": "XMLHttpRequest"
+      },
+      "expected": "/api/inventory/lots/170/print_label/",
+      "text": "QA: envio simulado, sem impressora.",
+      "enabled": true,
+      "errors": []
+    }
+  }
+]

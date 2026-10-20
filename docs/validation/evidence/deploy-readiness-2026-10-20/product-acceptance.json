@@ -1,0 +1,53 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "code": "routes.core_entrypoints",
+      "title": "Rotas principais carregaveis",
+      "status": "pass",
+      "evidence": "Rotas /health/, /, /api/v1/, /api/schema/, /api/docs/ e admin estao registradas."
+    },
+    {
+      "code": "auth.single_login",
+      "title": "Tela única de login",
+      "status": "pass",
+      "evidence": "/accounts/login/ é a única view de autenticação e o destino padrão é /app/."
+    },
+    {
+      "code": "routes.api_v1_modules",
+      "title": "Modulos publicados em API v1",
+      "status": "pass",
+      "evidence": "Namespace /api/v1/ inclui os modulos principais sem rota operacional legada."
+    },
+    {
+      "code": "ui.admin_menus",
+      "title": "Fronteira do admin tecnico",
+      "status": "pass",
+      "evidence": "Django Admin padrão está registrado em /admin/ e ausente da sidebar operacional."
+    },
+    {
+      "code": "commands.operational_gates",
+      "title": "Comandos operacionais de aceite",
+      "status": "pass",
+      "evidence": "Comandos operacionais de prontidao, backup, compliance e aceite estao registrados."
+    },
+    {
+      "code": "docs.product_acceptance",
+      "title": "Documentacao navegavel de aceite",
+      "status": "pass",
+      "evidence": "README, MKDocs, deploy e arquitetura documentam check_product_acceptance e os gates relacionados."
+    },
+    {
+      "code": "prd.sprint_35_recorded",
+      "title": "PRD vigente registra o gate de aceite técnico",
+      "status": "pass",
+      "evidence": "PRD.md vigente registra arquitetura single-instance e check_product_acceptance."
+    },
+    {
+      "code": "security.no_real_secrets",
+      "title": "Sem segredos reais em docs de aceite",
+      "status": "pass",
+      "evidence": "Documentacao de aceite e operacao usa variaveis simbolicas, sem tokens reais detectados."
+    }
+  ]
+}

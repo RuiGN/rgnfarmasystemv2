@@ -1,0 +1,23 @@
+"""Block operational dotenv, allowing explicit isolated pytest fixtures only."""
+import os
+from pathlib import Path
+
+import environ
+
+_SCRATCH = Path('/Users/rgnsystems/.hermes/cache/scratch').resolve()
+_real_read_env = environ.Env.read_env.__func__
+
+
+def _isolated_read_env(cls, env_file=None, *args, **kwargs):
+    if not isinstance(env_file, (str, os.PathLike)):
+        return None
+    path = Path(env_file).resolve()
+    if not path.is_relative_to(_SCRATCH):
+        return None
+    relative = path.relative_to(_SCRATCH)
+    if not any(part.startswith('pytest-') for part in relative.parts[:-1]):
+        return None
+    return _real_read_env(cls, path, *args, **kwargs)
+
+
+environ.Env.read_env = classmethod(_isolated_read_env)

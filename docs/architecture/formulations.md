@@ -26,6 +26,23 @@ Endpoints REST devem usar `IsAuthenticated` e permissões Django de modelo. A UI
 operacional em `/app/` deve usar o shell, cards, tabelas, formulários, badges,
 modais, paginação e estados do design system.
 
+## Formulário de fórmula mestra
+
+Criação, edição e reaproveitamento usam o formulário compartilhado com abas:
+
+- **Produto:** seleção de um produto já cadastrado. Não edita o cadastro mestre
+  do produto nem concede permissões adicionais sobre ele.
+- **Fórmula mestra:** campos da fórmula, incluindo versão, status, tamanho do
+  lote, unidade, rendimento e observações, conforme as permissões existentes.
+- **Componentes:** cartões de materiais com quantidade, unidade, função, perdas
+  e conversão; inclusão e exclusão continuam sujeitas às regras do domínio.
+
+Salvar envia pai e componentes juntos. Erros mantêm os valores submetidos e
+abrem a aba correspondente; sem JavaScript, as seções aparecem em sequência.
+Não há novos models, migrations, menus ou permissões por aba. Veja o
+[contrato de inlines](inline-resources.md#edição-por-abas) e as
+[evidências de validação](../validation/resource-form-tabs.md).
+
 ## Verificação mínima
 
 ```bash

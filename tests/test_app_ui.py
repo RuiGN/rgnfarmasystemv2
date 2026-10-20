@@ -374,7 +374,7 @@ class AppUiFoundationTests(TestCase):
 
         assert detail.status_code == 200
         assert 'data-ui="resource-detail"' in detail.content.decode()
-        assert 'class="table table-borderless' in detail.content.decode()
+        assert 'class="table table-hover align-middle' in detail.content.decode()
         assert form.status_code == 200
         assert 'data-ui="resource-form"' in form.content.decode()
 
@@ -512,10 +512,12 @@ class AppUiFoundationTests(TestCase):
 
         assert response.status_code == 200
         content = response.content.decode()
-        assert re.search(r'<td>\s*Sim\s*</td>', content)
-        assert re.search(r'<td>\s*Não\s*</td>', content)
-        assert re.search(r'<td>\s*True\s*</td>', content) is None
-        assert re.search(r'<td>\s*False\s*</td>', content) is None
+        cells = re.findall(r'<td\b[^>]*>(.*?)</td>', content, re.S)
+        values = [re.sub(r'<[^>]+>', '', cell).strip() for cell in cells]
+        assert 'Sim' in values
+        assert 'Não' in values
+        assert 'True' not in values
+        assert 'False' not in values
 
     def test_created_at_resources_expose_date_range_filters(self):
         self.client.force_login(self.admin)
@@ -998,7 +1000,10 @@ class AppUiPersistedAuditTests(TestCase):
 
         assert response.status_code == 200
         content = response.content.decode()
-        assert content.index('Submetido') < content.index('Criado')
+        audit_html = content.split('aria-labelledby="audit-trail-title"', maxsplit=1)[1].split(
+            '</section>', maxsplit=1
+        )[0]
+        assert audit_html.index('Submetido') < audit_html.index('Criado')
         assert 'Ana Silva' in content
         assert 'status' in content
         assert 'in_review' in content
@@ -2018,7 +2023,8 @@ class AppUiSprint43ReadinessTests(TestCase):
             'class="table table-hover align-middle mb-0"'
             in Path('templates/app/resource_list.html').read_text()
         )
-        assert 'class="card stretch stretch-full"' in content
+        assert re.search(r'class="card stretch stretch-full(?: [^"]*)?"', content)
+        assert 'data-ui="resource-panel"' in content
 
     def test_all_modules_and_resource_lists_are_smoke_navigable(self):
         for module in get_modules():
@@ -2040,9 +2046,8 @@ class AppUiSprint43ReadinessTests(TestCase):
         content = response.content.decode()
         assert 'Somente leitura' in content
         assert 'Novo registro' not in content
-        assert (
-            '<caption class="px-4 pt-3 pb-0 text-muted fs-12 fw-bold text-start">Arquivos protegidos'
-            in content
+        assert re.search(
+            r'<caption\b[^>]*class="visually-hidden"[^>]*>\s*Arquivos protegidos', content
         )
         assert 'scope="col"' in content
 

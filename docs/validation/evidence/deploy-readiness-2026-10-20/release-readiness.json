@@ -1,0 +1,53 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "code": "release.required_gates",
+      "title": "Gates obrigatorios de release",
+      "status": "pass",
+      "evidence": "Gates check_operational_readiness, check_backup_restore_readiness, check_product_acceptance e check_release_readiness estao registrados e documentados."
+    },
+    {
+      "code": "docs.release_navigation",
+      "title": "Navegacao da documentacao de release",
+      "status": "pass",
+      "evidence": "MKDocs, docs/index.md e docs/architecture/release-readiness.md expõem a prontidão de release e o comando check_release_readiness."
+    },
+    {
+      "code": "release.smoke_routes",
+      "title": "Smoke local de rotas criticas",
+      "status": "pass",
+      "evidence": "Runbook documenta smoke local para /health/, /, /api/schema/, /api/docs/ e /api/v1/; rotas Django carregam."
+    },
+    {
+      "code": "release.openapi_schema",
+      "title": "OpenAPI pronto para release",
+      "status": "pass",
+      "evidence": "OpenAPI via drf-spectacular, /api/schema/, /api/docs/ e openapi-schema.yml estao disponiveis."
+    },
+    {
+      "code": "release.demo_data",
+      "title": "Carga demo para staging local",
+      "status": "pass",
+      "evidence": "Comando load_demo_scenario esta registrado e documentado para instancia unica com scenario e exemplos de dados demo."
+    },
+    {
+      "code": "release.evidence_runbook",
+      "title": "Runbook de evidencia de release",
+      "status": "pass",
+      "evidence": "Runbook documenta checks Django, migrations, gates, OpenAPI, smoke local e Evidencia de release."
+    },
+    {
+      "code": "prd.sprint_36_recorded",
+      "title": "PRD vigente registra o gate de prontidão de release",
+      "status": "pass",
+      "evidence": "PRD.md vigente registra arquitetura single-instance e check_release_readiness."
+    },
+    {
+      "code": "security.no_real_secrets",
+      "title": "Sem segredos reais em docs de release",
+      "status": "pass",
+      "evidence": "Documentacao de release usa variaveis simbolicas, sem tokens reais detectados."
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 from collections.abc import Mapping
 
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import transaction
 from rest_framework import serializers
 
 from base.serializer_mixins import ModelSerializerContractMixin
@@ -81,15 +82,23 @@ class ProductionOrderSerializer(
             )
         return super().to_internal_value(data)
 
+    @transaction.atomic
     def update(self, instance, validated_data):
+        # Validation may have run before a lifecycle transition committed.
+        # Reapply only the submitted fields to the current row under its lock.
+        current = ProductionOrder.objects.select_for_update().get(pk=instance.pk)
+        for field_name, value in validated_data.items():
+            setattr(current, field_name, value)
         try:
-            return super().update(instance, validated_data)
+            self._run_model_clean(current)
+            current.save(update_fields=[*validated_data, 'updated_at'])
         except DjangoValidationError as error:
             raise serializers.ValidationError(
                 error.message_dict
                 if hasattr(error, 'message_dict')
                 else {'non_field_errors': error.messages}
             ) from error
+        return current
 
     class Meta:
         model = ProductionOrder

@@ -541,7 +541,7 @@ def test_audit_trail_uses_intrinsic_height_inside_responsive_detail_column():
 
     opening_section = re.search(r'<section\s+class="([^"]+)"', audit_template)
     primary_section = re.search(
-        r'<section\s+class="([^"]+)">\s*<div class="card-body">',
+        r'<section\s+class="([^"]+)"\s+data-ui="detail-content">',
         detail_template,
     )
 
@@ -566,3 +566,15 @@ def test_resource_filters_and_pagination_use_bootstrap_duralux_controls():
         'class="list-unstyled d-flex align-items-center gap-2 mb-0 pagination-common-style"'
         in pagination
     )
+
+
+def test_detail_profile_and_summary_keep_intrinsic_height_when_stacked():
+    detail = (ROOT / 'templates/app/resource_detail.html').read_text()
+    summary = (ROOT / 'templates/includes/components/detail_summary.html').read_text()
+    layout = detail.split('data-ui="detail-layout"', 1)[1]
+    profile = re.search(r'<div\s+class="([^"]*\bcard\b[^"]*)"', layout)
+    operational_summary = re.search(r'<section\s+class="([^"]+)"', summary)
+
+    assert profile is not None and operational_summary is not None
+    for card in (profile, operational_summary):
+        assert {'stretch', 'stretch-full'}.isdisjoint(card.group(1).split())

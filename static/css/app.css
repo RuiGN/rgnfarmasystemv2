@@ -1391,3 +1391,72 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
         break-inside: avoid;
     }
 }
+
+/* Preserve native deletion until the shared form's click handler is installed. */
+.resource-inline-formset [data-inline-delete-action] {
+    display: none;
+}
+
+.resource-inline-formset[data-inline-ready] [data-inline-delete-fallback] {
+    display: none;
+}
+
+.resource-inline-formset[data-inline-ready] [data-inline-delete-action] {
+    display: inline-flex;
+}
+
+.resource-form-tabs:not([data-tabs-ready]) > .card-header {
+    display: none;
+}
+
+.resource-form-tabs:not([data-tabs-ready]) > .tab-content > .tab-pane {
+    display: block;
+    opacity: 1;
+}
+
+.resource-form-tabs .nav-link {
+    white-space: normal;
+}
+
+.resource-form-tabs .nav-link:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: -2px;
+}
+
+.resource-form-tabs .resource-form-field,
+.resource-form-tabs .resource-inline-formset,
+.resource-form-tabs .form-field {
+    min-width: 0;
+}
+
+.resource-form-tabs .resource-form-field .form-control,
+.resource-form-tabs .resource-form-field .form-select,
+.resource-form-tabs .resource-inline-formset .form-control,
+.resource-form-tabs .resource-inline-formset .form-select {
+    max-width: 100%;
+}
+
+.resource-form-tabs .resource-inline-formset {
+    margin-top: 0 !important;
+    margin-bottom: 0;
+}
+
+.resource-form-tabs .resource-inline-formset > .card-header {
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+@media (max-width: 767.98px) {
+    .resource-form-tabs > .tab-content > .tab-pane > .card-body,
+    .resource-form-tabs .resource-inline-formset > .card-body.p-4 {
+        padding: 1rem !important;
+    }
+
+    .resource-form-tabs .resource-inline-formset .form-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .resource-form-tabs .resource-inline-formset .form-field {
+        grid-column: 1 / -1;
+    }
+}

@@ -1,0 +1,45 @@
+{
+  "full_run": {
+    "source_fingerprint": "40881783acdc88647c79fac9652178ec1e0b6d3602a6578b065774cd97e3911c",
+    "status": "completed",
+    "exit_code": 1,
+    "elapsed_seconds": 2199.03,
+    "passed": 2565,
+    "failed": 28,
+    "main_cases": 2593,
+    "passed_subtests": 42,
+    "junit_tests": 2635,
+    "line_coverage_percent": 86.39
+  },
+  "comparison": {
+    "previous_failures_reproduced": 25,
+    "new_to_previous_replay": [
+      "tests.test_evidence_audit::test_evidence_audit_command_outputs_json",
+      "tests.test_evidence_audit::test_evidence_catalog_passes_hash_and_approval",
+      "tests.test_readiness_deadline_corrections::test_real_healthy_probes_do_not_change_operational_settings_or_write_cache"
+    ]
+  },
+  "readiness_replay": {
+    "passed": 1,
+    "reason": "Full runner pointed unmarked healthy probe at a nonexistent base name; replay targeted the existing isolated synthetic database."
+  },
+  "final_feature": {
+    "directed_tests": 102,
+    "browser_checks": 25,
+    "source_fingerprint": "86c46fa1572cce481eba73ececffc347287be8a7205c975f1398775d4da622a8"
+  },
+  "release_gate": "HOLD",
+  "scope_note": "Full run precedes the two final client fallbacks; final source separately passed directed and browser regressions.",
+  "approval_required_at_full_run": {
+    "evidence_id": "EV-SI-005",
+    "artifact": "tests/test_formula_inline_components_ui.py",
+    "reason": "Approved source hash differs after authorized UI-test update. Catalog and approval metadata were not changed."
+  },
+  "post_run_revalidation": {
+    "user_authorized": true,
+    "evidence_id": "EV-SI-005",
+    "catalog_and_environment_replays_passed": 3,
+    "evidence": "ev-si-005-revalidation.json",
+    "note": "Historical full-run counts remain unchanged. No new full-suite run or general release approval is claimed."
+  }
+}

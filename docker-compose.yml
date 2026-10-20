@@ -107,7 +107,7 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-rgnfarmasystem}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-rgnfarmasystem}
     healthcheck:
-      test: rabbitmq-diagnostics -q ping
+      test: ["CMD", "su-exec", "rabbitmq", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 5s
       timeout: 5s
       retries: 5

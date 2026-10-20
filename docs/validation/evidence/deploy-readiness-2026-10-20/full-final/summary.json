@@ -1,0 +1,69 @@
+{
+  "engineering_verdict": "PASS",
+  "production_authorization": "HOLD_PENDING_OPERATOR_CHECKS_AND_HUMAN_SIGNOFFS",
+  "captured_at": "2026-10-20T09:53:08.180712+00:00",
+  "source_revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+  "head": "d8b179c77787806f463d1d637a526bbdf0436d22",
+  "source_count": 999,
+  "environment_fingerprint": "sha256:3a3ac0b1df015bcfa317db82fdcbbea4a91330b3237dc7a19cc004b65d73a3cb",
+  "image_id": "sha256:2b3211d4c19535b92332928d5990470f8d1b6d8bf545330949d334c0bae28cc3",
+  "attempt": 4,
+  "main_testcases_passed": 2613,
+  "junit_aggregate_tests": 2655,
+  "pytest_reported_subtests_passed": 42,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "coverage_percent": 86.4011972151734,
+  "coverage_formatted": "86.40",
+  "coverage_minimum": 80,
+  "duration_seconds": 1869.634,
+  "suite_attributes": [
+    {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "2655",
+      "time": "1862.590",
+      "timestamp": "2026-10-20T06:16:55.597944-03:00",
+      "hostname": "macrui.local"
+    }
+  ],
+  "integration": {
+    "passed": true,
+    "healthy_samples": 3,
+    "probe_timeout_seconds": 2,
+    "settings_unchanged": true,
+    "cleanup_readback_verified": true
+  },
+  "visual": {
+    "states": 12,
+    "captures": 24,
+    "instrumented_interactions": 11,
+    "independent_scores": [
+      94,
+      93
+    ],
+    "verdict": "PASS",
+    "boundary": "Declared Chromium1440/375 matrix, not complete WCAG/cross-browser/hardware verification."
+  },
+  "prior_failures_retained": [
+    "../full-attempt-3/",
+    "../live-integration-candidate-attempt-1.json"
+  ],
+  "runtime_performance_boundary": "Quiet integration and unchanged deadline tests passed. Earlier loaded failures remain recorded; target capacity/load certification is not claimed.",
+  "operational_prerequisites": [
+    "Physical label acceptance in the industry before using printing operationally.",
+    "Formal INC-2026-001 closure by Security/DPO and Quality.",
+    "Secure administrator provisioning/credential validation.",
+    "Target VPS readiness, restorable backup, previous image, rollback owner and release authorization."
+  ],
+  "external_effects": {
+    "commit": false,
+    "push": false,
+    "deployment": false,
+    "operational_database_access": false,
+    "physical_printing": false
+  }
+}

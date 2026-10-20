@@ -29,6 +29,7 @@ from django.views.generic import TemplateView
 from auxiliary.models import City, StateProvince
 from base.ui.actions.context import available_actions
 from base.ui.audit import get_audit_entries
+from base.ui.form_layouts import build_resource_form_layout
 from base.ui.forms import _apply_widget_metadata, build_resource_form
 from base.ui.personal_area import build_personal_area
 from base.ui.presentation import ProgressMetric, build_detail_summary, resolve_status
@@ -109,6 +110,10 @@ def _build_inline_form_class(inline):
             super()._update_errors(errors)
 
         def _post_clean(self):
+            # A discarded new row has no model values to validate or persist.
+            # Formset deletion and its permission check still run normally.
+            if self.instance.pk is None and self.cleaned_data.get('DELETE'):
+                return
             # An immutable persisted child is rendered as disabled controls.
             # Do not round-trip its dates/derived values through ModelForm's
             # coercion merely because the parent form is being submitted.
@@ -1240,6 +1245,9 @@ class ResourceListView(LoginRequiredMixin, ResourceContextMixin, TemplateView):
         context['headers'] = [
             _field_label(resource.model, field) for field in resource.list_display
         ]
+        context['can_print_labels'] = resource.model is StockLot and self.request.user.has_perm(
+            'inventory.view_stocklot'
+        )
         context['collection_actions'] = available_actions(self.request, resource)
         return context
 
@@ -1890,6 +1898,7 @@ class ResourceCreateView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
             )
         context['inline_formsets'] = inline_formsets
         context['has_inline_formsets'] = bool(inline_formsets)
+        context.update(build_resource_form_layout(self.get_resource(), form, inline_formsets))
         context['form_mode'] = 'create'
         context['cancel_url'] = reverse(
             'app:resource_list',

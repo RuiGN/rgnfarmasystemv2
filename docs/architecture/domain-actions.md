@@ -26,6 +26,33 @@ O dispatcher reutiliza o callback registrado pelo router; não copia métodos
 como `approve`, `release`, `close` ou `cancel`. Permissões, locks, transações,
 validações, efeitos colaterais e auditoria permanecem no DRF e no domínio.
 
+## Permissões das ações de coleção
+
+O padrão de uma action POST adicional é `change` do model, seja de detalhe ou
+coleção. `detail=False` não demonstra que a operação apenas cria registros.
+O `create` CRUD mantém a permissão `add` do DRF.
+
+Ações de criação usam `action_permission_map` explícito no ViewSet; a descoberta
+HTML lê o mesmo mapa. As exceções de criação atuais são:
+
+| Action | Permissão |
+| --- | --- |
+| `finance.from_title`, `finance.from_settlement` | `finance.add_cashflowentry` |
+| `fiscal.from_document` | `fiscal.add_fiscalbookentry` |
+| `procurement.import_xml` | `procurement.add_purchasereceipt` |
+| `risks.generate` | `risks.add_riskalert` |
+| `inventory.issue` | `inventory.add_stockmovement` |
+
+`compliance.evaluate_module` faz `update_or_create`; exige conjuntamente
+`compliance.add_compliancechecklistitem` e
+`compliance.change_compliancechecklistitem`, tanto na API quanto no HTML.
+Sem as permissões completas, a ação é negada antes de alterar os checks.
+Revisar as permissões dos grupos operacionais antes de disponibilizar essa
+mudança; nenhuma concessão automática ou migration de grupos é executada.
+
+Regressão: `tests/test_p1_collection_permissions.py`. Novas actions de coleção
+precisam de revisão dos efeitos reais e de teste com permissões mínimas.
+
 ## Metadados
 
 Cada `ActionConfig` é imutável e declara recurso, model, rota reversível,

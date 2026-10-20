@@ -1,0 +1,51 @@
+{
+  "checked_at": "2026-10-20T10:52:02.991915+00:00",
+  "status": "PASS",
+  "directory": "/var/backups/rgnfarmasystem/releases/prepublish-20261020T104215904590Z-63af02ef",
+  "receipt_sha256": "4041038ba43ea31f461cc1e8edee510201f8a5b069b06aee2d0923ce461c9f12",
+  "artifact_hashes_verified": 5,
+  "files_mode0600": 7,
+  "rollback_tag": "rgnfarmasystem:rollback-20261020t104215904590z-1afda8b358fa",
+  "rollback_image_id": "sha256:1afda8b358fa7e8f6b839607ef8398c59d293fe4afacf797cee606c2dce9486e",
+  "runtime_identities_unchanged_and_healthy": 9,
+  "checks": [
+    {
+      "check": "gzip",
+      "file": "postgresql.dump.gz",
+      "exit_status": 0
+    },
+    {
+      "check": "gzip",
+      "file": "media.tar.gz",
+      "exit_status": 0
+    },
+    {
+      "check": "gzip",
+      "file": "rollback-image.tar.gz",
+      "exit_status": 0
+    },
+    {
+      "check": "tar-list",
+      "file": "media.tar.gz",
+      "exit_status": 0
+    },
+    {
+      "check": "tar-list",
+      "file": "rollback-image.tar.gz",
+      "exit_status": 0
+    },
+    {
+      "check": "pg_restore-list-no-database-connection",
+      "producer_exit": 0,
+      "consumer_exit": 0
+    }
+  ],
+  "no_restore_or_restart": true,
+  "postgres_format": "custom pg_dump; requires pg_restore, not the plain-SQL restore.sh path",
+  "limits": [
+    "hot backup",
+    "no joint DB/media atomicity",
+    "no isolated restoration",
+    "no offsite copy"
+  ]
+}

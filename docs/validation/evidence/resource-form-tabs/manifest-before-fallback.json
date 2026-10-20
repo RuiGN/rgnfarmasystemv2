@@ -1,0 +1,39 @@
+{
+  "base_sha": "d8b179c77787806f463d1d637a526bbdf0436d22",
+  "head_sha": "d8b179c77787806f463d1d637a526bbdf0436d22",
+  "code_sha256": {
+    "base/ui/form_layouts.py": "efa95e1bc970ecde5dd080a1df40ec8fdde3eecc404625b4e0373470784bdb7f",
+    "base/ui/views.py": "b9ca79ffb7105f052ae55869159fe45b77e53c93d15b655a3e2e119a4d00ac25",
+    "base/ui/registry.py": "fd9d1e831751a2cf8a63a94a64967b4789899e669a0320989ce581b028d725c5",
+    "static/css/app.css": "70f32fbc8a7536273b5ec627b62f953968b4304937718b48d0eba68ab55c191c",
+    "static/js/resource-form-tabs.js": "9f078be91fb157ed9046f4c736986c3f69630e93df13b4738c453b70da7ec821",
+    "templates/app/resource_form.html": "15b4928c83e85072f26972e4c33d068c6f06797a29663211f18aa65e89ccfa96",
+    "templates/app/includes/inline_stacked.html": "5a25bf9db6d7e539ccc2d651e21161613c4c545dced0b4a12d57a031649a6e2d",
+    "templates/app/includes/resource_form_field.html": "92adf346742e5caec23ba19664c6386576bd589f533e0d532e58f7fceaea5c41",
+    "templates/app/includes/resource_inline_formset.html": "b5d3d6b947464dce32ead3995746a82c3426116cd18e37e2b81cc997093f8475",
+    "templates/app/includes/resource_form_tabs.html": "1c6778c171edd6d7909401401d8f78e3ed7e98f945ee4167a077d264d37d0ef8",
+    "tests/test_resource_form_tabs.py": "54968e8558fe6a33340db7f1a86a593814043c3b39041d08536dc7c6364fb01d",
+    "tests/test_formula_inline_components_ui.py": "5098d55a0b4ba83235dbe452e6e84068b623114399c3f89cf636d7a83313d62a"
+  },
+  "python": "3.14.7",
+  "packages": {
+    "Django": "6.0.8",
+    "pytest": "9.1.1",
+    "ruff": "0.15.21",
+    "mypy": "2.3.0"
+  },
+  "directed": {
+    "tests": 100,
+    "failures": 0,
+    "errors": 0
+  },
+  "browser_final_checks": 22,
+  "responsive_combinations": 12,
+  "browser_result": "passed",
+  "limits": [
+    "Synthetic loopback QA only",
+    "Not release approval",
+    "Not regulatory qualification",
+    "Not a full WCAG or physical-device audit"
+  ]
+}

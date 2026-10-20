@@ -1,0 +1,188 @@
+[
+  {
+    "page": "personal-no-access",
+    "url": "http://127.0.0.1:8767/personal-no-access.html",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/personal-no-access-1440.png",
+    "captured_at": "2026-10-20T07:50:45.373171+00:00",
+    "target_revision": "source-sha256:2401d28a80bc7d6b3a06398af0d58267f97d716dcbe2cdfbde92b7da0a210c8d",
+    "metrics": {
+      "width": 1440,
+      "height": 1000,
+      "revision": "source-sha256:2401d28a80bc7d6b3a06398af0d58267f97d716dcbe2cdfbde92b7da0a210c8d",
+      "overflow": 0,
+      "headingLevels": [
+        {
+          "tag": "H1",
+          "text": "Minha \u00e1rea"
+        },
+        {
+          "tag": "H2",
+          "text": "Nenhuma fila pessoal dispon\u00edvel"
+        }
+      ],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14
+    }
+  },
+  {
+    "page": "personal-no-access",
+    "url": "http://127.0.0.1:8767/personal-no-access.html",
+    "viewport": {
+      "width": 375,
+      "height": 900
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/personal-no-access-375.png",
+    "captured_at": "2026-10-20T07:50:46.015621+00:00",
+    "target_revision": "source-sha256:2401d28a80bc7d6b3a06398af0d58267f97d716dcbe2cdfbde92b7da0a210c8d",
+    "metrics": {
+      "width": 375,
+      "height": 900,
+      "revision": "source-sha256:2401d28a80bc7d6b3a06398af0d58267f97d716dcbe2cdfbde92b7da0a210c8d",
+      "overflow": 0,
+      "headingLevels": [
+        {
+          "tag": "H1",
+          "text": "Minha \u00e1rea"
+        },
+        {
+          "tag": "H2",
+          "text": "Nenhuma fila pessoal dispon\u00edvel"
+        }
+      ],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14
+    }
+  },
+  {
+    "page": "personal-empty",
+    "url": "http://127.0.0.1:8767/personal-empty.html",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/personal-empty-1440.png",
+    "captured_at": "2026-10-20T07:51:17.867818+00:00",
+    "target_revision": "source-sha256:2401d28a80bc7d6b3a06398af0d58267f97d716dcbe2cdfbde92b7da0a210c8d",
+    "metrics": {
+      "width": 1440,
+      "height": 1000,
+      "revision": "source-sha256:2401d28a80bc7d6b3a06398af0d58267f97d716dcbe2cdfbde92b7da0a210c8d",
+      "overflow": 0,
+      "headingLevels": [
+        {
+          "tag": "H1",
+          "text": "Minha \u00e1rea"
+        },
+        {
+          "tag": "H2",
+          "text": "CAPAs sob minha responsabilidade"
+        }
+      ],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 13
+    }
+  },
+  {
+    "page": "personal-empty",
+    "url": "http://127.0.0.1:8767/personal-empty.html",
+    "viewport": {
+      "width": 375,
+      "height": 900
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/personal-empty-375.png",
+    "captured_at": "2026-10-20T07:51:18.344306+00:00",
+    "target_revision": "source-sha256:2401d28a80bc7d6b3a06398af0d58267f97d716dcbe2cdfbde92b7da0a210c8d",
+    "metrics": {
+      "width": 375,
+      "height": 900,
+      "revision": "source-sha256:2401d28a80bc7d6b3a06398af0d58267f97d716dcbe2cdfbde92b7da0a210c8d",
+      "overflow": 0,
+      "headingLevels": [
+        {
+          "tag": "H1",
+          "text": "Minha \u00e1rea"
+        },
+        {
+          "tag": "H2",
+          "text": "CAPAs sob minha responsabilidade"
+        }
+      ],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14
+    }
+  },
+  {
+    "page": "personal-assigned",
+    "url": "http://127.0.0.1:8767/personal-assigned.html",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/personal-assigned-1440.png",
+    "captured_at": "2026-10-20T07:51:28.732331+00:00",
+    "target_revision": "source-sha256:2401d28a80bc7d6b3a06398af0d58267f97d716dcbe2cdfbde92b7da0a210c8d",
+    "metrics": {
+      "width": 1440,
+      "height": 1000,
+      "revision": "source-sha256:2401d28a80bc7d6b3a06398af0d58267f97d716dcbe2cdfbde92b7da0a210c8d",
+      "overflow": 0,
+      "headingLevels": [
+        {
+          "tag": "H1",
+          "text": "Minha \u00e1rea"
+        },
+        {
+          "tag": "H2",
+          "text": "CAPAs sob minha responsabilidade"
+        }
+      ],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14
+    }
+  },
+  {
+    "page": "personal-assigned",
+    "url": "http://127.0.0.1:8767/personal-assigned.html",
+    "viewport": {
+      "width": 375,
+      "height": 900
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/personal-assigned-375.png",
+    "captured_at": "2026-10-20T07:51:29.229195+00:00",
+    "target_revision": "source-sha256:2401d28a80bc7d6b3a06398af0d58267f97d716dcbe2cdfbde92b7da0a210c8d",
+    "metrics": {
+      "width": 375,
+      "height": 900,
+      "revision": "source-sha256:2401d28a80bc7d6b3a06398af0d58267f97d716dcbe2cdfbde92b7da0a210c8d",
+      "overflow": 0,
+      "headingLevels": [
+        {
+          "tag": "H1",
+          "text": "Minha \u00e1rea"
+        },
+        {
+          "tag": "H2",
+          "text": "CAPAs sob minha responsabilidade"
+        }
+      ],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14
+    }
+  }
+]

@@ -1,0 +1,31 @@
+{
+  "delegation_id": "deleg_4a2b5174",
+  "model": "gpt-6.1-sol",
+  "scope": "Broad feature review before the two final client fallback follow-ups",
+  "source_fingerprint": "40881783acdc88647c79fac9652178ec1e0b6d3602a6578b065774cd97e3911c",
+  "report_summary": {
+    "verdict": "ship",
+    "confidence": "medium",
+    "findings": [],
+    "spec_axis": "Aderente ao escopo: três abas e cartões para fórmulas, abas compartilhadas para os demais onze recursos com filhos, formulário simples preservado. Sem regressão bloqueante identificada segundo o critério P0/P1 informado; não aprova release geral.",
+    "checked_clean": [
+      "Doze arquivos e hashes conferidos no snapshot revisado; HEAD coincide com a base informada.",
+      "BoundFields e formsets autorizados preservados; nenhum campo ou permissão reconstruído pelo agrupador.",
+      "Criação, edição e reaproveitamento compartilham contexto; autorização e transação de pai, filhos e auditoria permanecem nos fluxos existentes.",
+      "Guard de descarte novo exige instance.pk is None e DELETE, sem dispensar autorização do formset ou validação de filhos mantidos.",
+      "Captura de submit revela campos inválidos e bloqueia loader; um formulário, CSRF e identificadores preservados.",
+      "Revisor reportou dez verificações isoladas sem banco aprovadas, além de AST, sintaxe JS e diff check.",
+      "Revisor conferiu os artefatos então existentes: cem testes verdes e vinte e dois cenários de navegador, sem alegar execução própria dos cenários com banco."
+    ],
+    "could_not_assess": [
+      "Não reexecutou testes com banco ou transações.",
+      "Não realizou navegação nem homologação visual própria; leu os artefatos.",
+      "Bootstrap ausente com JavaScript ativo não estava exercitado naquele snapshot; o pai posteriormente reproduziu e corrigiu um defeito desse caminho e adicionou cenário específico.",
+      "Suíte integral e aprovação geral de release fora deste parecer."
+    ]
+  },
+  "followups": {
+    "native_delete_fallback": "Independently reviewed in review-delta.json at fingerprint a2a35a1ff3b84114cd48662e787c5fcf94a2ad4463e7a41bf9e5ea46884ae464.",
+    "bootstrap_missing_delete": "Final source fingerprint 86c46fa1572cce481eba73ececffc347287be8a7205c975f1398775d4da622a8; 102 directed tests and 25 browser checks; narrow independent review pending."
+  }
+}

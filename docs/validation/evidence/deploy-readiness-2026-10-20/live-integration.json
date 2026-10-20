@@ -1,0 +1,62 @@
+{
+  "passed": true,
+  "owner": "4259ec11b406",
+  "settings": "core.settings.production",
+  "liveness_status": 200,
+  "readiness_status": 200,
+  "healthy_backend_samples_seconds": [
+    3.026,
+    2.89,
+    3.016
+  ],
+  "startup_attempts": [
+    {
+      "status": 200,
+      "checks": {
+        "database": true,
+        "cache": true,
+        "broker": true
+      },
+      "seconds": 3.026
+    },
+    {
+      "status": 200,
+      "checks": {
+        "database": true,
+        "cache": true,
+        "broker": true
+      },
+      "seconds": 2.89
+    },
+    {
+      "status": 200,
+      "checks": {
+        "database": true,
+        "cache": true,
+        "broker": true
+      },
+      "seconds": 3.016
+    }
+  ],
+  "probe_timeout_seconds_unmodified": 2,
+  "settings_unchanged": true,
+  "backends": {
+    "database": "ephemeral PostgreSQL",
+    "cache": "ephemeral Redis",
+    "broker": "ephemeral RabbitMQ"
+  },
+  "boundary": "Synthetic local internal Docker network only; no production or printer access.",
+  "backend_image_ids": {
+    "postgres:15-alpine": "sha256:f7d23353e1b15400d22ebe31189f4d314b87a4c129cc400c8c2d8d4ca127bf81",
+    "redis:7-alpine": "sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499",
+    "rabbitmq:3.13-management-alpine": "sha256:606d8c0d6b3c18d1da9afc53bc7cdb2a8d5486df91b5a9830e9e07626c9ae281"
+  },
+  "cleanup_verified": true,
+  "resources_removed": {
+    "rgn-release-4259ec11b406-app": true,
+    "rgn-release-4259ec11b406-rabbitmq": true,
+    "rgn-release-4259ec11b406-redis": true,
+    "rgn-release-4259ec11b406-db": true,
+    "rgn-release-4259ec11b406-network": true
+  }
+}

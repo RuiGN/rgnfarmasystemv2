@@ -39,6 +39,7 @@ class SingleInstanceDjangoModelPermissions(DjangoModelPermissions):
             return False
 
         queryset = self._queryset(view)
-        permission_method = 'POST' if getattr(view, 'detail', True) is False else 'PUT'
-        required_permissions = self.get_required_permissions(permission_method, queryset.model)
+        # Additional POST actions mutate by default, even on a collection.
+        # Creation-only actions must declare their add permission explicitly.
+        required_permissions = self.get_required_permissions('PUT', queryset.model)
         return request.user.has_perms(required_permissions)

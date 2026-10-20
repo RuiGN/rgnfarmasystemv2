@@ -1,5 +1,5 @@
 from django.contrib import admin
-from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin
 from inventory.models import StockBalance, StockLot, StockLotGenealogy, StockMovement
 
 
@@ -29,9 +29,13 @@ class StockLotAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('quality_status', 'is_expired', 'created_at', 'updated_at')
 
+    def get_readonly_fields(self, request, obj=None):
+        fields = tuple(super().get_readonly_fields(request, obj))
+        return (*fields, 'product') if obj is not None else fields
+
 
 @admin.register(StockBalance)
-class StockBalanceAdmin(admin.ModelAdmin):
+class StockBalanceAdmin(GxpRetentionModelAdmin):
     list_display = (
         'product',
         'lot',

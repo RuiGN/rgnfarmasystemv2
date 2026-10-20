@@ -1,0 +1,1101 @@
+[
+  {
+    "check": "tabs-initialized",
+    "result": {
+      "ready": true,
+      "tabs": [
+        "Produto",
+        "Fórmula mestra",
+        "Componentes"
+      ],
+      "visiblePanels": 1,
+      "noValidate": true
+    }
+  },
+  {
+    "check": "keyboard",
+    "key": "ArrowRight",
+    "result": {
+      "selected": "resource-tab-formula",
+      "active": [
+        "resource-pane-formula"
+      ]
+    },
+    "passed": true
+  },
+  {
+    "check": "keyboard",
+    "key": "End",
+    "result": {
+      "selected": "resource-tab-inline-components",
+      "active": [
+        "resource-pane-inline-components"
+      ]
+    },
+    "passed": true
+  },
+  {
+    "check": "keyboard",
+    "key": "Home",
+    "result": {
+      "selected": "resource-tab-product",
+      "active": [
+        "resource-pane-product"
+      ]
+    },
+    "passed": true
+  },
+  {
+    "check": "responsive-product",
+    "width": 1440,
+    "result": {
+      "viewport": 1440,
+      "page": 1440,
+      "form": 1100
+    },
+    "passed": true
+  },
+  {
+    "check": "responsive-product",
+    "width": 1024,
+    "result": {
+      "viewport": 1024,
+      "page": 1024,
+      "form": 684
+    },
+    "passed": true
+  },
+  {
+    "check": "responsive-product",
+    "width": 768,
+    "result": {
+      "viewport": 768,
+      "page": 768,
+      "form": 428
+    },
+    "passed": true
+  },
+  {
+    "check": "responsive-product",
+    "width": 320,
+    "result": {
+      "viewport": 320,
+      "page": 461,
+      "form": 0
+    },
+    "passed": false
+  },
+  {
+    "check": "responsive-components-settled",
+    "width": 1440,
+    "result": {
+      "viewport": 1440,
+      "page": 1435,
+      "form": 1375,
+      "panel": 1373
+    },
+    "passed": true
+  },
+  {
+    "check": "responsive-components-settled",
+    "width": 1024,
+    "result": {
+      "viewport": 1024,
+      "page": 1019,
+      "form": 959,
+      "panel": 957
+    },
+    "passed": true
+  },
+  {
+    "check": "responsive-components-settled",
+    "width": 768,
+    "result": {
+      "viewport": 768,
+      "page": 763,
+      "form": 703,
+      "panel": 701
+    },
+    "passed": true
+  },
+  {
+    "check": "responsive-components-settled",
+    "width": 320,
+    "result": {
+      "viewport": 320,
+      "page": 315,
+      "form": 275,
+      "panel": 273
+    },
+    "passed": true
+  },
+  {
+    "check": "client-parent-invalid",
+    "result": {
+      "active": "resource-tab-formula",
+      "focus": "id_batch_unit",
+      "overlayHidden": true,
+      "url": "/app/formulations/formulas/39/edit/"
+    },
+    "passed": true
+  },
+  {
+    "check": "client-component-invalid",
+    "result": {
+      "active": "resource-tab-inline-components",
+      "focus": "id_components-0-quantity",
+      "overlayHidden": true
+    },
+    "passed": true
+  },
+  {
+    "check": "add-delete-empty-row",
+    "result": {
+      "before": 2,
+      "after": 3,
+      "deleted": true,
+      "identityEnabled": true,
+      "visibleDisabled": true,
+      "hidden": true
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "product",
+    "width": 1440,
+    "result": {
+      "viewport": 1440,
+      "page": 1440,
+      "pane": "resource-pane-product",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "inline-components",
+    "width": 320,
+    "result": {
+      "viewport": 320,
+      "page": 315,
+      "pane": "resource-pane-inline-components",
+      "controls": [
+        {
+          "id": "id_components-0-line_number",
+          "width": 173,
+          "withinParent": true
+        },
+        {
+          "id": "id_components-0-material",
+          "width": 173,
+          "withinParent": true
+        },
+        {
+          "id": "id_components-0-role",
+          "width": 173,
+          "withinParent": true
+        },
+        {
+          "id": "id_components-0-quantity",
+          "width": 173,
+          "withinParent": true
+        },
+        {
+          "id": "id_components-0-unit",
+          "width": 173,
+          "withinParent": true
+        },
+        {
+          "id": "id_components-0-expected_loss_percent",
+          "width": 173,
+          "withinParent": true
+        },
+        {
+          "id": "id_components-0-conversion_factor",
+          "width": 173,
+          "withinParent": true
+        },
+        {
+          "id": "id_components-0-is_active",
+          "width": 13.4375,
+          "withinParent": true
+        },
+        {
+          "id": "id_components-1-line_number",
+          "width": 173,
+          "withinParent": true
+        },
+        {
+          "id": "id_components-1-material",
+          "width": 173,
+          "withinParent": true
+        },
+        {
+          "id": "id_components-1-role",
+          "width": 173,
+          "withinParent": true
+        },
+        {
+          "id": "id_components-1-quantity",
+          "width": 173,
+          "withinParent": true
+        },
+        {
+          "id": "id_components-1-unit",
+          "width": 173,
+          "withinParent": true
+        },
+        {
+          "id": "id_components-1-expected_loss_percent",
+          "width": 173,
+          "withinParent": true
+        },
+        {
+          "id": "id_components-1-conversion_factor",
+          "width": 173,
+          "withinParent": true
+        },
+        {
+          "id": "id_components-1-is_active",
+          "width": 13.4375,
+          "withinParent": true
+        }
+      ]
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "product",
+    "width": 320,
+    "result": {
+      "viewport": 320,
+      "page": 320,
+      "pane": "resource-pane-product",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "product",
+    "width": 768,
+    "result": {
+      "viewport": 768,
+      "page": 768,
+      "pane": "resource-pane-product",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "product",
+    "width": 1024,
+    "result": {
+      "viewport": 1024,
+      "page": 1024,
+      "pane": "resource-pane-product",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "product",
+    "width": 1440,
+    "result": {
+      "viewport": 1440,
+      "page": 1440,
+      "pane": "resource-pane-product",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "formula",
+    "width": 320,
+    "result": {
+      "viewport": 320,
+      "page": 315,
+      "pane": "resource-pane-formula",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "formula",
+    "width": 768,
+    "result": {
+      "viewport": 768,
+      "page": 763,
+      "pane": "resource-pane-formula",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "formula",
+    "width": 1024,
+    "result": {
+      "viewport": 1024,
+      "page": 1019,
+      "pane": "resource-pane-formula",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "formula",
+    "width": 1440,
+    "result": {
+      "viewport": 1440,
+      "page": 1435,
+      "pane": "resource-pane-formula",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "inline-components",
+    "width": 320,
+    "result": {
+      "viewport": 320,
+      "page": 315,
+      "pane": "resource-pane-inline-components",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "inline-components",
+    "width": 768,
+    "result": {
+      "viewport": 768,
+      "page": 763,
+      "pane": "resource-pane-inline-components",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "inline-components",
+    "width": 1024,
+    "result": {
+      "viewport": 1024,
+      "page": 1019,
+      "pane": "resource-pane-inline-components",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "inline-components",
+    "width": 1440,
+    "result": {
+      "viewport": 1440,
+      "page": 1435,
+      "pane": "resource-pane-inline-components",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-server-error-after-new-row-delete",
+    "result": {
+      "active": "resource-tab-inline-components",
+      "error": "A quantidade deve ser maior que zero.",
+      "value": "0"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-save-after-discard-readback",
+    "result": {
+      "quantity": "6.0000",
+      "initial": 1,
+      "errors": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-no-javascript",
+    "result": {
+      "header": "none",
+      "visiblePanels": 3,
+      "ready": false,
+      "noValidate": false,
+      "viewport": 320,
+      "page": 315
+    },
+    "passed": true
+  },
+  {
+    "check": "final-keyboard",
+    "key": "ArrowRight",
+    "result": {
+      "selected": "resource-tab-formula",
+      "focus": "resource-tab-formula",
+      "active": "resource-pane-formula"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-keyboard",
+    "key": "End",
+    "result": {
+      "selected": "resource-tab-inline-components",
+      "focus": "resource-tab-inline-components",
+      "active": "resource-pane-inline-components"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-keyboard",
+    "key": "Home",
+    "result": {
+      "selected": "resource-tab-product",
+      "focus": "resource-tab-product",
+      "active": "resource-pane-product"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-keyboard",
+    "key": "ArrowLeft",
+    "result": {
+      "selected": "resource-tab-inline-components",
+      "focus": "resource-tab-inline-components",
+      "active": "resource-pane-inline-components"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-client-parent-invalid",
+    "result": {
+      "active": "resource-tab-formula",
+      "focus": "id_batch_unit",
+      "overlayHidden": true
+    },
+    "passed": true
+  },
+  {
+    "check": "final-client-component-invalid",
+    "result": {
+      "active": "resource-tab-inline-components",
+      "focus": "id_components-0-quantity",
+      "overlayHidden": true
+    },
+    "passed": true
+  },
+  {
+    "check": "final-console-and-tab-names",
+    "result": {
+      "tabs": [
+        {
+          "role": "tab",
+          "name": "Produto"
+        },
+        {
+          "role": "tab",
+          "name": "Fórmula mestra"
+        },
+        {
+          "role": "tab",
+          "name": "Componentes"
+        }
+      ],
+      "counts": {
+        "error": 0,
+        "warn": 0,
+        "unhandled": 0
+      }
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "product",
+    "width": 320,
+    "result": {
+      "viewport": 320,
+      "page": 320,
+      "pane": "resource-pane-product",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "product",
+    "width": 768,
+    "result": {
+      "viewport": 768,
+      "page": 768,
+      "pane": "resource-pane-product",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "product",
+    "width": 1024,
+    "result": {
+      "viewport": 1024,
+      "page": 1024,
+      "pane": "resource-pane-product",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "product",
+    "width": 1440,
+    "result": {
+      "viewport": 1440,
+      "page": 1440,
+      "pane": "resource-pane-product",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "formula",
+    "width": 320,
+    "result": {
+      "viewport": 320,
+      "page": 315,
+      "pane": "resource-pane-formula",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "formula",
+    "width": 768,
+    "result": {
+      "viewport": 768,
+      "page": 763,
+      "pane": "resource-pane-formula",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "formula",
+    "width": 1024,
+    "result": {
+      "viewport": 1024,
+      "page": 1019,
+      "pane": "resource-pane-formula",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "formula",
+    "width": 1440,
+    "result": {
+      "viewport": 1440,
+      "page": 1435,
+      "pane": "resource-pane-formula",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "inline-components",
+    "width": 320,
+    "result": {
+      "viewport": 320,
+      "page": 315,
+      "pane": "resource-pane-inline-components",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "inline-components",
+    "width": 768,
+    "result": {
+      "viewport": 768,
+      "page": 763,
+      "pane": "resource-pane-inline-components",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "inline-components",
+    "width": 1024,
+    "result": {
+      "viewport": 1024,
+      "page": 1019,
+      "pane": "resource-pane-inline-components",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "inline-components",
+    "width": 1440,
+    "result": {
+      "viewport": 1440,
+      "page": 1435,
+      "pane": "resource-pane-inline-components",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-progressive-delete",
+    "result": {
+      "ready": true,
+      "fallback": "none",
+      "button": "flex"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-server-error-after-new-row-delete",
+    "result": {
+      "active": "resource-tab-inline-components",
+      "error": "A quantidade deve ser maior que zero.",
+      "value": "0"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-save-after-discard-readback",
+    "result": {
+      "quantity": "6.0000",
+      "initial": 1,
+      "errors": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-keyboard",
+    "key": "ArrowRight",
+    "result": {
+      "selected": "resource-tab-formula",
+      "focus": "resource-tab-formula",
+      "active": "resource-pane-formula"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-keyboard",
+    "key": "End",
+    "result": {
+      "selected": "resource-tab-inline-components",
+      "focus": "resource-tab-inline-components",
+      "active": "resource-pane-inline-components"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-keyboard",
+    "key": "Home",
+    "result": {
+      "selected": "resource-tab-product",
+      "focus": "resource-tab-product",
+      "active": "resource-pane-product"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-keyboard",
+    "key": "ArrowLeft",
+    "result": {
+      "selected": "resource-tab-inline-components",
+      "focus": "resource-tab-inline-components",
+      "active": "resource-pane-inline-components"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-client-parent-invalid",
+    "result": {
+      "active": "resource-tab-formula",
+      "focus": "id_batch_unit",
+      "overlayHidden": true
+    },
+    "passed": true
+  },
+  {
+    "check": "final-client-component-invalid",
+    "result": {
+      "active": "resource-tab-inline-components",
+      "focus": "id_components-0-quantity",
+      "overlayHidden": true
+    },
+    "passed": true
+  },
+  {
+    "check": "final-console-and-tab-names",
+    "result": {
+      "tabs": [
+        {
+          "role": "tab",
+          "name": "Produto"
+        },
+        {
+          "role": "tab",
+          "name": "Fórmula mestra"
+        },
+        {
+          "role": "tab",
+          "name": "Componentes"
+        }
+      ],
+      "counts": {
+        "error": 0,
+        "warn": 0,
+        "unhandled": 0
+      }
+    },
+    "passed": true
+  },
+  {
+    "check": "final-no-javascript",
+    "result": {
+      "header": "none",
+      "visiblePanels": 3,
+      "ready": false,
+      "noValidate": false,
+      "viewport": 320,
+      "page": 315,
+      "nativeVisible": true,
+      "actionHidden": true
+    },
+    "passed": true
+  },
+  {
+    "check": "final-no-js-native-delete-readback",
+    "result": {
+      "initial": 0,
+      "errors": []
+    },
+    "passed": true
+  },
+  {
+    "check": "bootstrap-delete-before-fix",
+    "result": {
+      "disabled": false,
+      "deleteChecked": true,
+      "valid": false
+    },
+    "passed": false
+  },
+  {
+    "check": "final-bootstrap-missing-delete-readback",
+    "result": {
+      "tabMissing": true,
+      "ready": false,
+      "visiblePanels": 3,
+      "noValidate": false,
+      "disabled": true,
+      "deleteChecked": true,
+      "identityEnabled": true,
+      "valid": true,
+      "readbackInitialForms": 1
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "product",
+    "width": 320,
+    "result": {
+      "viewport": 320,
+      "page": 320,
+      "pane": "resource-pane-product",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "product",
+    "width": 768,
+    "result": {
+      "viewport": 768,
+      "page": 768,
+      "pane": "resource-pane-product",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "product",
+    "width": 1024,
+    "result": {
+      "viewport": 1024,
+      "page": 1024,
+      "pane": "resource-pane-product",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "product",
+    "width": 1440,
+    "result": {
+      "viewport": 1440,
+      "page": 1440,
+      "pane": "resource-pane-product",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "formula",
+    "width": 320,
+    "result": {
+      "viewport": 320,
+      "page": 315,
+      "pane": "resource-pane-formula",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "formula",
+    "width": 768,
+    "result": {
+      "viewport": 768,
+      "page": 763,
+      "pane": "resource-pane-formula",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "formula",
+    "width": 1024,
+    "result": {
+      "viewport": 1024,
+      "page": 1019,
+      "pane": "resource-pane-formula",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "formula",
+    "width": 1440,
+    "result": {
+      "viewport": 1440,
+      "page": 1435,
+      "pane": "resource-pane-formula",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "inline-components",
+    "width": 320,
+    "result": {
+      "viewport": 320,
+      "page": 315,
+      "pane": "resource-pane-inline-components",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "inline-components",
+    "width": 768,
+    "result": {
+      "viewport": 768,
+      "page": 763,
+      "pane": "resource-pane-inline-components",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "inline-components",
+    "width": 1024,
+    "result": {
+      "viewport": 1024,
+      "page": 1019,
+      "pane": "resource-pane-inline-components",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-responsive",
+    "panel": "inline-components",
+    "width": 1440,
+    "result": {
+      "viewport": 1440,
+      "page": 1435,
+      "pane": "resource-pane-inline-components",
+      "overflowControls": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-progressive-delete",
+    "result": {
+      "ready": true,
+      "fallback": "none",
+      "button": "flex"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-keyboard",
+    "key": "ArrowRight",
+    "result": {
+      "selected": "resource-tab-formula",
+      "focus": "resource-tab-formula",
+      "active": "resource-pane-formula"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-keyboard",
+    "key": "End",
+    "result": {
+      "selected": "resource-tab-inline-components",
+      "focus": "resource-tab-inline-components",
+      "active": "resource-pane-inline-components"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-keyboard",
+    "key": "Home",
+    "result": {
+      "selected": "resource-tab-product",
+      "focus": "resource-tab-product",
+      "active": "resource-pane-product"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-keyboard",
+    "key": "ArrowLeft",
+    "result": {
+      "selected": "resource-tab-inline-components",
+      "focus": "resource-tab-inline-components",
+      "active": "resource-pane-inline-components"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-client-parent-invalid",
+    "result": {
+      "active": "resource-tab-formula",
+      "focus": "id_batch_unit",
+      "overlayHidden": true
+    },
+    "passed": true
+  },
+  {
+    "check": "final-client-component-invalid",
+    "result": {
+      "active": "resource-tab-inline-components",
+      "focus": "id_components-0-quantity",
+      "overlayHidden": true
+    },
+    "passed": true
+  },
+  {
+    "check": "final-console-and-tab-names",
+    "result": {
+      "tabs": [
+        {
+          "role": "tab",
+          "name": "Produto"
+        },
+        {
+          "role": "tab",
+          "name": "Fórmula mestra"
+        },
+        {
+          "role": "tab",
+          "name": "Componentes"
+        }
+      ],
+      "counts": {
+        "error": 0,
+        "warn": 0,
+        "unhandled": 0
+      }
+    },
+    "passed": true
+  },
+  {
+    "check": "final-server-error-after-new-row-delete",
+    "result": {
+      "active": "resource-tab-inline-components",
+      "error": "A quantidade deve ser maior que zero.",
+      "value": "0"
+    },
+    "passed": true
+  },
+  {
+    "check": "final-save-after-discard-readback",
+    "result": {
+      "quantity": "6.0000",
+      "initial": 1,
+      "errors": []
+    },
+    "passed": true
+  },
+  {
+    "check": "final-no-javascript",
+    "result": {
+      "header": "none",
+      "visiblePanels": 3,
+      "ready": false,
+      "noValidate": false,
+      "viewport": 320,
+      "page": 315,
+      "nativeVisible": true,
+      "actionHidden": true
+    },
+    "passed": true
+  },
+  {
+    "check": "final-no-js-native-delete-readback",
+    "result": {
+      "initial": 0,
+      "errors": []
+    },
+    "passed": true
+  }
+]

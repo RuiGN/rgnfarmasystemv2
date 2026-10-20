@@ -1,0 +1,52 @@
+{
+  "schema": "vps_audit_parent_close/v1",
+  "checked_at": "2026-10-20T10:26:52.377117+00:00",
+  "documentary_findings_addressed": [
+    "DOC-P2-01",
+    "DOC-P3-01"
+  ],
+  "independent_verdict_preserved": "REVISE",
+  "independent_rereview": false,
+  "main_probe_count": 3,
+  "unchanged_local_source_count": 999,
+  "report_hashes": {
+    "docs/validation/deploy-readiness-2026-10-20.md": "448a0a582731da87963991f559f644154ecb9031aa730082f035056f088245f7",
+    "docs/validation/vps-preflight-2026-10-20.md": "173cb9cdd0e3e7c21cb38cb2e9f6cc3e9c7baed445e2362aa9d33467ffba4fd7"
+  },
+  "checks": [
+    {
+      "command": [
+        ".venv/bin/ruff",
+        "check",
+        "."
+      ],
+      "exit_status": 0,
+      "stdout": "All checks passed!",
+      "stderr": ""
+    },
+    {
+      "command": [
+        ".venv/bin/ruff",
+        "format",
+        "--check",
+        "."
+      ],
+      "exit_status": 0,
+      "stdout": "576 files already formatted",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_status": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "audit_completed": true,
+  "production_verdict": "HOLD",
+  "new_remote_actions": []
+}

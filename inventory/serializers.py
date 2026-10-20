@@ -16,26 +16,23 @@ class SingleInstanceInventorySerializerMixin(ModelSerializerContractMixin):
             for field_name in self.immutable_update_fields
             if self.instance is not None and field_name in data
         ]
-        if immutable_fields:
-            raise serializers.ValidationError(
-                {
-                    field_name: 'Campo de identidade imutável após a criação.'
-                    for field_name in immutable_fields
-                }
-            )
+        errors = {
+            field_name: 'Campo de identidade imutável após a criação.'
+            for field_name in immutable_fields
+        }
         controlled_fields = [
             field_name for field_name in self.controlled_write_fields if field_name in data
         ]
-        if controlled_fields:
-            raise serializers.ValidationError(
-                {
-                    field_name: (
-                        'Campo controlado pelo fluxo de domínio e indisponível '
-                        'para mutação genérica.'
-                    )
-                    for field_name in controlled_fields
-                }
-            )
+        errors.update(
+            {
+                field_name: (
+                    'Campo controlado pelo fluxo de domínio e indisponível para mutação genérica.'
+                )
+                for field_name in controlled_fields
+            }
+        )
+        if errors:
+            raise serializers.ValidationError(errors)
         return serializers.ModelSerializer.to_internal_value(self, data)
 
     def _instance_for_clean(self, attrs):
@@ -63,6 +60,7 @@ class SingleInstanceInventorySerializerMixin(ModelSerializerContractMixin):
 
 class StockLotSerializer(SingleInstanceInventorySerializerMixin, serializers.ModelSerializer):
     controlled_write_fields = ('quality_status',)
+    immutable_update_fields = ('product',)
     is_expired = serializers.BooleanField(read_only=True)
     sublot_number = serializers.CharField(required=False, allow_blank=True, default='')
 

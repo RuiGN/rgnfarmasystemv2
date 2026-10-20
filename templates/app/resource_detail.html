@@ -61,8 +61,8 @@
 
 <div class="row g-4" data-ui="detail-layout">
     <!-- Coluna Esquerda: Resumo do Registro / Cartão Perfil (Duralux Profile Card) -->
-    <div class="col-xxl-4 col-xl-5">
-        <div class="card stretch stretch-full border">
+    <div class="{% if has_detail_sidebar %}col-12 col-xl-4{% else %}col-12{% endif %}">
+        <div class="card border">
             <div class="card-body p-4 text-center">
                 <!-- Avatar / Ícone de Destaque -->
                 <div class="avatar-text avatar-xl bg-soft-primary text-primary mx-auto mb-3">
@@ -131,7 +131,7 @@
                     {% if module.slug == 'formulations' and resource.slug == 'formulas' and can_view_formula_cockpit %}
                         <a href="{% url 'app:master_formula_cockpit' object.pk %}" class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2">
                             <i class="feather-layers" aria-hidden="true"></i>
-                            <span>Cockpit da fórmula (Abas)</span>
+                            <span>Ciclo de abastecimento</span>
                         </a>
                     {% endif %}
 
@@ -173,14 +173,14 @@
                     {% if module.slug == 'recalls' and resource.slug == 'complaints' and can_view_market_complaint_cockpit %}
                         <a href="{% url 'app:market_complaint_cockpit' object.pk %}" class="btn btn-warning w-100 d-inline-flex align-items-center justify-content-center gap-2">
                             <i class="feather-radio" aria-hidden="true"></i>
-                            <span>Cockpit de cosmetovigilância</span>
+                            <span>Cockpit de cosmetovigilância / Recall</span>
                         </a>
                     {% endif %}
 
                     {% if module.slug == 'masters' and resource.slug == 'partners' and can_view_supplier_cockpit %}
                         <a href="{% url 'app:supplier_cockpit' object.pk %}" class="btn btn-info w-100 d-inline-flex align-items-center justify-content-center gap-2 text-white">
                             <i class="feather-truck" aria-hidden="true"></i>
-                            <span>Cockpit 360° do fornecedor</span>
+                            <span>Cockpit do fornecedor (360°)</span>
                         </a>
                     {% endif %}
 
@@ -231,8 +231,8 @@
     </div>
 
     <!-- Coluna Direita: Abas de Dados & Trilha de Auditoria (Duralux Tabbed View) -->
-    <div class="col-xxl-8 col-xl-7">
-        <div class="card stretch stretch-full border border-top-0">
+    <div class="{% if has_detail_sidebar %}col-12 col-xl-8{% else %}col-12{% endif %}">
+        <section class="card border border-top-0" data-ui="detail-content">
             <div class="card-header p-0">
                 <ul class="nav nav-tabs flex-wrap w-100 customers-nav-tabs" id="resourceDetailTabs" role="tablist">
                     <li class="nav-item flex-fill border-top" role="presentation">
@@ -319,7 +319,7 @@
                 </div>
                 {% endif %}
             </div>
-        </div>
+        </section>
     </div>
 </div>
 {% endblock %}

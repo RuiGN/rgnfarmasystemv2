@@ -334,7 +334,7 @@ class FormulaInlineComponentsUiTests(TestCase):
         assert 'Adicionar componente' in content
         assert 'components-TOTAL_FORMS' in content
 
-    def test_tabular_inline_delete_control_is_icon_action(self):
+    def test_stacked_formula_delete_control_is_icon_action(self):
         response = self.client.get(
             reverse(
                 'app:resource_create',
@@ -344,8 +344,8 @@ class FormulaInlineComponentsUiTests(TestCase):
 
         assert response.status_code == 200
         section = response.content.decode().split('data-inline-formset="components"', 1)[1]
-        assert '>Ações</th>' in section
-        assert '>Excluir</th>' not in section
+        assert 'resource-inline-formset__form' in section
+        assert '<table' not in section
         assert 'data-inline-formset-delete' in section
         assert 'aria-label="Excluir item"' in section
         assert 'feather-trash-2' in section

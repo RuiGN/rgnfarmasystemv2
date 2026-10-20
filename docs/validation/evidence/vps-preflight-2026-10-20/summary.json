@@ -1,0 +1,53 @@
+{
+  "schema": "vps_preflight_summary/v1",
+  "verdict": "HOLD",
+  "target_host": "13.140.139.122",
+  "ssh_user": "deploy",
+  "actual_checkout": "/home/deploy/rgnfarmasystemv2",
+  "head": "d8b179c77787806f463d1d637a526bbdf0436d22",
+  "container_count": 9,
+  "healthy_count": 9,
+  "unchanged_container_identity": true,
+  "dotenv_mode": "0o664",
+  "candidate_source_counts": {
+    "expected_count": 999,
+    "matching": 942,
+    "missing": 14,
+    "different": 43,
+    "refused_symlinks": 0,
+    "unreadable": 0
+  },
+  "current_image_id": "sha256:1afda8b358fa7e8f6b839607ef8398c59d293fe4afacf797cee606c2dce9486e",
+  "latest_backup_metadata": {
+    "postgres-": {
+      "name": "postgres-20261020-030000.sql.gz",
+      "bytes": 114699,
+      "mode": "0o600",
+      "modified_at": "2026-10-20T03:00:01.400654+00:00",
+      "age_hours": 7.171,
+      "symlink": false
+    },
+    "media-": {
+      "name": "media-20261020-030000.tar.gz",
+      "bytes": 105,
+      "mode": "0o600",
+      "modified_at": "2026-10-20T03:00:01.432654+00:00",
+      "age_hours": 7.171,
+      "symlink": false
+    }
+  },
+  "resources": {
+    "cpu_count": 4,
+    "load_average": [
+      1.94482421875,
+      1.591796875,
+      1.49267578125
+    ],
+    "root_free_gib": 182.83,
+    "available_ram_gib": 2.71,
+    "swap_used_gib": 1.3,
+    "host_total_container_count": 50
+  },
+  "mutating_remote_actions": [],
+  "source_snapshot_unchanged": true
+}

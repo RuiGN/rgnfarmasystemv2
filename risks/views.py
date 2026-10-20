@@ -209,6 +209,7 @@ class RiskReviewViewSet(SingleInstanceRiskViewSet):
 
 
 class RiskAlertViewSet(SingleInstanceRiskViewSet):
+    action_permission_map = {'generate': ('risks.add_riskalert',)}
     queryset = RiskAlert.objects.select_related('risk', 'action', 'acknowledged_by')
     serializer_class = RiskAlertSerializer
     filterset_fields = ('risk', 'action', 'alert_type', 'severity', 'status', 'due_date')

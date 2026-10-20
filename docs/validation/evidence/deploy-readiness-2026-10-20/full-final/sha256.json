@@ -1,0 +1,10 @@
+{
+  "dotenv-bootstrap.txt": "a0d08d2fd9e61a01beea2f5803325134440ca3d32c031d882edbb5dda23c2e47",
+  "release-full-coverage.json.gz": "dfe4798acb85bdf40a7def1194f46a4b96b37bfb17fc511163be97939c20ae33",
+  "release-full-coverage.xml.gz": "746d13ab3d3f0d5ef713715de114fb14447e9fe96dcfb5ca081d7c1926eca5a4",
+  "release-full-junit.xml.gz": "79d04ad2d1aed29e8d01dbac61e4a99d58594e222fd8823bc8b35d0a5b9bf645",
+  "release-full-output.log.gz": "ff117a2c5d5cbd016c2f2b28acecabd39114aeeedf7c2f36493889f706ffff76",
+  "run.json": "4c5c5e922ff36691ce758dc45c0617a61536370eb53be739b46fa45d79de2dad",
+  "summary.json": "0530dc5d145c195b02187d714c40b3d0e22c813ff65842575e9a886c7d07a58f",
+  "verification-wrapper.txt": "8a74c12ba83196a08c5bfbea660cdfa1e5aee036045effa5279b59664029b1fd"
+}

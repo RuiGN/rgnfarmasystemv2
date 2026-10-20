@@ -43,12 +43,28 @@ O retorno de sucesso confirma o envio ao socket; não confirma a saída física
 da etiqueta. A operação trabalha sem repetição automática. Em caso de timeout
 ou resultado incerto, verifique a impressora antes de solicitar outra etiqueta.
 
-Interfaces REST:
+### Interface operacional
+
+A ação **Etiqueta** está disponível por linha em **Estoque → Lotes** para
+usuários com `inventory.view_stocklot`, além do detalhe e do cockpit de
+liberação de lote. A listagem calcula essa disponibilidade somente para
+`StockLot`; não há impressão direta a partir de fórmulas ou produtos.
+Cada botão possui seu próprio formulário e token CSRF. O controlador compartilhado
+registra todos os botões e usa a URL e o token da linha selecionada, mantendo
+confirmação explícita, bloqueio do botão durante o envio, feedback textual seguro
+e ausência de repetição automática. Sem JavaScript, o botão não envia impressão.
+
+### Endpoints REST
 
 - `GET|POST /api/integrations/label-printers/` mantém as configurações;
 - `POST /api/inventory/lots/{id}/print_label/` envia a etiqueta do lote;
 - ambas exigem autenticação e permissões Django; chamadas de sessão exigem
   CSRF.
+
+Regressões: `tests/test_direct_label_printing.py` cobre renderização por linha,
+permissões e POST com CSRF; `tests/test_local_printing_js.py` executa os cenários
+de interação em `tests/js/local-printing.test.cjs` com o runner nativo do Node.js.
+Em ambientes sem Node.js, essa última verificação é explicitamente ignorada.
 
 ## Verificação mínima
 

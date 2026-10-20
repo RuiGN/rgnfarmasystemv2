@@ -1,0 +1,58 @@
+{
+  "schema_version": "release_visual_observations/v1",
+  "round": 3,
+  "repository": "/Users/rgnsystems/Documents/rgnfarmasystemv2",
+  "target_revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+  "source_count": 999,
+  "rendered_states": 12,
+  "captures": 24,
+  "required_cells": 24,
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "width": 375,
+      "height": 900
+    }
+  ],
+  "instrumented_interaction_observations": 11,
+  "max_positive_horizontal_overflow": 0,
+  "javascript_errors": 0,
+  "javascript_warnings": 0,
+  "failed_local_resources": 0,
+  "cumulative_fixture_server_methods": {
+    "GET": 1207
+  },
+  "cumulative_fixture_server_statuses": {
+    "200": 1207
+  },
+  "fixed_findings": [
+    {
+      "finding": "Long personal task title and status escaped the card.",
+      "evidence": "personal-assigned-375.png"
+    },
+    {
+      "finding": "Operational summary intersected the primary detail card.",
+      "before": "../visual-qa-round-2/mobile-production-overlap-before-fix.png",
+      "after": "mobile-summary-final.png",
+      "observed_gap_px": 44
+    }
+  ],
+  "score": 94,
+  "verdict": "PASS",
+  "confidence": "medium",
+  "differences": [],
+  "independent_visual_review": {
+    "receipt": "independent-reviews.json",
+    "scores": [94, 93],
+    "verdicts": ["PASS", "PASS"],
+    "boundary": "Independent read-only image reviews of the declared matrix, not new live browser runs or release approval. Four non-blocking UX/copy suggestions retained."
+  },
+  "pixel_diff": "not_assessed: regenerated fixtures have different database sequences/timestamps; geometry and screenshots are the fix evidence",
+  "accessibility": "Observed headings, labels, error associations, visible focus and keyboard path to avatar; not a full WCAG or screen-reader audit.",
+  "motion": "Menu open/closed and settled tab states observed; no frame-by-frame animation-performance claim.",
+  "network_boundary": "Local HTML/assets and browser errors observed. Cross-origin responseStatus=0 is not interpreted as success or failure.",
+  "boundary": "Real Django rendering on isolated synthetic PostgreSQL; served HTML snapshots and real local assets; no live POST endpoints or physical printing."
+}

@@ -39,6 +39,11 @@ STATIC_ANALYSIS_PACKAGES=(
   workflow
 )
 
+node --version
+node --check static/js/resource-form-tabs.js
+node --check static/js/local-printing.js
+node --test tests/js/local-printing.test.cjs
+
 python manage.py check
 python manage.py makemigrations --check --dry-run
 python -m ruff check .

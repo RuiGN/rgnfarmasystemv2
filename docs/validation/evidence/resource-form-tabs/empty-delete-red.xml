@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="8.544" timestamp="2026-10-20T00:35:41.353266-03:00" hostname="macrui.local"><testcase classname="tests.test_resource_form_tabs" name="test_discarded_new_blank_component_does_not_run_model_validation" time="7.246"><failure message="TypeError: '&lt;=' not supported between instances of 'NoneType' and 'int'">tests/test_resource_form_tabs.py:452: in test_discarded_new_blank_component_does_not_run_model_validation
+    response = tab_admin.post(reverse('app:resource_edit', kwargs={
+.venv/lib/python3.14/site-packages/django/test/client.py:1156: in post
+    response = super().post(
+.venv/lib/python3.14/site-packages/django/test/client.py:499: in post
+    return self.generic(
+.venv/lib/python3.14/site-packages/django/test/client.py:671: in generic
+    return self.request(**r)
+           ^^^^^^^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/django/test/client.py:1090: in request
+    self.check_exception(response)
+.venv/lib/python3.14/site-packages/django/test/client.py:805: in check_exception
+    raise exc_value
+.venv/lib/python3.14/site-packages/django/core/handlers/exception.py:55: in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/django/core/handlers/base.py:198: in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/django/views/generic/base.py:106: in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+base/ui/views.py:1972: in dispatch
+    return super(ResourceCreateView, self).dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/django/contrib/auth/mixins.py:74: in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+base/ui/views.py:470: in dispatch
+    return super().dispatch(request, *args, **kwargs)  # type: ignore[misc]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/django/views/generic/base.py:145: in dispatch
+    return handler(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+base/ui/views.py:2003: in post
+    inline_formsets_are_valid = all(
+                                ^^^
+base/ui/views.py:2004: in &lt;genexpr&gt;
+    not inline['available'] or inline['formset'].is_valid() for inline in inline_formsets
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/django/forms/formsets.py:384: in is_valid
+    self.errors
+.venv/lib/python3.14/site-packages/django/forms/formsets.py:366: in errors
+    self.full_clean()
+.venv/lib/python3.14/site-packages/django/forms/formsets.py:429: in full_clean
+    form_errors = form.errors
+                  ^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/django/forms/forms.py:201: in errors
+    self.full_clean()
+.venv/lib/python3.14/site-packages/django/forms/forms.py:339: in full_clean
+    self._post_clean()
+base/ui/views.py:123: in _post_clean
+    super()._post_clean()
+.venv/lib/python3.14/site-packages/django/forms/models.py:503: in _post_clean
+    self.instance.full_clean(
+.venv/lib/python3.14/site-packages/django/db/models/base.py:1687: in full_clean
+    self.clean()
+formulations/models.py:194: in clean
+    if self.quantity &lt;= 0:
+       ^^^^^^^^^^^^^^^^^^
+E   TypeError: '&lt;=' not supported between instances of 'NoneType' and 'int'</failure></testcase></testsuite></testsuites>

@@ -30,22 +30,17 @@
                                             {% for field in inline_form.visible_fields %}
                                                 {% if field.name == 'DELETE' %}
                                                     <div class="form-field form-field-inline">
-                                                        <label for="{{ field.id_for_label }}" class="form-label">{{ field }} Remover</label>
+                                                        <label class="form-check-label" for="{{ field.id_for_label }}" data-inline-delete-fallback>{{ field }} Remover</label>
+                                                        <button type="button" class="btn btn-icon btn-outline-danger" data-inline-formset-delete data-inline-delete-action aria-label="Excluir item" title="Excluir item">
+                                                            <i class="feather-trash-2" aria-hidden="true"></i>
+                                                            <span class="visually-hidden">Excluir item</span>
+                                                        </button>
                                                         {% if field.errors %}
                                                             <span class="invalid-feedback d-block field-error" id="{{ field.id_for_label }}_errors" role="alert">{{ field.errors }}</span>
                                                         {% endif %}
                                                     </div>
                                                 {% else %}
-                                                    <div class="form-field {{ field.field.rgn_layout_class }}{% if field.field.widget.input_type == 'checkbox' %} form-field-inline{% endif %}">
-                                                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                                                        {{ field }}
-                                                        {% if field.help_text %}
-                                                            <span class="field-help" id="{{ field.id_for_label }}_help">{{ field.help_text }}</span>
-                                                        {% endif %}
-                                                        {% if field.errors %}
-                                                            <span class="invalid-feedback d-block field-error" id="{{ field.id_for_label }}_errors" role="alert">{{ field.errors }}</span>
-                                                        {% endif %}
-                                                    </div>
+                                                    {% include 'app/includes/resource_form_field.html' with horizontal=False %}
                                                 {% endif %}
                                             {% endfor %}
                                         </div>
@@ -61,16 +56,14 @@
                                         {% for field in inline.formset.empty_form.visible_fields %}
                                             {% if field.name == 'DELETE' %}
                                                 <div class="form-field form-field-inline">
-                                                    <label for="{{ field.id_for_label }}" class="form-label">{{ field }} Remover</label>
+                                                    <label class="form-check-label" for="{{ field.id_for_label }}" data-inline-delete-fallback>{{ field }} Remover</label>
+                                                    <button type="button" class="btn btn-icon btn-outline-danger" data-inline-formset-delete data-inline-delete-action aria-label="Excluir item" title="Excluir item">
+                                                        <i class="feather-trash-2" aria-hidden="true"></i>
+                                                        <span class="visually-hidden">Excluir item</span>
+                                                    </button>
                                                 </div>
                                             {% else %}
-                                                <div class="form-field {{ field.field.rgn_layout_class }}{% if field.field.widget.input_type == 'checkbox' %} form-field-inline{% endif %}">
-                                                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                                                    {{ field }}
-                                                    {% if field.help_text %}
-                                                        <span class="field-help" id="{{ field.id_for_label }}_help">{{ field.help_text }}</span>
-                                                    {% endif %}
-                                                </div>
+                                                {% include 'app/includes/resource_form_field.html' with horizontal=False %}
                                             {% endif %}
                                         {% endfor %}
                                     </div>

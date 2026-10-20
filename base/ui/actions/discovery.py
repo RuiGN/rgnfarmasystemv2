@@ -44,7 +44,7 @@ def discover_post_actions() -> tuple[DiscoveredAction, ...]:
         model = viewset.queryset.model
         detail = bool(initkwargs['detail'])
         custom_permissions = getattr(viewset, 'action_permission_map', {}).get(action_name)
-        permissions = tuple(custom_permissions or (_default_permission(model, detail),))
+        permissions = tuple(custom_permissions or (_default_permission(model),))
         route_name = ':'.join((*namespaces, pattern.name))
         discovered.append(
             DiscoveredAction(
@@ -71,6 +71,5 @@ def _walk_patterns(patterns, namespaces=()):
             yield pattern, namespaces
 
 
-def _default_permission(model: type[Model], detail: bool) -> str:
-    action = 'change' if detail else 'add'
-    return f'{model._meta.app_label}.{action}_{model._meta.model_name}'
+def _default_permission(model: type[Model]) -> str:
+    return f'{model._meta.app_label}.change_{model._meta.model_name}'

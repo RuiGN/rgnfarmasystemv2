@@ -1,0 +1,51 @@
+{
+  "head_sha": "d8b179c77787806f463d1d637a526bbdf0436d22",
+  "source_sha256": {
+    "base/ui/views.py": "6865be9c192a928cb043ac3909d80d70d3c843e3bea4f87de2afc173461e7c5b",
+    "templates/app/resource_list.html": "1094b8d7ac7538ecaca09540dda8a3bf6693002f14849d6ac3b76595685bde56",
+    "static/js/local-printing.js": "1cd7b7cbeb8c03c1c80851a3651998a8f2220665c359c847fd6ae3f3dae2f9e2",
+    "tests/test_direct_label_printing.py": "00a6b89690fc4013e2c04b4a9e7cc1b35ea5cd79d3a7a24a726d558631dd96ad",
+    "tests/test_local_printing_js.py": "6e3b398c330063b9315e940ce85aec24fba629baceb1e182c6ce2f4052611f83",
+    "tests/js/local-printing.test.cjs": "3e2aa276887523cc98043b4b1fe3bdaec8bfdeaef9192fd0a4f14163e7384a9e",
+    "docs/architecture/integrations.md": "505aea011a66b18e8696f6984dba49fa72e386a4018cbef8ffc1918ce347b554",
+    "docs/pdf/manual_usuario.md": "de37431b9ac25215b55e3a802c2b9328cbcdec291f8dd9352367c0e25b615be4",
+    "docs/validation/direct-label-printing-acceptance.md": "7089567880643c14d137c5f955226bc49d1b069df2743f9aade6d239e78489bd",
+    "docs/validation/lot-list-label-printing.md": "83b416c0d70e1cba8cd9254642dbd16dca0cde0a541369df312bc9b637cfee7f"
+  },
+  "artifact_sha256": {
+    "browser-checks.json": "4e4d6807fea07bd368bc7c63faba817cb1e61cc0db6795e910f97afb5779d96a",
+    "directed-junit.xml": "aee9bcc4aefc822b667714633d8541f01032807a6d473ba23ad09241a88bfc91",
+    "generic-ui-junit.xml": "ac60277776d4a75ff4d692b716f89ec2ce1d4933979ea758cf6e48df2b149edc",
+    "list-1440.png": "dac6dec8fb07ba0a67da4d30a3c34e3eb8c6be3cc71454d52b3f544b45b9caba",
+    "list-320.png": "d52e0964f167cad3ee53286c842c78a9055cc26b6c351d6b93ec4699bb1a0a01",
+    "list-red.xml": "ce969f3a2c48e900ecfe29bd63572e6232048ef7c1ab2a9331f69a4fe06d9db5",
+    "review.json": "a22111dc481987ca1bb925845a6470b68c3d582dfb9cc6aa4e0270788ecd28ee",
+    "served-1440.png": "dac6dec8fb07ba0a67da4d30a3c34e3eb8c6be3cc71454d52b3f544b45b9caba",
+    "served-320.png": "683d9779aeaabf33cd961f909e120b42fd8ec6751c35c8c7d488fec6fcec12ac",
+    "served-surface-checks.json": "9640e6a074c4ede237c9448c52f3dd2ba08f6da6338242e29ef81cd55efaa1bc"
+  },
+  "directed_pytest": {
+    "tests": 71,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "node_behavior_cases": 10,
+  "node_cases_included_by_one_pytest_wrapper": true,
+  "browser": {
+    "checks": 9,
+    "all_passed": true,
+    "transport": "explicitly simulated in saved Django-rendered QA fixtures"
+  },
+  "generic_ui": {
+    "passed": 5,
+    "failed": 3,
+    "all_failure_ids_present_in_prior_full_junit": true
+  },
+  "cleanup": {
+    "fixture_records_rolled_back": true,
+    "loopback_port_8766_closed": true
+  },
+  "physical_printing": "not attempted; no API/printer connection in browser QA",
+  "release_approval": false
+}

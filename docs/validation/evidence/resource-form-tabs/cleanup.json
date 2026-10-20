@@ -1,0 +1,10 @@
+{
+  "qa_server_stopped": true,
+  "qa_database_removed": true,
+  "scope": "synthetic loopback QA only",
+  "full_suite_databases_removed": [
+    "test_rgn_tabs_full_20261020",
+    "test_rgn_tabs_full_final_20261020"
+  ],
+  "full_suite_cleanup_verified": true
+}

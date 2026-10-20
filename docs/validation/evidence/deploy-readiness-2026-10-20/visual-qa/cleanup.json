@@ -1,0 +1,6 @@
+{
+  "loopback_port": 8767,
+  "closed": true,
+  "synthetic_database_fixtures_rolled_back": true,
+  "no_operational_endpoints": true
+}

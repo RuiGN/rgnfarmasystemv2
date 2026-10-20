@@ -1,0 +1,75 @@
+{
+  "passed": true,
+  "findings": [
+    {
+      "evidence_id": "EV-CSV-001",
+      "status": "pass",
+      "message": "Evidência íntegra e aprovada."
+    },
+    {
+      "evidence_id": "EV-SI-001",
+      "status": "pass",
+      "message": "Evidência íntegra e aprovada."
+    },
+    {
+      "evidence_id": "EV-SI-002",
+      "status": "pass",
+      "message": "Evidência íntegra e aprovada."
+    },
+    {
+      "evidence_id": "EV-SI-003",
+      "status": "pass",
+      "message": "Evidência íntegra e aprovada."
+    },
+    {
+      "evidence_id": "EV-SI-004",
+      "status": "pass",
+      "message": "Evidência íntegra e aprovada."
+    },
+    {
+      "evidence_id": "EV-SI-005",
+      "status": "pass",
+      "message": "Evidência íntegra e aprovada."
+    },
+    {
+      "evidence_id": "EV-SI-006",
+      "status": "pass",
+      "message": "Evidência íntegra e aprovada."
+    },
+    {
+      "evidence_id": "EV-SI-008",
+      "status": "pass",
+      "message": "Evidência íntegra e aprovada."
+    },
+    {
+      "evidence_id": "EV-SI-009",
+      "status": "pass",
+      "message": "Evidência íntegra e aprovada."
+    },
+    {
+      "evidence_id": "EV-SI-010",
+      "status": "pass",
+      "message": "Evidência íntegra e aprovada."
+    },
+    {
+      "evidence_id": "EV-SIA-ADMIN",
+      "status": "pass",
+      "message": "Evidência íntegra e aprovada."
+    },
+    {
+      "evidence_id": "EV-SIA-ACTION-253",
+      "status": "pass",
+      "message": "Evidência íntegra e aprovada."
+    },
+    {
+      "evidence_id": "EV-SIA-ACTION-258",
+      "status": "pass",
+      "message": "Evidência íntegra e aprovada."
+    },
+    {
+      "evidence_id": "EV-SIA-PTBR",
+      "status": "pass",
+      "message": "Evidência íntegra e aprovada."
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "python": "3.14.7",
+  "django": "6.0.8",
+  "platform": "macOS-26.7.2-x86_64-i386-64bit-Mach-O",
+  "node": "v24.21.0",
+  "shell_test_image_id": "sha256:299626c308433c66f4895d728b7432bf09deb578afddb84a51d8d04d70bf3b02",
+  "production_image_python": "3.14.8",
+  "production_image_django": "6.0.8",
+  "fingerprint": "sha256:a53894b28d36346cc1c17bce22c3ab2e27aa2ac8e1485bc9a4525b6cd70ac49a"
+}

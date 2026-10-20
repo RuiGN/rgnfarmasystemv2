@@ -1,0 +1,89 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "code": "settings.allowed_hosts_env_list",
+      "title": "ALLOWED_HOSTS por .env",
+      "status": "pass",
+      "evidence": "core/settings/base.py usa env.list para ALLOWED_HOSTS."
+    },
+    {
+      "code": "settings.csrf_trusted_origins_env_list",
+      "title": "CSRF_TRUSTED_ORIGINS por .env",
+      "status": "pass",
+      "evidence": "core/settings/base.py usa env.list para CSRF_TRUSTED_ORIGINS."
+    },
+    {
+      "code": "settings.secure_proxy_ssl_header",
+      "title": "Proxy SSL atras do Nginx e Cloudflare Tunnel",
+      "status": "pass",
+      "evidence": "SECURE_PROXY_SSL_HEADER e SECURE_SSL_REDIRECT estao configurados."
+    },
+    {
+      "code": "entrypoint.app_startup_order",
+      "title": "Startup ordenado do app",
+      "status": "pass",
+      "evidence": "entrypoint.sh executa wait_for_db, migrate_with_lock e collectstatic --noinput --clear."
+    },
+    {
+      "code": "entrypoint.worker_startup_scope",
+      "title": "Startup isolado dos workers",
+      "status": "pass",
+      "evidence": "worker-entrypoint.sh aguarda banco e migrations aplicadas sem executar migrations nem collectstatic."
+    },
+    {
+      "code": "docker_compose.vps_resilience",
+      "title": "Resiliencia do Compose VPS",
+      "status": "pass",
+      "evidence": "Todos os servicos da VPS possuem healthcheck e restart; deploy preserva backup e rollback de codigo."
+    },
+    {
+      "code": "docker_compose.vps_network_isolation",
+      "title": "Isolamento da rede de producao",
+      "status": "pass",
+      "evidence": "Banco, filas, cache, app e workers ficam na rede backend; apenas Nginx usa loopback do host."
+    },
+    {
+      "code": "cloudflare_tunnel.readiness",
+      "title": "Prontidao do Cloudflare Tunnel",
+      "status": "pass",
+      "evidence": "O conector expoe /ready apenas no loopback e o deploy valida origem, conector e dominio publico."
+    },
+    {
+      "code": "docker_compose.local_services",
+      "title": "Servicos locais minimos",
+      "status": "pass",
+      "evidence": "docker-compose.yml contem app, db, redis, rabbitmq, celery_worker, celery_beat e depends_on healthy."
+    },
+    {
+      "code": "startup.initial_migration_window",
+      "title": "Janela de primeira inicializacao",
+      "status": "pass",
+      "evidence": "App e workers possuem janela minima de 600s para migrations iniciais; workers aguardam ate 900s."
+    },
+    {
+      "code": "ui.responsive_design_system",
+      "title": "UI responsiva alinhada ao design system",
+      "status": "pass",
+      "evidence": "Shell usa assets/classes Duralux e CSS local preserva o espacamento nativo do main responsivo."
+    },
+    {
+      "code": "async.celery_services",
+      "title": "Processamento assincrono",
+      "status": "pass",
+      "evidence": "Celery configurado com celery_worker e celery_beat nos perfis local e VPS, aguardando migrations sem executa-las."
+    },
+    {
+      "code": "api.filter_pagination_performance",
+      "title": "Filtros e paginacao padrao",
+      "status": "pass",
+      "evidence": "DRF usa DjangoFilterBackend e paginacao padrao para listas empresariais."
+    },
+    {
+      "code": "docs.deployment_and_backup",
+      "title": "Documentacao e scripts operacionais",
+      "status": "pass",
+      "evidence": "Deploy Compose single-domain, Cloudflare Tunnel, backup PostgreSQL/media, rotacao e restore dry-run estao documentados ou scriptados."
+    }
+  ]
+}

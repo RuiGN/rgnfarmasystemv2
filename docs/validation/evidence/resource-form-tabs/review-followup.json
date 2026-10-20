@@ -1,0 +1,29 @@
+{
+  "source_delegation": "deleg_0fe099fe",
+  "source_model": "gpt-6.1-sol",
+  "report_contract": "The older summary used a nonstandard verdict and confidence shape; retained as a finding lead, not a schema-valid ship/no_ship verdict.",
+  "finding": {
+    "priority": "P2",
+    "path": "templates/app/includes/inline_stacked.html",
+    "scope": "Persisted forms and empty_form DELETE controls",
+    "issue": "Permanent d-none hid the native DELETE checkbox without page JavaScript."
+  },
+  "verification": {
+    "red": "native-delete-red.xml",
+    "green": "directed-junit.xml",
+    "green_tests": 101,
+    "browser": "browser-final.json",
+    "browser_checks": 24,
+    "native_flow": "With page scripts disabled: visible labeled checkbox, hidden enhanced button, native mouse click, valid form submission, HTTP redirect and GET readback with INITIAL_FORMS=0.",
+    "parent_observed": true
+  },
+  "resolution": {
+    "native_label": "Remover",
+    "enhancement_marker": "data-inline-ready",
+    "marker_owner": "Shared resource_form click handler, after registration",
+    "other_consumers": "Without that handler, including resource_execution_board, keep the native checkbox.",
+    "code_fingerprint": "a2a35a1ff3b84114cd48662e787c5fcf94a2ad4463e7a41bf9e5ea46884ae464",
+    "independent_delta_review": "deleg_9aa7d503: ship, high confidence, no findings for this delta; no release approval. See review-delta.json."
+  },
+  "snapshot_note": "This follow-up records the native-checkbox correction at its historical fingerprint; current artifacts supersede its 101/24 counts. See manifest.json and the subsequent Bootstrap follow-up."
+}

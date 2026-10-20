@@ -37,17 +37,21 @@ jobs:
       CSRF_TRUSTED_ORIGINS: https://app.example.invalid
       CUSTOMER_APP_BASE_URL: https://app.example.invalid
       DATA_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      SECURE_HSTS_SECONDS: "31536000"
+      SECURE_HSTS_INCLUDE_SUBDOMAINS: "True"
+      SECURE_HSTS_PRELOAD: "True"
       RELEASE_VERSION: ${{ inputs.version || github.ref_name }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with: {python-version: '3.14'}
-      - run: pip install -r requirements.txt
-      - run: pytest -q
-      - run: python manage.py check
-      - run: python manage.py makemigrations --check --dry-run
-      - run: python manage.py spectacular --file openapi-schema.yml --validate --fail-on-warn
-      - run: python manage.py check_release_readiness --fail-on-error
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - run: pip install --requirement requirements-dev.txt
+      - name: Run complete quality gate
+        run: bash scripts/ci/quality-gate.sh
       - run: bash scripts/release_gate.sh "$RELEASE_VERSION"
 
   build:

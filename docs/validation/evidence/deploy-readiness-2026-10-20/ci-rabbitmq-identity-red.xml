@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.181" timestamp="2026-10-20T04:33:10.866135-03:00" hostname="macrui.local"><testcase classname="tests.test_rabbitmq_healthcheck_identity" name="test_rabbitmq_healthcheck_uses_broker_identity_before_startup[.github/workflows/quality.yml]" time="0.011"><failure message="AssertionError: assert ['rabbitmq-di... '-q', 'ping'] == ['su-exec', '... '-q', 'ping']&#10;  &#10;  At index 0 diff: 'rabbitmq-diagnostics' != 'su-exec'&#10;  Right contains 2 more items, first extra item: '-q'&#10;  Use -v to get more diff">tests/test_rabbitmq_healthcheck_identity.py:30: in test_rabbitmq_healthcheck_uses_broker_identity_before_startup
+    assert command == ['su-exec', 'rabbitmq', 'rabbitmq-diagnostics', '-q', 'ping']
+E   AssertionError: assert ['rabbitmq-di... '-q', 'ping'] == ['su-exec', '... '-q', 'ping']
+E     
+E     At index 0 diff: 'rabbitmq-diagnostics' != 'su-exec'
+E     Right contains 2 more items, first extra item: '-q'
+E     Use -v to get more diff</failure></testcase></testsuite></testsuites>

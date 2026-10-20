@@ -1,0 +1,36 @@
+{
+  "schema": "vps_preflight_review_followup/v1",
+  "delegation_id": "deleg_34c17b04",
+  "independent_verdict_original": "REVISE",
+  "scope": "Read-only review of the two reports and preserved JSON/text evidence; no SSH, scripts, DB, dotenv or network execution by the reviewer.",
+  "findings": [
+    {
+      "id": "DOC-P2-01",
+      "severity": "P2",
+      "finding": "Local readiness report denied production access for the whole session despite the later authorized read-only VPS audit.",
+      "target": "docs/validation/deploy-readiness-2026-10-20.md",
+      "parent_change": "Delimited the earlier local revalidation and explicitly acknowledged the subsequent read-only VPS access; retained no deploy/no rollback rehearsal boundary.",
+      "state": "documentation_change_applied"
+    },
+    {
+      "id": "DOC-P3-01",
+      "severity": "P3",
+      "finding": "Claim that every SSH command was linked exceeded the three preserved main probes; initial access/discovery commands were not in that receipt.",
+      "target": "docs/validation/vps-preflight-2026-10-20.md",
+      "parent_change": "Limited the coverage claim to the three main preserved probes and explicitly documented the discovery/exit1 trace gap; did not reconstruct absent receipts.",
+      "state": "documentation_change_applied"
+    }
+  ],
+  "independent_observations": [
+    "Nine healthy/running containers, stable IDs and zero restart counts in the preserved captures.",
+    "HTTP200 and public curl TLS verification results supported by the receipts.",
+    "Remote dotenv0664 observed through metadata, without content reads in preserved probes.",
+    "942 matching,43 differing and14 absent sources reconcile to999.",
+    "Backup evidence remains partial; no archive checksum recomputation or restore claimed.",
+    "The original ten artifact hashes checked by the reviewer matched.",
+    "No explicit secrets or unauthorized mutation commands identified in the reviewed material."
+  ],
+  "independent_rereview_after_parent_changes": false,
+  "production_verdict": "HOLD",
+  "boundary": "Documentary corrections are verified by the parent separately; the independent REVISE is preserved and not relabeled PASS."
+}

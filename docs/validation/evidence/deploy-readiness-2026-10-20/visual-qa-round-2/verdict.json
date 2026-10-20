@@ -1,0 +1,13 @@
+{
+  "score": 82,
+  "verdict": "REVISE",
+  "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+  "differences": [
+    {
+      "difference": "The mobile operational summary overlaps the data card by 303.796875 pixels vertically.",
+      "suggestion": "Remove forced stretch heights from both profile and summary, then recapture the same detail and tab interactions."
+    }
+  ],
+  "evidence": "mobile-production-overlap-before-fix.png",
+  "console_boundary": "An absent collector was not independent console evidence; final round explicitly asserts collector installation."
+}
