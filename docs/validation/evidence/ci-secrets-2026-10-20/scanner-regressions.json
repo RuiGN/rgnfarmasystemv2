@@ -1,0 +1,139 @@
+{
+  "checked_at": "2026-10-20T11:23:13.309942+00:00",
+  "status": "PASS",
+  "real_scanner_cases": [
+    {
+      "label": "approved-history-green",
+      "command": [
+        "gitleaks",
+        "git",
+        "/Users/rgnsystems/Documents/rgnfarmasystemv2",
+        "--config",
+        "/Users/rgnsystems/Documents/rgnfarmasystemv2/.gitleaks.toml",
+        "--gitleaks-ignore-path",
+        "/Users/rgnsystems/Documents/rgnfarmasystemv2/.gitleaksignore",
+        "--redact=100",
+        "--no-banner",
+        "--no-color",
+        "--report-format",
+        "json",
+        "--report-path",
+        "/Users/rgnsystems/.hermes/cache/scratch/ci-secrets-approved-history-green.json",
+        "--log-opts=d8b179c77787806f463d1d637a526bbdf0436d22..HEAD"
+      ],
+      "exit_status": 0,
+      "finding_count": 0,
+      "rules": {},
+      "unapproved_commit_detected": false
+    },
+    {
+      "label": "directory-still-rejects",
+      "command": [
+        "gitleaks",
+        "dir",
+        "/Users/rgnsystems/.hermes/cache/scratch/ci-secrets-regression-6yydh23b",
+        "--config",
+        "/Users/rgnsystems/Documents/rgnfarmasystemv2/.gitleaks.toml",
+        "--gitleaks-ignore-path",
+        "/Users/rgnsystems/.hermes/cache/scratch/ci-secrets-regression-6yydh23b/.gitleaksignore",
+        "--redact=100",
+        "--no-banner",
+        "--no-color",
+        "--report-format",
+        "json",
+        "--report-path",
+        "/Users/rgnsystems/.hermes/cache/scratch/ci-secrets-directory-still-rejects.json"
+      ],
+      "exit_status": 1,
+      "finding_count": 20,
+      "rules": {
+        "generic-api-key": 20
+      },
+      "unapproved_commit_detected": false
+    },
+    {
+      "label": "other-commit-still-rejects",
+      "command": [
+        "gitleaks",
+        "git",
+        "/Users/rgnsystems/.hermes/cache/scratch/ci-secrets-regression-6yydh23b",
+        "--config",
+        "/Users/rgnsystems/Documents/rgnfarmasystemv2/.gitleaks.toml",
+        "--gitleaks-ignore-path",
+        "/Users/rgnsystems/.hermes/cache/scratch/ci-secrets-regression-6yydh23b/.gitleaksignore",
+        "--redact=100",
+        "--no-banner",
+        "--no-color",
+        "--report-format",
+        "json",
+        "--report-path",
+        "/Users/rgnsystems/.hermes/cache/scratch/ci-secrets-other-commit-still-rejects.json",
+        "--log-opts=HEAD"
+      ],
+      "exit_status": 1,
+      "finding_count": 20,
+      "rules": {
+        "generic-api-key": 20
+      },
+      "unapproved_commit_detected": true
+    },
+    {
+      "label": "changed-value-still-rejects",
+      "command": [
+        "gitleaks",
+        "git",
+        "/Users/rgnsystems/.hermes/cache/scratch/ci-secrets-regression-6yydh23b",
+        "--config",
+        "/Users/rgnsystems/Documents/rgnfarmasystemv2/.gitleaks.toml",
+        "--gitleaks-ignore-path",
+        "/Users/rgnsystems/.hermes/cache/scratch/ci-secrets-regression-6yydh23b/.gitleaksignore",
+        "--redact=100",
+        "--no-banner",
+        "--no-color",
+        "--report-format",
+        "json",
+        "--report-path",
+        "/Users/rgnsystems/.hermes/cache/scratch/ci-secrets-changed-value-still-rejects.json",
+        "--log-opts=HEAD^..HEAD"
+      ],
+      "exit_status": 1,
+      "finding_count": 1,
+      "rules": {
+        "generic-api-key": 1
+      },
+      "unapproved_commit_detected": true
+    },
+    {
+      "label": "other-rule-still-rejects",
+      "command": [
+        "gitleaks",
+        "git",
+        "/Users/rgnsystems/.hermes/cache/scratch/ci-secrets-regression-6yydh23b",
+        "--config",
+        "/Users/rgnsystems/Documents/rgnfarmasystemv2/.gitleaks.toml",
+        "--gitleaks-ignore-path",
+        "/Users/rgnsystems/.hermes/cache/scratch/ci-secrets-regression-6yydh23b/.gitleaksignore",
+        "--redact=100",
+        "--no-banner",
+        "--no-color",
+        "--report-format",
+        "json",
+        "--report-path",
+        "/Users/rgnsystems/.hermes/cache/scratch/ci-secrets-other-rule-still-rejects.json",
+        "--log-opts=HEAD^..HEAD"
+      ],
+      "exit_status": 1,
+      "finding_count": 1,
+      "rules": {
+        "github-pat": 1
+      },
+      "unapproved_commit_detected": true
+    }
+  ],
+  "policy_unchanged": true,
+  "previous_ignore_bytes_unchanged": 2398,
+  "default_rules_disabled": false,
+  "new_exceptions_commit": "36a5cd694de9c39876057f96e3220f26d9c97daa",
+  "fixture_data": "inert public hashes and unissued token-shaped canary; scratch only",
+  "no_credentials_or_dotenv_read": true
+}

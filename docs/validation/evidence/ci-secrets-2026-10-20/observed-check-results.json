@@ -1,0 +1,53 @@
+{
+  "schema": "observed_check_results/v1",
+  "checked_at": "2026-10-20T11:24:58.567311+00:00",
+  "source_snapshot_entries": 999,
+  "changed_source_paths": [
+    "tests/test_gitleaks_commit_hash_exceptions.py"
+  ],
+  "tests_red": {
+    "command": ".venv/bin/python -m unittest tests.test_gitleaks_commit_hash_exceptions",
+    "exit_status": 1,
+    "tests": 13,
+    "failures": 6,
+    "errors": 0,
+    "origin": "introduced",
+    "basis": "new expected exact fingerprints absent before ignore append; output retained in scratch"
+  },
+  "checks": [
+    {
+      "command": ".venv/bin/python -m unittest tests.test_gitleaks_commit_hash_exceptions",
+      "source": "this checkout",
+      "exit_status": 0,
+      "summary": ".............\n----------------------------------------------------------------------\nRan 13 tests in 0.081s\n\nOK",
+      "scope": "CI-secret correction only; not a full-suite rerun",
+      "freshness": "2026-10-20T11:24:58.567311+00:00"
+    },
+    {
+      "command": ".venv/bin/ruff check tests/test_gitleaks_commit_hash_exceptions.py",
+      "source": "this checkout",
+      "exit_status": 0,
+      "summary": "All checks passed!",
+      "scope": "CI-secret correction only; not a full-suite rerun",
+      "freshness": "2026-10-20T11:24:58.567311+00:00"
+    },
+    {
+      "command": ".venv/bin/ruff format --check tests/test_gitleaks_commit_hash_exceptions.py",
+      "source": "this checkout",
+      "exit_status": 0,
+      "summary": "1 file already formatted",
+      "scope": "CI-secret correction only; not a full-suite rerun",
+      "freshness": "2026-10-20T11:24:58.567311+00:00"
+    },
+    {
+      "command": "git diff --check",
+      "source": "this checkout",
+      "exit_status": 0,
+      "summary": "",
+      "scope": "CI-secret correction only; not a full-suite rerun",
+      "freshness": "2026-10-20T11:24:58.567311+00:00"
+    }
+  ],
+  "full_suite_current_tree": "not_run_locally; exact-head CI required",
+  "generated_artifact_map": "map_not_declared"
+}
