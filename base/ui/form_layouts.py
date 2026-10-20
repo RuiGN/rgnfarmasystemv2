@@ -2,13 +2,39 @@
 
 from typing import Any
 
+from .form_tab_groups import FORM_TAB_GROUPS
+
+
+def _domain_parent_tabs(resource, fields):
+    groups = FORM_TAB_GROUPS.get((resource.app_label, resource.slug), ())
+    # First assignment wins, even if a future declaration accidentally repeats a name.
+    owners = {}
+    for key, _label, names in groups:
+        for name in names:
+            owners.setdefault(name, key)
+    tabs = [
+        {
+            'key': key,
+            'label': label,
+            'fields': [field for field in fields if owners.get(field.name, 'general') == key],
+            'inline': None,
+        }
+        for key, label, _names in groups
+    ]
+    tabs = [tab for tab in tabs if tab['fields']]
+    # Sparse/authorized forms keep their existing general layout, not empty panels.
+    if len(tabs) < 2 or tabs[0]['key'] != 'general':
+        return []
+    return tabs
+
 
 def build_resource_form_layout(resource, form, inline_formsets):
     is_formula = (resource.app_label, resource.slug) == ('formulations', 'formulas')
-    if not is_formula and not inline_formsets:
+    fields = list(form.visible_fields())
+    parent_tabs = [] if is_formula else _domain_parent_tabs(resource, fields)
+    if not is_formula and not inline_formsets and not parent_tabs:
         return {'form_tabs': [], 'active_form_tab': ''}
 
-    fields = list(form.visible_fields())
     tabs: list[dict[str, Any]]
     if is_formula:
         tabs = [
@@ -27,7 +53,9 @@ def build_resource_form_layout(resource, form, inline_formsets):
         ]
         main_key = 'formula'
     else:
-        tabs = [{'key': 'general', 'label': 'Informações gerais', 'fields': fields, 'inline': None}]
+        tabs = parent_tabs or [
+            {'key': 'general', 'label': 'Informações gerais', 'fields': fields, 'inline': None}
+        ]
         main_key = 'general'
 
     for item in inline_formsets:

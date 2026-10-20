@@ -6,15 +6,14 @@
 {% block page_header %}
 <div class="page-header" id="section-0">
     <div class="page-header-left d-flex align-items-center">
-        <div class="page-header-title">
-            <h5 class="m-b-10">{{ module.label }}</h5>
-            <p class="text-muted fs-12 mb-0">Visão geral do módulo e catálogo de recursos autorizados</p>
-        </div>
         <ul class="breadcrumb mb-0 ms-md-4">
             <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Início</a></li>
             <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
             <li class="breadcrumb-item">{{ module.label }}</li>
         </ul>
+        <div class="page-header-title">
+            <h5 class="m-b-10">{{ module.label }}</h5>
+        </div>
     </div>
     <div class="page-header-right ms-auto">
         <a href="{% url 'app:index' %}" class="btn btn-sm btn-light-brand d-inline-flex align-items-center gap-2">

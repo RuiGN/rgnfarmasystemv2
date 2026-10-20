@@ -6,9 +6,6 @@
 {% block page_header %}
 <div class="page-header" id="section-0">
     <div class="page-header-left d-flex align-items-center">
-        <div class="page-header-title">
-            <h5 class="m-b-10">{{ partner.code }} - {{ partner.legal_name }}</h5>
-        </div>
         <ul class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Início</a></li>
             <li class="breadcrumb-item"><a href="{% url 'app:module' module.slug %}">{{ module.label }}</a></li>
@@ -16,6 +13,9 @@
             <li class="breadcrumb-item"><a href="{% url 'app:resource_detail' module.slug resource.slug partner.pk %}">Detalhe</a></li>
             <li class="breadcrumb-item">Cockpit do Fornecedor 360°</li>
         </ul>
+        <div class="page-header-title">
+            <h5 class="m-b-10">{{ partner.code }} - {{ partner.legal_name }}</h5>
+        </div>
     </div>
     <div class="page-header-right ms-auto">
         <div class="d-flex align-items-center gap-2">

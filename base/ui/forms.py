@@ -360,10 +360,17 @@ def _apply_widget_metadata(name, field):
     if isinstance(widget, forms.DateInput):
         attrs.pop('type', None)
         widget.input_type = 'date'
+        widget.format = '%Y-%m-%d'
     elif isinstance(widget, forms.DateTimeInput):
-        attrs['type'] = 'datetime-local'
+        attrs.pop('type', None)
+        widget.input_type = 'datetime-local'
+        widget.format = '%Y-%m-%dT%H:%M:%S'
+        attrs.setdefault('step', '1')
     elif isinstance(widget, forms.TimeInput):
-        attrs['type'] = 'time'
+        attrs.pop('type', None)
+        widget.input_type = 'time'
+        widget.format = '%H:%M:%S'
+        attrs.setdefault('step', '1')
     elif isinstance(widget, forms.Textarea):
         attrs.setdefault('rows', '4')
     elif isinstance(field, forms.DecimalField):

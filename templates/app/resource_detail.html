@@ -6,16 +6,15 @@
 {% block page_header %}
 <div class="page-header resource-detail-page-header" id="section-0">
     <div class="page-header-left d-flex align-items-center">
-        <div class="page-header-title">
-            <h5 class="m-b-10">{{ object }}</h5>
-            <p class="text-muted fs-12 mb-0">Dossiê e detalhamento operacional do registro com conformidade regulatória</p>
-        </div>
         <ul class="breadcrumb mb-0 ms-md-4">
             <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Início</a></li>
             <li class="breadcrumb-item"><a href="{% url 'app:module' module.slug %}">{{ module.label }}</a></li>
             <li class="breadcrumb-item"><a href="{% url 'app:resource_list' module.slug resource.slug %}">{{ resource.label }}</a></li>
             <li class="breadcrumb-item">Dossiê</li>
         </ul>
+        <div class="page-header-title">
+            <h5 class="m-b-10">{{ object }}</h5>
+        </div>
     </div>
     <div class="page-header-right ms-auto">
         <div class="page-header-right-items">
