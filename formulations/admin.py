@@ -1,4 +1,5 @@
 from django.contrib import admin
+from formulations.admin_writers import FormulaWriterAdminMixin
 from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from formulations.models import FormulaComponent, ManufacturingRoute, MasterFormula, RouteStep
 
@@ -19,7 +20,9 @@ class FormulaComponentInline(admin.TabularInline):
 
 
 @admin.register(MasterFormula)
-class MasterFormulaAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class MasterFormulaAdmin(
+    FormulaWriterAdminMixin, AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin
+):
     list_display = ('code', 'version', 'product', 'status', 'effective_from', 'effective_to')
     list_filter = ('status', 'product__item_type')
     search_fields = ('code', 'product__code', 'product__description')
@@ -29,7 +32,7 @@ class MasterFormulaAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(FormulaComponent)
-class FormulaComponentAdmin(admin.ModelAdmin):
+class FormulaComponentAdmin(FormulaWriterAdminMixin, admin.ModelAdmin):
     list_display = ('formula', 'line_number', 'material', 'role', 'quantity', 'unit', 'is_active')
     list_filter = ('role', 'is_active')
     search_fields = ('formula__code', 'material__code', 'material__description')

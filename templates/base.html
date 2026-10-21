@@ -197,7 +197,7 @@
         <!-- [ Footer ] end -->
     </main>
     {% block global_rag_chat %}
-        {% if request.user.is_authenticated and perms.knowledge.view_ragchatsession %}
+        {% if not form and request.user.is_authenticated and perms.knowledge.view_ragchatsession %}
             {% include 'includes/rag_chat.html' %}
             <script src="{% static 'js/rag-chat.js' %}" defer></script>
         {% endif %}
@@ -205,6 +205,7 @@
     <script src="{% static 'vendor/duralux/js/vendors.min.js' %}" defer></script>
     <script src="{% static 'vendor/duralux/js/common-init.min.js' %}" defer></script>
     <script src="{% static 'js/app-form-enhancements.js' %}" defer></script>
+    <script src="{% static 'js/related-fields.js' %}" defer></script>
     <script src="{% static 'js/resource-actions.js' %}" defer></script>
     <script src="{% static 'js/global-search.js' %}" defer></script>
     <script src="{% static 'js/command-palette.js' %}" defer></script>

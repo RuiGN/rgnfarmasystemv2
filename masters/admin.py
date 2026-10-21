@@ -1,4 +1,5 @@
 from django.contrib import admin
+from formulations.admin_writers import FormulaWriterAdminMixin
 from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from masters.models import (
     BusinessPartner,
@@ -27,7 +28,7 @@ class MasterCategoryAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(Product)
-class ProductAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class ProductAdmin(FormulaWriterAdminMixin, AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('code', 'description', 'item_type', 'status', 'unit')
     list_filter = ('item_type', 'status', 'requires_quality_release', 'requires_approved_supplier')
     search_fields = ('code', 'description', 'fiscal_ncm')

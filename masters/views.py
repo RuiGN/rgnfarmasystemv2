@@ -2,6 +2,7 @@ from rest_framework import filters, viewsets
 from django_filters.rest_framework import DjangoFilterBackend
 
 from base.permissions import SingleInstanceDjangoModelPermissions
+from formulations.writers import WriterViewSetMixin
 from masters.models import (
     BusinessPartner,
     MasterCategory,
@@ -49,7 +50,7 @@ class MasterCategoryViewSet(SingleInstanceMasterViewSet):
     ordering = ('kind', 'name')
 
 
-class ProductViewSet(SingleInstanceMasterViewSet):
+class ProductViewSet(WriterViewSetMixin, SingleInstanceMasterViewSet):
     queryset = Product.objects.select_related(
         'unit',
         'category',

@@ -22,14 +22,24 @@
                  aria-labelledby="resource-tab-{{ tab.key }}" tabindex="0">
             <div class="card-body p-4">
                 <h2 class="h6 fw-bold mb-4">{{ tab.label }}</h2>
-                {% if tab.key == 'product' %}
-                    <p class="text-muted fs-12">Selecione um produto cadastrado. Os dados cadastrais do produto são mantidos no módulo Cadastros.</p>
+                {% if product_workflow and tab.key == 'formula' %}
+                    {% include 'app/includes/product_formula_selection.html' %}
+                    {% if formula_form %}
+                        {% for field in formula_form.hidden_fields %}{{ field }}{% endfor %}
+                        {% if formula_form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ formula_form.non_field_errors }}</div>{% endif %}
+                    {% endif %}
+                {% endif %}
+                {% if product_workflow and tab.key == 'inline-components' and not tab.inline %}
+                    <p>Selecione e carregue uma fórmula na aba Fórmula mestra para cadastrar seus componentes.</p>
                 {% endif %}
                 {% for field in tab.fields %}
                     {% include 'app/includes/resource_form_field.html' with horizontal=True %}
                 {% endfor %}
                 {% if tab.inline %}
                     {% include 'app/includes/resource_inline_formset.html' with inline=tab.inline %}
+                {% endif %}
+                {% if tab.key == 'inline-components' %}
+                    {% include 'app/includes/component_related_create.html' %}
                 {% endif %}
             </div>
         </section>

@@ -40,11 +40,11 @@ def test_formula_groups_visible_fields_once():
     form = parent_form()
     layout = build_resource_form_layout(resource(), form, [inline()])
     tabs = layout['form_tabs']
-    assert [tab['key'] for tab in tabs] == ['product', 'formula', 'inline-components']
-    assert [field.name for field in tabs[0]['fields']] == ['product']
-    assert [field.name for field in tabs[1]['fields']] == ['version']
+    assert [tab['key'] for tab in tabs] == ['formula', 'inline-components']
+    assert [field.name for field in tabs[0]['fields']] == ['product', 'version']
+    assert tabs[1]['fields'] == []
     assert sum(len(tab['fields']) for tab in tabs) == len(form.visible_fields())
-    assert layout['active_form_tab'] == 'product'
+    assert layout['active_form_tab'] == 'formula'
     assert not form.is_bound
 
 
@@ -114,7 +114,7 @@ def test_valid_bound_child_does_not_get_an_error_badge():
         [child],
     )
     assert layout['form_tabs'][-1]['has_errors'] is False
-    assert layout['active_form_tab'] == 'product'
+    assert layout['active_form_tab'] == 'formula'
 
 
 def test_non_field_parent_error_activates_formula():
@@ -125,7 +125,7 @@ def test_non_field_parent_error_activates_formula():
     form.add_error(None, 'Conflito de versão.')
     layout = build_resource_form_layout(resource(), form, [inline()])
     assert layout['active_form_tab'] == 'formula'
-    assert layout['form_tabs'][1]['has_errors'] is True
+    assert layout['form_tabs'][0]['has_errors'] is True
 
 
 INLINE_RESOURCES = [
@@ -159,11 +159,11 @@ def create_url(module, slug):
     return reverse('app:resource_create', kwargs={'module_slug': module, 'resource_slug': slug})
 
 
-def test_formula_page_renders_three_unique_panels(tab_admin):
+def test_formula_page_renders_two_unique_panels(tab_admin):
     response = tab_admin.get(create_url('formulations', 'formulas'))
     assert response.status_code == 200
     tabs = response.context['form_tabs']
-    assert [tab['key'] for tab in tabs] == ['product', 'formula', 'inline-components']
+    assert [tab['key'] for tab in tabs] == ['formula', 'inline-components']
     html = response.content.decode()
     assert 'data-ui="resource-form-tabs"' in html
     for tab in tabs:
@@ -349,7 +349,7 @@ def formula_case(tab_admin):
 @pytest.mark.parametrize(
     ('field', 'value', 'active'),
     [
-        ('product', '', 'product'),
+        ('product', '', 'formula'),
         ('batch_size', '0', 'formula'),
         ('components-0-quantity', '0', 'inline-components'),
     ],
@@ -410,7 +410,6 @@ def test_edit_and_reuse_preserve_tab_layout_and_locked_fields(tab_admin, formula
         response = tab_admin.get(url)
         assert response.status_code == 200
         assert [tab['key'] for tab in response.context['form_tabs']] == [
-            'product',
             'formula',
             'inline-components',
         ]

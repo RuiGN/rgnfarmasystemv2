@@ -1,7 +1,8 @@
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
-from base.serializer_mixins import ModelSerializerContractMixin
+from base.serializer_mixins import ModelSerializerContractMixin, instance_for_clean
+from formulations.writers import WriterSerializerMixin
 
 from formulations.models import FormulaComponent, ManufacturingRoute, MasterFormula, RouteStep
 
@@ -14,23 +15,11 @@ class SingleInstanceFormulationSerializerMixin(ModelSerializerContractMixin):
             raise serializers.ValidationError(error.message_dict) from error
 
     def _instance_for_clean(self, attrs):
-        model = self.Meta.model
-        if self.instance is None:
-            return model(**attrs)
-
-        values = {}
-        for field in model._meta.concrete_fields:
-            if field.primary_key:
-                continue
-            values[field.name] = attrs.get(field.name, getattr(self.instance, field.name))
-
-        instance = model(**values)
-        instance.pk = self.instance.pk
-        return instance
+        return instance_for_clean(self.Meta.model, self.instance, attrs)
 
 
 class MasterFormulaSerializer(
-    SingleInstanceFormulationSerializerMixin, serializers.ModelSerializer
+    WriterSerializerMixin, SingleInstanceFormulationSerializerMixin, serializers.ModelSerializer
 ):
     is_released = serializers.BooleanField(read_only=True)
 
@@ -72,7 +61,7 @@ class MasterFormulaSerializer(
 
 
 class FormulaComponentSerializer(
-    SingleInstanceFormulationSerializerMixin, serializers.ModelSerializer
+    WriterSerializerMixin, SingleInstanceFormulationSerializerMixin, serializers.ModelSerializer
 ):
     planned_quantity_with_loss = serializers.DecimalField(
         max_digits=14, decimal_places=4, read_only=True

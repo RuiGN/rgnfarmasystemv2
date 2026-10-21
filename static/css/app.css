@@ -1450,6 +1450,30 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
     opacity: 1;
 }
 
+/* Compact date/time editors, with the existing Duralux control styling. */
+.datetime-split {
+    display: grid;
+    gap: .5rem;
+    min-width: 0;
+}
+
+.datetime-split > div,
+.datetime-split .form-control {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.datetime-split__label {
+    display: block;
+    margin-bottom: .25rem;
+    font-size: 12px;
+}
+
+/* Resource actions need readable text without changing vendor styles or inputs. */
+.resource-form .btn {
+    font-size: 12px;
+}
+
 .resource-form-tabs .nav-link {
     white-space: normal;
 }
@@ -1469,6 +1493,7 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
 .resource-form-tabs .resource-form-field .form-select,
 .resource-form-tabs .resource-inline-formset .form-control,
 .resource-form-tabs .resource-inline-formset .form-select {
+    min-width: 0;
     max-width: 100%;
 }
 
@@ -1486,6 +1511,15 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
     .resource-form-tabs > .tab-content > .tab-pane > .card-body,
     .resource-form-tabs .resource-inline-formset > .card-body.p-4 {
         padding: 1rem !important;
+    }
+
+    /* Keep the complete native datetime text and picker inside narrow inlines. */
+    .resource-form-tabs .resource-inline-formset:has(input[type="datetime-local"]) > .card-body.p-4 {
+        padding-inline: 0 !important;
+    }
+
+    .resource-form-tabs .resource-inline-formset:has(input[type="datetime-local"]) [data-inline-formset-form] {
+        padding-inline: .5rem !important;
     }
 
     .resource-form-tabs .resource-inline-formset .form-grid {

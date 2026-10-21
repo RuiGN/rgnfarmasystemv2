@@ -1,0 +1,31 @@
+{% if related_material_form or related_category_form %}
+<div class="border-top mt-4 pt-4">
+    <p class="form-text">Cadastros relacionados são salvos separadamente. Os dados do produto, da fórmula e dos componentes permanecem neste formulário até você usar Salvar.</p>
+    {% if related_category_form %}
+    <details class="mb-3"{% if request.POST.workflow_action == 'create_category' %} open{% endif %}>
+        <summary class="fw-semibold">Cadastrar categoria de material</summary>
+        <div class="mt-3" data-related-editor="category">
+            {% for field in related_category_form.hidden_fields %}{{ field }}{% endfor %}
+            {% if related_category_form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ related_category_form.non_field_errors }}</div>{% endif %}
+            {% for field in related_category_form.visible_fields %}
+                {% include 'app/includes/resource_form_field.html' with horizontal=True %}
+            {% endfor %}
+            <button class="btn btn-light-brand" type="submit" name="workflow_action" value="create_category" formnovalidate>Cadastrar categoria</button>
+        </div>
+    </details>
+    {% endif %}
+    {% if related_material_form %}
+    <details{% if request.POST.workflow_action == 'create_material' %} open{% endif %}>
+        <summary class="fw-semibold">Cadastrar material / componente</summary>
+        <div class="mt-3" data-related-editor="material">
+            {% for field in related_material_form.hidden_fields %}{{ field }}{% endfor %}
+            {% if related_material_form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ related_material_form.non_field_errors }}</div>{% endif %}
+            {% for field in related_material_form.visible_fields %}
+                {% include 'app/includes/resource_form_field.html' with horizontal=True %}
+            {% endfor %}
+            <button class="btn btn-light-brand" type="submit" name="workflow_action" value="create_material" formnovalidate>Cadastrar material</button>
+        </div>
+    </details>
+    {% endif %}
+</div>
+{% endif %}

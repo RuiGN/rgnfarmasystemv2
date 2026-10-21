@@ -163,7 +163,7 @@ class Product(AutoCodeMixin, SingleInstanceModel):
     def is_operationally_available(self):
         if self.status != self.Status.APPROVED:
             return False
-        if not self.unit.is_active:
+        if not self.unit_id or not self.unit.is_active:
             return False
         if self.category and not self.category.is_active:
             return False
@@ -172,7 +172,7 @@ class Product(AutoCodeMixin, SingleInstanceModel):
     def clean(self):
         super().clean()
         errors = {}
-        self._validate_match(errors, 'unit', self.unit)
+        self._validate_match(errors, 'unit', self.unit if self.unit_id else None)
         self._validate_category(errors, 'category', self.category, MasterCategory.Kind.CATEGORY)
         self._validate_category(
             errors,

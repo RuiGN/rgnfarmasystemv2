@@ -8,6 +8,7 @@ from django.db.models import URLField
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 
 from base.automatic_fields import automatic_generated_fields
+from base.ui.related_fields import configure_related_fields, validate_related_fields
 from finance.models import FinancialAccount, FinancialTitle
 
 
@@ -512,23 +513,19 @@ def build_resource_form(resource, *, update=False):
                 else:
                     field.required = False
                     field.initial = None
+                    field.widget = forms.HiddenInput()
                     field.help_text = 'Gerado automaticamente pelo sistema ao salvar.'
-                    field.widget.attrs['placeholder'] = 'Gerado automaticamente ao salvar'
 
             for name, field in self.fields.items():
                 _apply_widget_metadata(name, field)
 
-            if request is None:
-                return
+            if request is not None:
+                for field in self.fields.values():
+                    queryset = getattr(field, 'queryset', None)
+                    if queryset is not None and queryset.model is User:
+                        field.queryset = queryset.filter(is_active=True)
 
-            for field in self.fields.values():
-                queryset = getattr(field, 'queryset', None)
-                if queryset is None:
-                    continue
-
-                model = queryset.model
-                if model is User:
-                    field.queryset = queryset.filter(is_active=True)
+            configure_related_fields(self)
 
         def _get_validation_exclusions(self):
             exclusions = super()._get_validation_exclusions()
@@ -566,6 +563,7 @@ def build_resource_form(resource, *, update=False):
 
         def clean(self):
             cleaned_data = super().clean()
+            validate_related_fields(self, cleaned_data)
             if resource.model is FinancialTitle and 'original_amount' in cleaned_data:
                 # Model.clean runs in _post_clean, before save can derive this.
                 # This is validation-only; the locked model derives it again.

@@ -40,9 +40,10 @@ STATIC_ANALYSIS_PACKAGES=(
 )
 
 node --version
-node --check static/js/resource-form-tabs.js
-node --check static/js/local-printing.js
-node --test tests/js/local-printing.test.cjs
+for script in static/js/*.js; do
+  node --check "$script"
+done
+node --test tests/js/*.test.cjs
 
 python manage.py check
 python manage.py makemigrations --check --dry-run

@@ -55,6 +55,9 @@
             }, true);
 
             form.addEventListener('submit', function (event) {
+                // Separate server actions preserve the principal editor, even
+                // when its required fields are intentionally still incomplete.
+                if (event.submitter && event.submitter.formNoValidate) return;
                 if (form.checkValidity()) return;
                 event.preventDefault();
                 event.stopImmediatePropagation();

@@ -132,7 +132,16 @@ def test_selected_domain_create_http_preserves_field_and_management_identity(
     tabs = response.context['form_tabs']
     parent_tabs = [tab for tab in tabs if tab['inline'] is None]
     # The authorized view can remove service/decision fields; keys must follow that subset.
-    assert tuple(tab['key'] for tab in parent_tabs) == keys
+    if (module, slug) == ('masters', 'products'):
+        # Product HTTP editing now composes its principal form with an explicitly
+        # selected formula. The pure generic grouping contract above is unchanged.
+        assert tuple(tab['key'] for tab in tabs) == ('product', 'formula', 'inline-components')
+        assert Counter(field.name for field in tabs[0]['fields']) == Counter(
+            field.name for field in response.context['form'].visible_fields()
+        )
+        assert response.context['formula_form'] is None
+    else:
+        assert tuple(tab['key'] for tab in parent_tabs) == keys
     html = response.content.decode()
     form = response.context['form']
     for field in [*form.visible_fields(), *form.hidden_fields()]:
@@ -511,7 +520,15 @@ def test_financial_service_controls_remain_absent_from_domain_tabs(domain_admin)
     assert_rendered_once(response)
     names = {field.name for tab in response.context['form_tabs'] for field in tab['fields']}
     assert not FinancialTitle.SERVICE_FIELDS.intersection(names)
-    assert names == set(response.context['form'].fields)
+    form = response.context['form']
+    assert names == {field.name for field in form.visible_fields()}
+    hidden = {field.name: field for field in form.hidden_fields()}
+    assert names.isdisjoint(hidden)
+    assert names | hidden.keys() == set(form.fields)
+    assert hidden['title_number'].field.disabled is True
+    assert hidden['title_number'].field.widget.is_hidden is True
+    assert response.content.decode().count('name="title_number"') == 1
+    assert not FinancialTitle.SERVICE_FIELDS.intersection(form.fields)
 
 
 @pytest.mark.parametrize(

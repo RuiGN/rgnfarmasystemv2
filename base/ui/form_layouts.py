@@ -39,15 +39,9 @@ def build_resource_form_layout(resource, form, inline_formsets):
     if is_formula:
         tabs = [
             {
-                'key': 'product',
-                'label': 'Produto',
-                'fields': [field for field in fields if field.name == 'product'],
-                'inline': None,
-            },
-            {
                 'key': 'formula',
                 'label': 'Fórmula mestra',
-                'fields': [field for field in fields if field.name != 'product'],
+                'fields': fields,
                 'inline': None,
             },
         ]
