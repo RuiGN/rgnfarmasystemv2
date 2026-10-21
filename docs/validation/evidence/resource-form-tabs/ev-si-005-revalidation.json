@@ -1,0 +1,35 @@
+{
+  "evidence_id": "EV-SI-005",
+  "scope": "Engineering test-source revalidation only; not regulatory qualification or release approval",
+  "authorization": "Autorizar a revalidação de engenharia e a atualização de EV-SI-005 com as evidências atuais",
+  "completed_at": "2026-10-20T04:38:11.525554Z",
+  "artifact": "tests/test_formula_inline_components_ui.py",
+  "previous_sha256": "115d2df5681f860cdd308aea8e93d54b9874e36e7bc35555d6572763545c9544",
+  "new_sha256": "5098d55a0b4ba83235dbe452e6e84068b623114399c3f89cf636d7a83313d62a",
+  "catalog_entry": {
+    "id": "EV-SI-005",
+    "requirement": "SI-005",
+    "title": "Validação das relações 1-N prioritárias",
+    "owner": "engineering",
+    "reviewed_by": "automated-quality-gate + independent code review (user-authorized engineering revalidation)",
+    "captured_at": "2026-10-20T04:36:54.689517Z",
+    "status": "approved",
+    "sha256": "5098d55a0b4ba83235dbe452e6e84068b623114399c3f89cf636d7a83313d62a",
+    "artifact": "tests/test_formula_inline_components_ui.py",
+    "supersedes_sha256": "115d2df5681f860cdd308aea8e93d54b9874e36e7bc35555d6572763545c9544",
+    "review_scope": "Engineering test-source revalidation; not regulatory qualification or release approval.",
+    "authorization": "Explicit user approval in the implementation session.",
+    "review_evidence": [
+      "docs/validation/evidence/resource-form-tabs/directed-junit.xml",
+      "docs/validation/evidence/resource-form-tabs/review-broad.json",
+      "docs/validation/evidence/resource-form-tabs/review-delta.json"
+    ]
+  },
+  "catalog_audit_and_readiness_replay": {
+    "passed": 3,
+    "failed": 0,
+    "artifact": "final-replays.xml"
+  },
+  "other_catalog_entries_changed": false,
+  "release_gate": "HOLD: preexisting global failures remain outside this authorization"
+}

@@ -1,0 +1,13 @@
+{
+  "mismatches": [
+    {
+      "id": "EV-SI-005",
+      "artifact": "tests/test_formula_inline_components_ui.py",
+      "base_matches_approved": true,
+      "current_sha256": "5098d55a0b4ba83235dbe452e6e84068b623114399c3f89cf636d7a83313d62a"
+    }
+  ],
+  "catalog_modified": false,
+  "approval_fabricated": false,
+  "phase": "Before explicitly authorized revalidation; see ev-si-005-revalidation.json for current status"
+}

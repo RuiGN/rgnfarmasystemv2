@@ -130,6 +130,10 @@ class FinancialSettlementViewSet(SingleInstanceFinanceViewSet):
 
 
 class CashFlowEntryViewSet(SingleInstanceFinanceViewSet):
+    action_permission_map = {
+        'from_title': ('finance.add_cashflowentry',),
+        'from_settlement': ('finance.add_cashflowentry',),
+    }
     queryset = CashFlowEntry.objects.select_related('title', 'settlement', 'financial_account')
     serializer_class = CashFlowEntrySerializer
     filterset_fields = (

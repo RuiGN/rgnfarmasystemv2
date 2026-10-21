@@ -1,0 +1,39 @@
+{
+  "verdict": "REVISE",
+  "score": 80,
+  "finding": "Long title and status badge extend beyond card; not a completed matrix.",
+  "observation": {
+    "revision": "source-sha256:2401d28a80bc7d6b3a06398af0d58267f97d716dcbe2cdfbde92b7da0a210c8d",
+    "viewport": 375,
+    "card": {
+      "x": 21,
+      "y": 402.375,
+      "width": 333,
+      "height": 104.875,
+      "top": 402.375,
+      "right": 354,
+      "bottom": 507.25,
+      "left": 21
+    },
+    "title": {
+      "x": 37,
+      "y": 418.375,
+      "width": 575.265625,
+      "height": 21.5,
+      "top": 418.375,
+      "right": 612.265625,
+      "bottom": 439.875,
+      "left": 37
+    },
+    "badge": {
+      "x": 628.265625,
+      "y": 418.375,
+      "width": 65.765625,
+      "height": 21,
+      "top": 418.375,
+      "right": 694.03125,
+      "bottom": 439.375,
+      "left": 628.265625
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "suites": [
+    {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "4",
+      "skipped": "0",
+      "tests": "2655",
+      "time": "3119.341",
+      "timestamp": "2026-10-20T05:15:26.843091-03:00",
+      "hostname": "macrui.local"
+    }
+  ],
+  "testcase_count": 2613,
+  "failures": [
+    {
+      "nodeid": "tests.test_readiness_deadline_corrections::test_silent_database_returns_503_before_healthcheck_deadline[database-connect]",
+      "messages": [
+        {
+          "kind": "failure",
+          "message": "AssertionError: Readiness blocked on a silent database beyond the 9s supervisor deadline\nassert False"
+        }
+      ]
+    },
+    {
+      "nodeid": "tests.test_readiness_deadline_corrections::test_silent_database_returns_503_before_healthcheck_deadline[database-query]",
+      "messages": [
+        {
+          "kind": "failure",
+          "message": "AssertionError: Readiness blocked on a silent database beyond the 9s supervisor deadline\nassert False"
+        }
+      ]
+    },
+    {
+      "nodeid": "tests.test_readiness_deadline_corrections::test_silent_broker_handshake_is_bounded_including_network_reads",
+      "messages": [
+        {
+          "kind": "failure",
+          "message": "subprocess.TimeoutExpired: Command '['/Users/rgnsystems/Documents/rgnfarmasystemv2/.venv/bin/python', '-c', \"\\nimport json, os, time\\nimport django\\ndjango.setup()\\nfrom django.conf import settings\\nfrom django.test import RequestFactory, override_settings\\nfrom core import views\\nconfiguration = json.loads(os.environ['PROBE_TEST_CONFIGURATION'])\\nwith override_settings(**{key: value for key, value in configuration.items() if key == 'CACHES'}):\\n    active = configuration.pop('ACTIVE_PROBES', ['"
+        }
+      ]
+    },
+    {
+      "nodeid": "tests.test_run_with_env::test_wrapper_loads_dotenv_values_with_spaces_without_shell_evaluation",
+      "messages": [
+        {
+          "kind": "failure",
+          "message": "AssertionError: Traceback (most recent call last):\n    File \"<string>\", line 1, in <module>\n      import os; print(os.environ['DISPLAY_NAME'])\n                       ~~~~~~~~~~^^^^^^^^^^^^^^^^\n    File \"<frozen os>\", line 709, in __getitem__\n  KeyError: 'DISPLAY_NAME'\n  \nassert 1 == 0\n +  where 1 = CompletedProcess(args=['/Users/rgnsystems/Documents/rgnfarmasystemv2/.venv/bin/python', PosixPath('/Users/rgnsystems/D...             ~~~~~~~~~~^^^^^^^^^^^^^^^^\\n  File \"<frozen os>\", line 709, in __g"
+        }
+      ]
+    }
+  ],
+  "coverage_totals": {
+    "covered_lines": 26558,
+    "num_statements": 30738,
+    "percent_covered": 86.4011972151734,
+    "percent_covered_display": "86",
+    "missing_lines": 4180,
+    "excluded_lines": 13,
+    "percent_statements_covered": 86.4011972151734,
+    "percent_statements_covered_display": "86"
+  }
+}

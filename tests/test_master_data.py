@@ -79,6 +79,7 @@ def test_custom_post_action_honors_explicit_source_and_target_permissions(db):
 
 def test_collection_post_action_requires_add_permission(db):
     from finance.models import CashFlowEntry
+    from finance.views import CashFlowEntryViewSet
 
     user = User.objects.create_user(
         username='Collection Action User',
@@ -86,7 +87,12 @@ def test_collection_post_action_requires_add_permission(db):
         password='S3curePass!123',
     )
     request = SimpleNamespace(method='POST', user=user)
-    view = SimpleNamespace(action='from_title', detail=False, queryset=CashFlowEntry.objects.none())
+    view = SimpleNamespace(
+        action='from_title',
+        detail=False,
+        queryset=CashFlowEntry.objects.none(),
+        action_permission_map=CashFlowEntryViewSet.action_permission_map,
+    )
     permission = SingleInstanceDjangoModelPermissions()
 
     grant_model_perm(user, CashFlowEntry, 'change')

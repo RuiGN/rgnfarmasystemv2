@@ -1,0 +1,307 @@
+[
+  {
+    "name": "mobile-production-summary-after-fix",
+    "url": "http://127.0.0.1:8767/production-detail.html",
+    "width": 375,
+    "height": 900,
+    "revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+    "errors": [],
+    "observation": {
+      "summary": {
+        "x": 20,
+        "y": 100.15625,
+        "width": 330,
+        "height": 625.625,
+        "top": 100.15625,
+        "right": 350,
+        "bottom": 725.78125,
+        "left": 20
+      },
+      "data": {
+        "x": 20,
+        "y": 769.78125,
+        "width": 330,
+        "height": 314.96875,
+        "top": 769.78125,
+        "right": 350,
+        "bottom": 1084.75,
+        "left": 20
+      },
+      "gap": 44,
+      "overflow": -5,
+      "activePanel": "tab-fields"
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/mobile-production-summary-after-fix.png"
+  },
+  {
+    "name": "mobile-production-visuals-after-fix",
+    "url": "http://127.0.0.1:8767/production-detail.html",
+    "width": 375,
+    "height": 900,
+    "revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+    "errors": [],
+    "observation": {
+      "activePanel": "tab-views",
+      "overflow": -5
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/mobile-production-visuals-after-fix.png"
+  },
+  {
+    "name": "mobile-production-fields-after-fix",
+    "url": "http://127.0.0.1:8767/production-detail.html",
+    "width": 375,
+    "height": 900,
+    "revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+    "errors": [],
+    "observation": {
+      "activePanel": "tab-fields"
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/mobile-production-fields-after-fix.png"
+  },
+  {
+    "name": "mobile-avatar-keyboard-final",
+    "url": "http://127.0.0.1:8767/personal-no-access.html",
+    "width": 375,
+    "height": 900,
+    "revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+    "consoleCollectorObserved": true,
+    "errors": [],
+    "warnings": [],
+    "localFailedResources": [],
+    "captured_at": "2026-10-20T08:20:00.502098+00:00",
+    "observation": {
+      "focusedText": "Alterar avatar",
+      "focusedHref": "/accounts/avatar/",
+      "menuOpen": true,
+      "overflow": 0
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/mobile-avatar-keyboard-final.png"
+  },
+  {
+    "name": "mobile-avatar-destination-final",
+    "url": "http://127.0.0.1:8767/accounts/avatar/",
+    "width": 375,
+    "height": 900,
+    "revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+    "consoleCollectorObserved": true,
+    "errors": [],
+    "warnings": [],
+    "localFailedResources": [],
+    "captured_at": "2026-10-20T08:20:01.240601+00:00",
+    "observation": {
+      "actualPath": "/accounts/avatar/",
+      "uploadPerformed": false
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/mobile-avatar-destination-final.png"
+  },
+  {
+    "name": "mobile-sidebar-open-final",
+    "url": "http://127.0.0.1:8767/accounts/avatar/",
+    "width": 375,
+    "height": 900,
+    "revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+    "consoleCollectorObserved": true,
+    "errors": [],
+    "warnings": [],
+    "localFailedResources": [],
+    "captured_at": "2026-10-20T08:20:13.350706+00:00",
+    "observation": {
+      "left": 0,
+      "right": 280,
+      "overflow": 0
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/mobile-sidebar-open-final.png"
+  },
+  {
+    "name": "mobile-sidebar-closed-final",
+    "url": "http://127.0.0.1:8767/accounts/avatar/",
+    "width": 375,
+    "height": 900,
+    "revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+    "consoleCollectorObserved": true,
+    "errors": [],
+    "warnings": [],
+    "localFailedResources": [],
+    "captured_at": "2026-10-20T08:20:14.377575+00:00",
+    "observation": {
+      "right": 0,
+      "overflow": 0
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/mobile-sidebar-closed-final.png"
+  },
+  {
+    "name": "mobile-report-errors-final",
+    "url": "http://127.0.0.1:8767/report-errors.html",
+    "width": 375,
+    "height": 900,
+    "revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+    "consoleCollectorObserved": true,
+    "errors": [],
+    "warnings": [],
+    "localFailedResources": [],
+    "captured_at": "2026-10-20T08:20:29.178938+00:00",
+    "observation": {
+      "errors": [
+        {
+          "text": "Este campo \u00e9 obrigat\u00f3rio.",
+          "top": 449.53125,
+          "bottom": 474.328125
+        },
+        {
+          "text": "Este campo \u00e9 obrigat\u00f3rio.",
+          "top": 579.78125,
+          "bottom": 604.578125
+        }
+      ],
+      "invalid": [
+        {
+          "name": "period_end",
+          "describedBy": "id_period_end_errors"
+        },
+        {
+          "name": "period_start",
+          "describedBy": "id_period_start_errors"
+        }
+      ],
+      "submit": {
+        "x": 166.421875,
+        "y": 703.578125,
+        "width": 158.578125,
+        "height": 42,
+        "top": 703.578125,
+        "right": 325,
+        "bottom": 745.578125,
+        "left": 166.421875
+      }
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/mobile-report-errors-final.png"
+  },
+  {
+    "name": "mobile-report-cancel-final",
+    "url": "http://127.0.0.1:8767/app/reports/catalog/",
+    "width": 375,
+    "height": 900,
+    "revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+    "consoleCollectorObserved": true,
+    "errors": [],
+    "warnings": [],
+    "localFailedResources": [],
+    "captured_at": "2026-10-20T08:20:30.412108+00:00",
+    "observation": {
+      "actualPath": "/app/reports/catalog/",
+      "reportCards": 4
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/mobile-report-cancel-final.png"
+  },
+  {
+    "name": "desktop-report-journey-final",
+    "url": "http://127.0.0.1:8767/app/reports/catalog/3/run/",
+    "width": 1440,
+    "height": 1000,
+    "revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+    "consoleCollectorObserved": true,
+    "errors": [],
+    "warnings": [],
+    "localFailedResources": [],
+    "captured_at": "2026-10-20T08:20:45.726003+00:00",
+    "observation": {
+      "journey": [
+        "module",
+        "catalog",
+        "report form"
+      ],
+      "actualPath": "/app/reports/catalog/3/run/",
+      "noSubmission": true
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/desktop-report-journey-final.png"
+  },
+  {
+    "name": "mobile-summary-final",
+    "url": "http://127.0.0.1:8767/production-detail.html",
+    "width": 375,
+    "height": 900,
+    "revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+    "consoleCollectorObserved": true,
+    "errors": [],
+    "warnings": [],
+    "localFailedResources": [],
+    "captured_at": "2026-10-20T08:20:59.460284+00:00",
+    "observation": {
+      "summary": {
+        "x": 20,
+        "y": 100.15625,
+        "width": 330,
+        "height": 625.625,
+        "top": 100.15625,
+        "right": 350,
+        "bottom": 725.78125,
+        "left": 20
+      },
+      "data": {
+        "x": 20,
+        "y": 769.78125,
+        "width": 330,
+        "height": 314.96875,
+        "top": 769.78125,
+        "right": 350,
+        "bottom": 1084.75,
+        "left": 20
+      },
+      "gap": 44
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/mobile-summary-final.png"
+  },
+  {
+    "name": "mobile-visuals-tab-final",
+    "url": "http://127.0.0.1:8767/production-detail.html",
+    "width": 375,
+    "height": 900,
+    "revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+    "consoleCollectorObserved": true,
+    "errors": [],
+    "warnings": [],
+    "localFailedResources": [],
+    "captured_at": "2026-10-20T08:21:01.632663+00:00",
+    "observation": {
+      "activePanel": "tab-views"
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/mobile-visuals-tab-final.png"
+  },
+  {
+    "name": "mobile-fields-tab-final",
+    "url": "http://127.0.0.1:8767/production-detail.html",
+    "width": 375,
+    "height": 900,
+    "revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+    "consoleCollectorObserved": true,
+    "errors": [],
+    "warnings": [],
+    "localFailedResources": [],
+    "captured_at": "2026-10-20T08:21:04.042214+00:00",
+    "observation": {
+      "activePanel": "tab-fields"
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/mobile-fields-tab-final.png"
+  },
+  {
+    "name": "desktop-list-detail-final",
+    "url": "http://127.0.0.1:8767/app/masters/units/93/",
+    "width": 1440,
+    "height": 1000,
+    "revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+    "consoleCollectorObserved": true,
+    "errors": [],
+    "warnings": [],
+    "localFailedResources": [],
+    "captured_at": "2026-10-20T08:26:20.090984+00:00",
+    "observation": {
+      "actualPath": "/app/masters/units/93/",
+      "journey": [
+        "unit list",
+        "unit detail"
+      ],
+      "noMutation": true
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/desktop-list-detail-final.png"
+  }
+]

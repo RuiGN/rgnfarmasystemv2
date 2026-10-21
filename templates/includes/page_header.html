@@ -1,9 +1,5 @@
 <div class="page-header">
     <div class="page-header-left d-flex align-items-center">
-        <div class="page-header-title">
-            <h5 class="m-b-10">{{ page_title }}</h5>
-            {% if page_description %}<p class="text-muted mb-0">{{ page_description }}</p>{% endif %}
-        </div>
         {% if breadcrumbs %}
         <ul class="breadcrumb mb-0">
             {% for crumb in breadcrumbs %}
@@ -11,6 +7,9 @@
             {% endfor %}
         </ul>
         {% endif %}
+        <div class="page-header-title">
+            <h5 class="m-b-10">{{ page_title }}</h5>
+        </div>
     </div>
     {% if page_actions %}
     <div class="page-header-right ms-auto">

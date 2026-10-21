@@ -5,12 +5,12 @@
 {% block page_header %}
 <div class="page-header" id="section-0">
     <div class="page-header-left d-flex align-items-center">
-        <div class="page-header-title"><h5 class="m-b-10">Catálogo de relatórios</h5></div>
         <ul class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
             <li class="breadcrumb-item"><a href="{% url 'app:module' 'reports' %}">Relatórios e BI</a></li>
             <li class="breadcrumb-item">Catálogo</li>
         </ul>
+        <div class="page-header-title"><h5 class="m-b-10">Catálogo de relatórios</h5></div>
     </div>
 </div>
 {% endblock %}
@@ -76,7 +76,7 @@
                                         <span>Gerar Relatório</span>
                                     </a>
                                 {% else %}
-                                    <span class="badge bg-light text-muted fs-11"><i class="feather-lock me-1"></i>Somente leitura</span>
+                                    <span class="badge bg-light text-muted fs-11 text-wrap"><i class="feather-lock me-1" aria-hidden="true"></i>Consulta disponível; execução não autorizada</span>
                                 {% endif %}
                             </div>
                         </div>

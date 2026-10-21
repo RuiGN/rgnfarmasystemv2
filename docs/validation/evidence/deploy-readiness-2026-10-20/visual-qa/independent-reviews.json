@@ -1,0 +1,73 @@
+{
+  "schema_version": "dual_oracle_visual_review/v1",
+  "delegation_id": "deleg_4ba3bad0",
+  "target_revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+  "provenance": "Native delegation completion delivered both JSON reports. Parent checked score/verdict/differences/checked/could_not_assess/target_revision fields and exact target match. Reviewers inspected existing images, not independent live browser runs.",
+  "reviews": [
+    {
+      "lens": "Duralux consistency and functional integrity",
+      "score": 94,
+      "verdict": "PASS",
+      "differences": [
+        {
+          "difference": "Non-blocking: catalog banner tells read-only users to generate executions, although cards correctly deny execution.",
+          "suggestion": "Use neutral banner copy explaining that execution depends on profile permissions.",
+          "evidence": "reports-readonly-desktop-mobile.png; templates/app/report_catalog.html:29,73-79"
+        }
+      ],
+      "checked": [
+        "All12 states and24 unique1440/375 cells match the current target in the supplied manifests.",
+        "Duralux navigation, typography, cards, spacing, icons, status and primary actions preserved.",
+        "No-access personal queue distinguished from an authorized empty queue; long title contained with full title attribute preserved.",
+        "Report consultation/execution permission states, avatar route/focus and documented GET journeys inspected.",
+        "Operational summary/data separation,44px mobile gap, zero intersection and tab state captures inspected.",
+        "11 recorded final interactions have active collector and no JS/local-asset failures; these were supplied observations, not independently reproduced."
+      ],
+      "could_not_assess": [
+        "POST/upload/report execution/production transitions/deletion/physical printing/operational backends.",
+        "Dedicated click journey to report-execution listing.",
+        "Complete accessibility, measured contrast, screen reader, all keyboard journeys or frame-by-frame motion.",
+        "Pixel-comparable baseline, other viewports/browsers or operational data.",
+        "Independent verification of every source hash, full suite/CI/regulatory/deploy approval."
+      ]
+    },
+    {
+      "lens": "Visual fidelity, PT-BR and mobile wrapping/clipping",
+      "score": 93,
+      "verdict": "PASS",
+      "differences": [
+        {
+          "difference": "Non-blocking: avatar help names a Take selfie button not visible in the captured mobile file picker.",
+          "suggestion": "Describe file selection and an optional device camera without promising a control with that label.",
+          "evidence": "avatar-desktop-mobile.png; mobile-avatar-destination-final.png y485-535; templates/accounts/avatar.html:46"
+        },
+        {
+          "difference": "Non-blocking: floating support button covers part of footer copyright and occupies the side of the mobile tab area; tab labels remain readable.",
+          "suggestion": "Reserve footer clearance or adjust the floating control position at that intersection.",
+          "evidence": "mobile-fields-tab-final.png x298-354/y824-881; mobile-summary-final.png"
+        },
+        {
+          "difference": "Non-blocking: report period shows end date before start date; both fields and their errors remain intact.",
+          "suggestion": "If not deliberately required, present start before end while preserving error associations.",
+          "evidence": "report-form-desktop-mobile.png; mobile-report-errors-final.png y365-595"
+        }
+      ],
+      "checked": [
+        "Current-source screenshots and1440/375 viewport metadata inspected read-only.",
+        "Production summary, fields and tabs remain distinct without their former overlap.",
+        "Mobile table retains local horizontal scrolling rather than losing full product content.",
+        "Report labels, required markers and associated inline errors contained and readable.",
+        "Avatar menu/focus, sidebar open/closed, personal queue states and long-title containment inspected.",
+        "PT-BR accents, dates, hierarchy and primary actions readable; synthetic identifiers not treated as localization bugs."
+      ],
+      "could_not_assess": [
+        "No independent browser, tests, Docker, DB or network execution; console/network results are supplied evidence.",
+        "No POST, camera, real uploads, generated reports, production actions, deletion or operational endpoints.",
+        "Full tab order/focus return/screen reader/touch targets/WCAG or all below-fold regions.",
+        "Other widths/browsers/devices, virtual keyboard, zoom or enlarged fonts.",
+        "Touch disclosure of full title, comparable pixel baseline, measured contrast, reduced motion or physical printing."
+      ]
+    }
+  ],
+  "disposition": "Both visual reviews PASS within the declared matrix. Four non-blocking UX/copy suggestions retained as residual improvements, not silently fixed while the full suite runs against frozen sources. No deploy or regulatory approval."
+}

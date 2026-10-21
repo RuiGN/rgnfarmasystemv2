@@ -1,0 +1,68 @@
+[
+  {
+    "command": [
+      "/Users/rgnsystems/Documents/rgnfarmasystemv2/.venv/bin/python",
+      "/Users/rgnsystems/.hermes/cache/scratch/run_release_verification.py",
+      "--manage",
+      "check"
+    ],
+    "exit_code": 0,
+    "log": "docs/validation/evidence/deploy-readiness-2026-10-20/final-check.log"
+  },
+  {
+    "command": [
+      "/Users/rgnsystems/Documents/rgnfarmasystemv2/.venv/bin/python",
+      "/Users/rgnsystems/.hermes/cache/scratch/run_release_verification.py",
+      "--manage",
+      "makemigrations",
+      "--check",
+      "--dry-run"
+    ],
+    "exit_code": 0,
+    "log": "docs/validation/evidence/deploy-readiness-2026-10-20/final-makemigrations.log"
+  },
+  {
+    "command": [
+      "/Users/rgnsystems/Documents/rgnfarmasystemv2/.venv/bin/python",
+      "/Users/rgnsystems/.hermes/cache/scratch/run_release_verification.py",
+      "--manage",
+      "check_operational_readiness",
+      "--fail-on-error"
+    ],
+    "exit_code": 0,
+    "log": "docs/validation/evidence/deploy-readiness-2026-10-20/final-check_operational_readiness.log"
+  },
+  {
+    "command": [
+      "/Users/rgnsystems/Documents/rgnfarmasystemv2/.venv/bin/python",
+      "/Users/rgnsystems/.hermes/cache/scratch/run_release_verification.py",
+      "--manage",
+      "check_backup_restore_readiness",
+      "--fail-on-error"
+    ],
+    "exit_code": 0,
+    "log": "docs/validation/evidence/deploy-readiness-2026-10-20/final-check_backup_restore_readiness.log"
+  },
+  {
+    "command": [
+      "/Users/rgnsystems/Documents/rgnfarmasystemv2/.venv/bin/python",
+      "/Users/rgnsystems/.hermes/cache/scratch/run_release_verification.py",
+      "--manage",
+      "check_product_acceptance",
+      "--fail-on-error"
+    ],
+    "exit_code": 0,
+    "log": "docs/validation/evidence/deploy-readiness-2026-10-20/final-check_product_acceptance.log"
+  },
+  {
+    "command": [
+      "/Users/rgnsystems/Documents/rgnfarmasystemv2/.venv/bin/python",
+      "/Users/rgnsystems/.hermes/cache/scratch/run_release_verification.py",
+      "--manage",
+      "check_release_readiness",
+      "--fail-on-error"
+    ],
+    "exit_code": 0,
+    "log": "docs/validation/evidence/deploy-readiness-2026-10-20/final-check_release_readiness.log"
+  }
+]

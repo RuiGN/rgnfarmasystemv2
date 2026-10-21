@@ -19,7 +19,9 @@ class DemoSeeder:
         self.refs = {}
 
     def run_full_demo(self):
-        with transaction.atomic():
+        from formulations.writers import write_gate
+
+        with write_gate():
             self._seed_users()
             self._seed_auxiliary()
             self._seed_masters()
@@ -37,6 +39,14 @@ class DemoSeeder:
 
     def _upsert(self, model, count_key, lookup, defaults=None):
         defaults = defaults or {}
+        from formulations.writers import LABELS, save_changes, write_gate
+
+        if model._meta.label_lower in LABELS:
+            with write_gate():
+                obj = model.objects.filter(**lookup).first()
+                obj = save_changes(obj or model(**lookup), defaults)
+            self.counts[count_key] = self.counts.get(count_key, 0) + 1
+            return obj
         payload = {**defaults}
         if any(field.name == 'updated_at' for field in model._meta.fields):
             payload.setdefault('updated_at', self.now)

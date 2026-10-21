@@ -6,15 +6,14 @@
 {% block page_header %}
 <div class="page-header" id="section-0">
     <div class="page-header-left d-flex align-items-center">
-        <div class="page-header-title">
-            <h5 class="m-b-10">{{ resource.label }}</h5>
-            <p class="text-muted fs-12 mb-0">Listagem operacional com rastreabilidade ALCOA+ e integridade de dados</p>
-        </div>
         <ul class="breadcrumb mb-0 ms-md-4">
             <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Início</a></li>
             <li class="breadcrumb-item"><a href="{% url 'app:module' module.slug %}">{{ module.label }}</a></li>
             <li class="breadcrumb-item">{{ resource.label }}</li>
         </ul>
+        <div class="page-header-title">
+            <h5 class="m-b-10">{{ resource.label }}</h5>
+        </div>
     </div>
     <div class="page-header-right ms-auto">
         <div class="page-header-right-items">
@@ -98,7 +97,7 @@
         {% if rows %}
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <caption class="sr-only">{{ resource.label }} - listagem operacional</caption>
+                <caption class="visually-hidden">{{ resource.label }} - listagem operacional</caption>
                 <thead>
                     <tr class="bg-light fs-11 fw-bold text-muted text-uppercase">
                         {% for header in headers %}
@@ -138,14 +137,18 @@
                                     </a>
                                 {% elif module.slug == 'inventory' and resource.slug == 'lots' %}
                                     {% if can_print_labels %}
-                                        <button type="button"
-                                                class="btn btn-sm btn-success d-inline-flex align-items-center gap-1"
-                                                data-label-print-button
-                                                data-label-print-url="{% url 'inventory:lot-print-label' row.object.pk %}"
-                                                title="Imprimir etiqueta do lote com data e validade">
-                                            <i class="feather-printer fs-11"></i>
-                                            <span class="fs-11">Etiqueta</span>
-                                        </button>
+                                        <form class="d-inline-flex" data-label-print-form>
+                                            {% csrf_token %}
+                                            <button type="button"
+                                                    class="btn btn-sm btn-success d-inline-flex align-items-center gap-1"
+                                                    data-label-print-button
+                                                    data-label-print-url="{% url 'inventory:lot-print-label' row.object.pk %}"
+                                                    aria-label="Imprimir etiqueta do lote {{ row.object.lot_number }}"
+                                                    title="Imprimir etiqueta do lote com validade">
+                                                <i class="feather-printer fs-11" aria-hidden="true"></i>
+                                                <span class="fs-11">Etiqueta</span>
+                                            </button>
+                                        </form>
                                     {% endif %}
                                     <a href="{% url 'app:stock_lot_dossier' row.object.pk %}" class="btn btn-sm btn-info d-inline-flex align-items-center gap-1" title="Abrir dossiê QA do lote">
                                         <i class="feather-shield fs-11"></i>

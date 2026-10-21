@@ -1,0 +1,13 @@
+{
+  "attempt": 4,
+  "source_revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+  "started_at": "2026-10-20T09:16:52.719287+00:00",
+  "bootstrap_sha256": "a0d08d2fd9e61a01beea2f5803325134440ca3d32c031d882edbb5dda23c2e47",
+  "resource_policy": "No concurrent Docker build/integration or separate test runs.",
+  "exit_code": 0,
+  "state": "finished",
+  "duration_seconds": 1869.634,
+  "junit": "/Users/rgnsystems/.hermes/cache/scratch/release-full-junit.xml",
+  "coverage_json": "/Users/rgnsystems/.hermes/cache/scratch/release-full-coverage.json",
+  "output": "/Users/rgnsystems/.hermes/cache/scratch/release-full-output.log"
+}

@@ -1,0 +1,128 @@
+[
+  {
+    "check": "two-rendered-rows-and-accessible-controls",
+    "passed": true,
+    "result": {
+      "count": 2,
+      "forms": true,
+      "named": true,
+      "live": "polite"
+    }
+  },
+  {
+    "check": "cancel-sends-nothing",
+    "passed": true,
+    "result": {
+      "requests": 0,
+      "confirmations": 1
+    }
+  },
+  {
+    "check": "only-selected-button-disabled",
+    "passed": true,
+    "result": {
+      "disabled": true,
+      "otherEnabled": true,
+      "requests": 1
+    }
+  },
+  {
+    "check": "second-row-correct-url-csrf-no-duplicate",
+    "passed": true,
+    "result": {
+      "requests": [
+        {
+          "url": "/api/inventory/lots/170/print_label/",
+          "method": "POST",
+          "csrfPresent": true,
+          "xhr": "XMLHttpRequest"
+        }
+      ],
+      "expected": "/api/inventory/lots/170/print_label/",
+      "text": "QA: envio simulado, sem impressora.",
+      "enabled": true
+    }
+  },
+  {
+    "check": "http-error-safe-feedback-no-resend",
+    "passed": true,
+    "result": {
+      "requests": 2,
+      "text": "QA: impressora indisponível (simulado).",
+      "tone": "alert alert-danger mb-4",
+      "enabled": true
+    }
+  },
+  {
+    "check": "network-error-no-resend",
+    "passed": true,
+    "result": {
+      "requests": 3,
+      "text": "QA: falha de rede simulada",
+      "enabled": true,
+      "errors": []
+    }
+  },
+  {
+    "check": "detail-single-button-backwards-compatible",
+    "passed": true,
+    "result": {
+      "buttons": 1,
+      "requests": [
+        {
+          "url": "/api/inventory/lots/169/print_label/",
+          "method": "POST",
+          "csrfPresent": true,
+          "xhr": "XMLHttpRequest"
+        }
+      ],
+      "text": "QA: envio simulado, sem impressora.",
+      "enabled": true,
+      "errors": []
+    }
+  },
+  {
+    "check": "rendered-list-layout",
+    "width": 1440,
+    "passed": true,
+    "result": {
+      "viewport": 1440,
+      "page": 1440,
+      "buttons": [
+        {
+          "text": "Etiqueta",
+          "visible": true,
+          "disabled": false
+        },
+        {
+          "text": "Etiqueta",
+          "visible": true,
+          "disabled": false
+        }
+      ],
+      "scrollable": true
+    }
+  },
+  {
+    "check": "rendered-list-layout",
+    "width": 320,
+    "passed": true,
+    "result": {
+      "viewport": 320,
+      "page": 315,
+      "buttons": [
+        {
+          "text": "Etiqueta",
+          "visible": true,
+          "disabled": false
+        },
+        {
+          "text": "Etiqueta",
+          "visible": true,
+          "disabled": false
+        }
+      ],
+      "scrollable": true
+    }
+  }
+]

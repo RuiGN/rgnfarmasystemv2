@@ -111,6 +111,7 @@ class UserAvatarTests(TestCase):
         assert app_response.status_code == 200
         app_content = app_response.content.decode()
         assert 'avatars/user-existing.png' in app_content
+        assert f'href="{reverse("accounts:avatar")}"' in app_content
         assert 'Alterar avatar' in app_content
         assert 'vendor/duralux/images/1.png' not in app_content
 

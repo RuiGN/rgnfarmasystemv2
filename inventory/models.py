@@ -101,9 +101,23 @@ class StockLot(SingleInstanceModel):
     def output_lots(self):
         return StockLot.objects.filter(input_genealogy_links__input_lot=self)
 
+    def _immutable_product_errors(self):
+        if self.pk is None:
+            return {}
+        persisted = type(self).objects.filter(pk=self.pk).values('product_id').first()
+        if persisted is not None and persisted['product_id'] != self.product_id:
+            return {'product': 'O produto do lote não pode ser alterado após o cadastro.'}
+        return {}
+
+    def save(self, *args, **kwargs):
+        errors = self._immutable_product_errors()
+        if errors:
+            raise ValidationError(errors)
+        return super().save(*args, **kwargs)
+
     def clean(self):
         super().clean()
-        errors = {}
+        errors = self._immutable_product_errors()
         if (
             self.expiry_date
             and self.manufacturing_date

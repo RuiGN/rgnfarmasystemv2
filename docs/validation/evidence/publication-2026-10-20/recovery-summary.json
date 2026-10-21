@@ -1,0 +1,52 @@
+{
+  "delegation_id": "deleg_d5f384c2",
+  "remote_receipt_sha256": "4041038ba43ea31f461cc1e8edee510201f8a5b069b06aee2d0923ce461c9f12",
+  "remote_directory": "/var/backups/rgnfarmasystem/releases/prepublish-20261020T104215904590Z-63af02ef",
+  "remote_receipt": "/var/backups/rgnfarmasystem/releases/prepublish-20261020T104215904590Z-63af02ef/receipt.json",
+  "remote_manifest": "/var/backups/rgnfarmasystem/releases/prepublish-20261020T104215904590Z-63af02ef/SHA256SUMS",
+  "artifacts": [
+    {
+      "name": "metadata-before.json",
+      "kind": "safe_metadata",
+      "bytes": 3531,
+      "mode": "0o600",
+      "sha256": "cd0518fa8659f20a247b101bca4211f10c3e9fdac1cb50c1071b919078f3e25d"
+    },
+    {
+      "name": "postgresql.dump.gz",
+      "kind": "postgresql_custom_dump_gzip",
+      "bytes": 233270,
+      "mode": "0o600",
+      "sha256": "c44af5d9daf4dba2917f3a758d81904740d19fbc098003c085c3f9ac0fef7834"
+    },
+    {
+      "name": "media.tar.gz",
+      "kind": "live_media_tar_gzip",
+      "bytes": 105,
+      "mode": "0o600",
+      "sha256": "716cd0c4d323ddc06b2abdabdc8794ff5724345f116b23d109121fec4d251d1e"
+    },
+    {
+      "name": "rollback-image.tar.gz",
+      "kind": "docker_image_save_gzip",
+      "bytes": 540412566,
+      "mode": "0o600",
+      "sha256": "1f6fd8c2ff771748c9565afb825d9fc6b7203bc586c86c60b912a8d87d31af16"
+    },
+    {
+      "name": "metadata-after.json",
+      "kind": "safe_metadata",
+      "bytes": 3531,
+      "mode": "0o600",
+      "sha256": "b02164ec07505dfa10aa26ace9c82150dd634331d9ba1b006dc2e2cb6160d5b0"
+    }
+  ],
+  "verification": "Worker checks plus fresh parent SSH hash/gzip/tar/pg_restore-list and tag/container readback; no isolated restore",
+  "backup_format": "PostgreSQL custom archive compressed with gzip, not plainSQL; do not pass directly to scripts/restore.sh",
+  "limits": [
+    "hot backup",
+    "no joint DB/media atomicity",
+    "no isolated restoration",
+    "no offsite copy"
+  ]
+}

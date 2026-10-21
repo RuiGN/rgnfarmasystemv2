@@ -65,6 +65,23 @@ responsável, data ou estado real. Sem resumo, o conteúdo ocupa as doze colunas
 Dashboards publicam a hora real em `generated_at` e oferecem tabela textual
 equivalente ao gráfico.
 
+## Formulários genéricos com abas
+
+`app/resource_form.html` mantém um formulário único e delega a apresentação a
+`resource_form_tabs.html`, `resource_form_field.html` e
+`resource_inline_formset.html`, sob `app/includes/`. A seleção de grupos vem
+de `base.ui.form_layouts`, não de lógica de domínio no template.
+
+`resource-form-tabs.js` usa o Bootstrap já carregado pelo shell; não importa
+scripts de demonstração do Duralux. Somente após inicializar as abas aplica
+`data-tabs-ready` e substitui a validação HTML automática por validação que
+revela a seção do primeiro campo inválido. Setas, Home e End navegam entre
+abas. Sem inicialização, o CSS escopado mostra todos os painéis.
+
+O recurso sem inlines mantém o formulário simples. O padrão não converte
+cockpits, quadros operacionais, páginas de detalhe ou Django Admin. Detalhes de
+persistência e permissões estão no [contrato de inlines](inline-resources.md).
+
 ## Verificação mínima
 
 ```bash

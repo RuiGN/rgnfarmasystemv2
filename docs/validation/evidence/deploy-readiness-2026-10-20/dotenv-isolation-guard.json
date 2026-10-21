@@ -1,0 +1,7 @@
+{
+  "operational_paths_blocked": true,
+  "implicit_lookup_blocked": true,
+  "symlink_escape_blocked": true,
+  "non_fixture_scratch_blocked": true,
+  "explicit_synthetic_fixture_allowed": true
+}

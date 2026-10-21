@@ -1,0 +1,4 @@
+{
+  "reason": "Controlled interruption to correct newly reproduced RabbitMQ healthcheck identity race; not a completed full-suite gate.",
+  "source_snapshot": "source-sha256:2e3e2f4570352c7ed769e879ace40a88425b599bd1efce023feb79122a826e02"
+}

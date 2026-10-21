@@ -184,6 +184,18 @@ class PersonalAreaViewTests(TestCase):
         self.assertContains(response, 'Minha área')
         self.assertContains(response, 'Pendências e atividades sob sua responsabilidade')
         self.assertContains(response, 'Nenhuma CAPA sob sua responsabilidade.')
+        self.assertContains(response, '<h2 id="personal-area-capas-heading"', html=False)
+
+    def test_without_queue_permissions_does_not_claim_all_work_is_complete(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse('app:personal_area'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Nenhuma fila pessoal disponível')
+        self.assertNotContains(
+            response, 'Todas as suas tarefas operacionais e aprovações estão em dia.'
+        )
 
     def test_page_does_not_render_another_users_record(self):
         grant_view_permission(self.user, CapaRecord)
@@ -235,3 +247,9 @@ class PersonalAreaViewTests(TestCase):
         self.assertIn('aria-labelledby="personal-area-heading"', template)
         self.assertIn('class="col-12 col-xl-6"', template)
         self.assertIn('{% empty %}', template)
+
+    def test_activity_copy_shrinks_without_pushing_status_outside_the_card(self):
+        template = Path('templates/app/personal_area.html').read_text()
+
+        self.assertIn('class="flex-grow-1 overflow-hidden"', template)
+        self.assertIn('title="{{ item.title }}"', template)

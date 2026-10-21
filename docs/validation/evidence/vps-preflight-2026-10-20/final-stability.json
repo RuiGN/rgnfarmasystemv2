@@ -1,0 +1,58 @@
+{
+  "captured_at": "2026-10-20T10:12:44.664181+00:00",
+  "scope": "Project-only filesystem metadata; no archives, dotenv, credentials or DB records read.",
+  "latest_release_backup": {
+    "directory": "/var/backups/rgnfarmasystem/releases/release-20261019T190736Z",
+    "regular_files": [
+      {
+        "name": "SHA256SUMS",
+        "bytes": 317,
+        "mode": "0o664",
+        "modified_at": "2026-10-19T19:07:37.808880+00:00"
+      },
+      {
+        "name": "media-20261019-160736.tar.gz",
+        "bytes": 116,
+        "mode": "0o600",
+        "modified_at": "2026-10-19T19:07:37.752880+00:00"
+      },
+      {
+        "name": "postgres-20261019-160736.sql.gz",
+        "bytes": 114677,
+        "mode": "0o600",
+        "modified_at": "2026-10-19T19:07:37.594879+00:00"
+      },
+      {
+        "name": "previous-release.gitref",
+        "bytes": 41,
+        "mode": "0o664",
+        "modified_at": "2026-10-19T19:07:36.484875+00:00"
+      }
+    ],
+    "checksum_manifest_entry_count": 2,
+    "checksum_manifest_schema_valid": true,
+    "archive_checksums_recomputed": false,
+    "recorded_previous_revision": "ef754b804095fa4f643275cf1b02f773209c6500"
+  },
+  "live_media_metadata": {
+    "directory": "/app/media",
+    "regular_file_count": 0,
+    "total_regular_bytes": 0,
+    "symlink_count": 0,
+    "traversal_error_count": 0,
+    "file_contents_read": false
+  },
+  "final_git_head": {
+    "exit_code": 0,
+    "stdout": "d8b179c77787806f463d1d637a526bbdf0436d22"
+  },
+  "final_git_status": {
+    "exit_code": 0,
+    "stdout": ""
+  },
+  "final_dotenv_mode": "0o664",
+  "final_project_container_states": {
+    "exit_code": 0,
+    "stdout": "56de7cec9e2c5b723af5de04e9624ed3add35318bad1442326be996df8cbb6b4\trunning\thealthy\t0\ncbc3fa60676703609384ba6f9730bc0258fbcca9d27f2ada01d31b2954d64d41\trunning\thealthy\t0\n941346ba5ddc57b37d393bd6bfcec1bceda3ce9a46af652e44b9f29a1491ebe7\trunning\thealthy\t0\n7965021e1f295dcf80ab1838e7ba6bc65d776b372410915ce555265cd0721d2f\trunning\thealthy\t0\n6d1cc58854619aed09a7f4dcf8a07f5c250a88bf37ed9061f22982279a1f8954\trunning\thealthy\t0\n05a379410c935e1a283f6e80d99956922ddc41f268a2c3cf015431d6713b47ca\trunning\thealthy\t0\nb7f1721ad44eb0208fd967a6ae2bce485b944eaa269bdb7f5ab18bf2a47c1a34\trunning\thealthy\t0\n4cbfe1d2876aadeb534c6a165c016416abfbbc18824796a57db00d891b5ad3c0\trunning\thealthy\t0\nbccf8811fa1bc8411a58ac0cd28f01b577b01b894c5654640ab046448a2e167a\trunning\thealthy\t0"
+  }
+}

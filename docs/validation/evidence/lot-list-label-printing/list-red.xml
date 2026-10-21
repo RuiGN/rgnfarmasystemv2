@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="4.614" timestamp="2026-10-20T02:06:28.912186-03:00" hostname="macrui.local"><testcase classname="tests.test_direct_label_printing" name="test_authorized_lot_list_renders_a_csrf_print_form_for_each_lot" time="4.343"><failure message="assert 0 == 2&#10; +  where 0 = len([])">tests/test_direct_label_printing.py:296: in test_authorized_lot_list_renders_a_csrf_print_form_for_each_lot
+    assert len(forms) == 2
+E   assert 0 == 2
+E    +  where 0 = len([])</failure></testcase></testsuite></testsuites>

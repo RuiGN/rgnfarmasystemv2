@@ -1,0 +1,40 @@
+"""Authorized permission-only change; O_PATH never opens dotenv for reading."""
+from datetime import datetime, UTC
+import json
+import os
+import stat
+
+TARGET = '/home/deploy/rgnfarmasystemv2/.env'
+
+
+def metadata(s):
+    return {'mode': format(stat.S_IMODE(s.st_mode), '04o'), 'uid': s.st_uid,
+            'gid': s.st_gid, 'device': s.st_dev, 'inode': s.st_ino,
+            'bytes': s.st_size, 'mtime_ns': s.st_mtime_ns}
+
+
+assert os.geteuid() == 1000, 'Unexpected SSH user; no change attempted'
+assert os.path.realpath(TARGET) == TARGET, 'Symlink path refused; no change attempted'
+fd = os.open(TARGET, os.O_PATH | os.O_NOFOLLOW | os.O_CLOEXEC)
+try:
+    before_stat = os.fstat(fd)
+    assert stat.S_ISREG(before_stat.st_mode), 'Non-regular target refused'
+    before = metadata(before_stat)
+    assert before['uid'] == 1000 and before['gid'] == 1000, 'Unexpected ownership'
+    assert before['mode'] in {'0664', '0600'}, 'Unexpected mode; no change attempted'
+    current = os.lstat(TARGET)
+    assert (current.st_dev, current.st_ino) == (before_stat.st_dev, before_stat.st_ino)
+    changed = before['mode'] != '0600'
+    if changed:
+        # Pinned metadata-only descriptor prevents chmod following a replaced path.
+        os.chmod('/proc/self/fd/' + str(fd), 0o600)
+    after = metadata(os.lstat(TARGET))
+    assert after['mode'] == '0600'
+    assert all(after[k] == before[k] for k in ['uid', 'gid', 'device', 'inode', 'bytes', 'mtime_ns'])
+    print(json.dumps({'checked_at': datetime.now(UTC).isoformat(),
+                      'target': TARGET, 'authorized_operation': 'chmod 0600 only',
+                      'permission_changed': changed, 'before': before, 'after': after,
+                      'contents_read': False, 'contents_hashed': False,
+                      'restart_commands_executed': False}, indent=2))
+finally:
+    os.close(fd)

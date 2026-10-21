@@ -50,8 +50,12 @@ Preencher sem registrar senhas, tokens ou outros segredos:
 2. **Permissão**
    - Confirmar que usuário sem `inventory.view_stocklot` não vê a ação e recebe
      acesso negado na API.
-   - Confirmar que usuário autorizado vê **Imprimir etiqueta** no detalhe do
-     lote.
+   - Confirmar que usuário autorizado vê **Etiqueta** em cada linha da listagem
+     de lotes e **Imprimir etiqueta** no detalhe do lote.
+   - Com pelo menos dois lotes controlados, selecionar a segunda linha e conferir
+     que somente a etiqueta daquele lote é enviada, com confirmação explícita.
+   - Cancelar a confirmação de outra linha e confirmar que nada é enviado.
+   - Durante o envio, conferir que o botão selecionado fica desabilitado.
 
 3. **Conteúdo impresso**
    - Enviar uma etiqueta do lote controlado.

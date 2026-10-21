@@ -1,0 +1,8 @@
+{
+  "exit_code": 1,
+  "state": "finished",
+  "duration_seconds": 3132.777,
+  "junit": "/Users/rgnsystems/.hermes/cache/scratch/release-full-junit.xml",
+  "coverage_json": "/Users/rgnsystems/.hermes/cache/scratch/release-full-coverage.json",
+  "output": "/Users/rgnsystems/.hermes/cache/scratch/release-full-output.log"
+}

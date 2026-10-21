@@ -12,7 +12,9 @@ from reports.models import ALLOWED_FILTER_FIELDS, ReportExecution
 def _filter_field(specification):
     common = {'label': specification.label, 'required': specification.required}
     if specification.field_type == 'date':
-        return forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), **common)
+        return forms.DateField(
+            widget=forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}), **common
+        )
     if specification.field_type == 'choice':
         serialized_choices = [
             ('', '---------'),

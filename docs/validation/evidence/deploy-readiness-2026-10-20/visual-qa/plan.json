@@ -1,0 +1,56 @@
+{
+  "schema_version": "visual_qa_plan/v1",
+  "repository": "/Users/rgnsystems/Documents/rgnfarmasystemv2",
+  "target_revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+  "states": [
+    "personal-no-access",
+    "personal-empty",
+    "personal-assigned",
+    "avatar",
+    "reports-readonly",
+    "reports-runner",
+    "report-form",
+    "report-errors",
+    "reports-module",
+    "unit-list",
+    "unit-detail",
+    "production-detail"
+  ],
+  "required_viewports": [
+    {
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "width": 375,
+      "height": 900
+    }
+  ],
+  "interaction_scope": [
+    "mobile-avatar-keyboard-final",
+    "mobile-avatar-destination-final",
+    "mobile-sidebar-open-final",
+    "mobile-sidebar-closed-final",
+    "mobile-report-errors-final",
+    "mobile-report-cancel-final",
+    "desktop-report-journey-final",
+    "mobile-summary-final",
+    "mobile-visuals-tab-final",
+    "mobile-fields-tab-final",
+    "desktop-list-detail-final"
+  ],
+  "excluded_flows": [
+    "POST/upload",
+    "report execution",
+    "production transitions",
+    "deletion",
+    "physical printing",
+    "operational backends"
+  ],
+  "evidence": [
+    "capture-manifest.json",
+    "interaction-checks.json",
+    "summary.json",
+    "render-manifest.json"
+  ]
+}

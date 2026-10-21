@@ -1,0 +1,29 @@
+[
+  {
+    "command": "ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=12 -o ConnectionAttempts=1 -T 13.140.139.122 'python3 -'",
+    "stdin_artifact": "probe-preflight.stdin.txt",
+    "source": "SSH deploy@13.140.139.122; existing configured credentials and strict host-key validation",
+    "exit_status": 0,
+    "scope": "Project containers, metadata, HTTP statuses; no credentials/logs/body contents",
+    "freshness": "2026-10-20T10:07:26.237867+00:00",
+    "result_artifact": "preflight.json"
+  },
+  {
+    "command": "ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=12 -o ConnectionAttempts=1 -T 13.140.139.122 'python3 -'",
+    "stdin_artifact": "probe-recovery.stdin.txt",
+    "source": "SSH deploy@13.140.139.122; existing configured credentials and strict host-key validation",
+    "exit_status": 0,
+    "scope": "Candidate source hashes, backup metadata, image identity and three readiness samples",
+    "freshness": "2026-10-20T10:10:17.123205+00:00",
+    "result_artifact": "recovery.json"
+  },
+  {
+    "command": "ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=12 -o ConnectionAttempts=1 -T 13.140.139.122 'python3 -'",
+    "stdin_artifact": "probe-backup-details.stdin.txt",
+    "source": "SSH deploy@13.140.139.122; existing configured credentials and strict host-key validation",
+    "exit_status": 0,
+    "scope": "Latest release manifest metadata, media counts and exact final target identities",
+    "freshness": "2026-10-20T10:12:44.664181+00:00",
+    "result_artifact": "final-stability.json"
+  }
+]

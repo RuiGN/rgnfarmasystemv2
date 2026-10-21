@@ -367,6 +367,7 @@ class TaxAssessmentPeriodViewSet(SingleInstanceFiscalViewSet):
 
 
 class FiscalBookEntryViewSet(SingleInstanceFiscalViewSet):
+    action_permission_map = {'from_document': ('fiscal.add_fiscalbookentry',)}
     queryset = FiscalBookEntry.objects.select_related('document')
     serializer_class = FiscalBookEntrySerializer
     filterset_fields = ('book_type', 'document', 'entry_date')

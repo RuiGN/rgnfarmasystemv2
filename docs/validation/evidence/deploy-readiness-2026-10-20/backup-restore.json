@@ -1,0 +1,95 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "code": "backup.postgres_dump_gzip",
+      "title": "Backup PostgreSQL compactado",
+      "status": "pass",
+      "evidence": "scripts/backup.sh gera postgres-${TIMESTAMP}.sql.gz com pg_dump e gzip."
+    },
+    {
+      "code": "backup.media_archive",
+      "title": "Backup de media",
+      "status": "pass",
+      "evidence": "scripts/backup.sh arquiva /app/media em media-${TIMESTAMP}.tar.gz."
+    },
+    {
+      "code": "backup.retention_rotation",
+      "title": "Rotacao por retencao",
+      "status": "pass",
+      "evidence": "scripts/backup.sh remove arquivos acima de RETENTION_DAYS."
+    },
+    {
+      "code": "restore.script_exists",
+      "title": "Script de restauracao",
+      "status": "pass",
+      "evidence": "scripts/restore.sh existe, usa bash e set -euo pipefail."
+    },
+    {
+      "code": "restore.requires_explicit_artifact",
+      "title": "Artefato explicito para restauracao",
+      "status": "pass",
+      "evidence": "scripts/restore.sh exige --postgres e/ou --media antes de restaurar."
+    },
+    {
+      "code": "restore.requires_confirmation",
+      "title": "Confirmacao explicita para restore",
+      "status": "pass",
+      "evidence": "scripts/restore.sh bloqueia execucao destrutiva sem --yes."
+    },
+    {
+      "code": "restore.supports_dry_run",
+      "title": "Dry-run de restauracao",
+      "status": "pass",
+      "evidence": "scripts/restore.sh suporta --dry-run sem executar alteracoes."
+    },
+    {
+      "code": "restore.pre_restore_backup",
+      "title": "Backup antes de restaurar",
+      "status": "pass",
+      "evidence": "scripts/restore.sh executa scripts/backup.sh em diretorio pre-restore antes da restauracao."
+    },
+    {
+      "code": "restore.postgres_restore",
+      "title": "Restore PostgreSQL",
+      "status": "pass",
+      "evidence": "scripts/restore.sh limpa schema public e restaura PostgreSQL com gunzip e psql ON_ERROR_STOP."
+    },
+    {
+      "code": "restore.media_restore",
+      "title": "Restore de media",
+      "status": "pass",
+      "evidence": "Restore de mídia cobre container e diretório local com validação e troca atômica."
+    },
+    {
+      "code": "backup.local_scheduler",
+      "title": "Agendador de backup local",
+      "status": "pass",
+      "evidence": "scripts/backup_scheduler.sh agenda ciclos locais, usa lock e valida os artefatos produzidos."
+    },
+    {
+      "code": "backup.local_compose_service",
+      "title": "Servico backup_scheduler no Compose VPS",
+      "status": "pass",
+      "evidence": "docker-compose.vps.yml declara backup_scheduler com banco privado e midia somente leitura."
+    },
+    {
+      "code": "backup.local_environment",
+      "title": "Variaveis de ambiente do backup local",
+      "status": "pass",
+      "evidence": ".env.example documenta janela e retencao do backup local."
+    },
+    {
+      "code": "docs.backup_restore_plan",
+      "title": "Plano documentado de backup e restauracao",
+      "status": "pass",
+      "evidence": "docs/deployment.md, docs/architecture/backup-restore.md e MKDocs documentam backup, restore, pre-restore e check_backup_restore_readiness."
+    },
+    {
+      "code": "security.no_real_secrets",
+      "title": "Sem segredos reais em scripts e docs",
+      "status": "pass",
+      "evidence": "Scripts e documentacao usam variaveis/placeholders, sem tokens reais detectados."
+    }
+  ]
+}

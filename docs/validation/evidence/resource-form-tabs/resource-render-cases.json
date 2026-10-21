@@ -1,0 +1,74 @@
+[
+  {
+    "resource": "formulations/formulas",
+    "case": "test_every_inline_resource_uses_the_shared_tabs[formulations-formulas]",
+    "result": "pass",
+    "scope": "HTTP create form shared tabs; not individual visual homologation"
+  },
+  {
+    "resource": "production/orders",
+    "case": "test_every_inline_resource_uses_the_shared_tabs[production-orders]",
+    "result": "pass",
+    "scope": "HTTP create form shared tabs; not individual visual homologation"
+  },
+  {
+    "resource": "procurement/orders",
+    "case": "test_every_inline_resource_uses_the_shared_tabs[procurement-orders]",
+    "result": "pass",
+    "scope": "HTTP create form shared tabs; not individual visual homologation"
+  },
+  {
+    "resource": "procurement/receipts",
+    "case": "test_every_inline_resource_uses_the_shared_tabs[procurement-receipts]",
+    "result": "pass",
+    "scope": "HTTP create form shared tabs; not individual visual homologation"
+  },
+  {
+    "resource": "quality/analyses",
+    "case": "test_every_inline_resource_uses_the_shared_tabs[quality-analyses]",
+    "result": "pass",
+    "scope": "HTTP create form shared tabs; not individual visual homologation"
+  },
+  {
+    "resource": "documents/controlled-documents",
+    "case": "test_every_inline_resource_uses_the_shared_tabs[documents-controlled-documents]",
+    "result": "pass",
+    "scope": "HTTP create form shared tabs; not individual visual homologation"
+  },
+  {
+    "resource": "deviations/events",
+    "case": "test_every_inline_resource_uses_the_shared_tabs[deviations-events]",
+    "result": "pass",
+    "scope": "HTTP create form shared tabs; not individual visual homologation"
+  },
+  {
+    "resource": "capa/records",
+    "case": "test_every_inline_resource_uses_the_shared_tabs[capa-records]",
+    "result": "pass",
+    "scope": "HTTP create form shared tabs; not individual visual homologation"
+  },
+  {
+    "resource": "audits/plans",
+    "case": "test_every_inline_resource_uses_the_shared_tabs[audits-plans]",
+    "result": "pass",
+    "scope": "HTTP create form shared tabs; not individual visual homologation"
+  },
+  {
+    "resource": "audits/findings",
+    "case": "test_every_inline_resource_uses_the_shared_tabs[audits-findings]",
+    "result": "pass",
+    "scope": "HTTP create form shared tabs; not individual visual homologation"
+  },
+  {
+    "resource": "risks/records",
+    "case": "test_every_inline_resource_uses_the_shared_tabs[risks-records]",
+    "result": "pass",
+    "scope": "HTTP create form shared tabs; not individual visual homologation"
+  },
+  {
+    "resource": "recalls/campaigns",
+    "case": "test_every_inline_resource_uses_the_shared_tabs[recalls-campaigns]",
+    "result": "pass",
+    "scope": "HTTP create form shared tabs; not individual visual homologation"
+  }
+]

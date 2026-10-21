@@ -10,8 +10,13 @@
 
 O `.env` remoto é preservado, fica `0600` e nunca deve ser impresso ou carregado
 com `source`. PostgreSQL, Redis e RabbitMQ não publicam portas externas.
-Defina `TUNNEL_METRICS_PORT=20242` para reservar uma porta de prontidão
-exclusiva deste conector no loopback da VPS.
+Defina `CLOUDFLARED_METRICS_ADDRESS=127.0.0.1:20242` no ambiente do Compose para
+reservar a porta de prontidão exclusiva deste conector no loopback da VPS.
+Esse endereço é autoritativo para Compose e `scripts/deploy-vps.sh`; não basta
+definir apenas a variável legada `TUNNEL_METRICS_PORT=20242`. Sem endereço
+explícito, o padrão do script é `127.0.0.1:20249`. Os probes deste runbook usam
+`20242`, portanto devem acompanhar o endereço efetivamente configurado, sem
+carregar o dotenv com `source` nem expor seu conteúdo.
 O Compose fixa `DJANGO_SETTINGS_MODULE=core.settings.production` no app e nos
 processos Celery. O dotenv de produção deve manter HSTS por um ano, incluindo
 subdomínios e a diretiva de preload, conforme `.env.example`.

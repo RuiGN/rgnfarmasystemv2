@@ -34,6 +34,19 @@ fallback para evento anônimo. O cancelamento é permitido somente em `draft`,
 terminal para essa ação, portanto uma repetição é rejeitada sem substituir
 justificativa, data, ator ou evento original.
 
+Atualizações genéricas da própria OP pela API recarregam a linha atual com
+`select_for_update()` em transação, reaplicam apenas os campos enviados,
+revalidam as referências atuais e salvam esses campos com `updated_at`.
+Assim, um `PATCH` validado antes de `complete`, `pause` ou `cancel` não restaura
+estado, rendimento, autoria ou timestamps antigos. A resposta utiliza a
+instância atualizada, não a leitura obsoleta. Metadados não enviados também
+são preservados. A UI já reaplica alterações sobre a ordem bloqueada; o Admin
+bloqueia a ordem antes de construir o formulário de gravação.
+
+Regressão: `tests/test_p1_production_stale_updates.py`, incluindo intercalação
+HTTP determinística, revalidação de fórmula e conexões PostgreSQL separadas.
+O teste de concorrência não substitui avaliação de carga em produção.
+
 Os mapas de controle e resultados exigem conjuntamente
 `production.view_productionorder` e a permissão funcional dedicada
 `production.view_production_maps`. Os links só são publicados no detalhe da

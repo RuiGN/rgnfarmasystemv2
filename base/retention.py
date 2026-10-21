@@ -18,7 +18,13 @@ GXP_RETENTION_APP_LABELS = frozenset(
 )
 
 
-def requires_gxp_retention(model) -> bool:
-    """Return whether physical deletion is forbidden for the model's app."""
+GXP_RETENTION_MODEL_LABELS = frozenset({'inventory.stockbalance'})
 
-    return model._meta.app_label in GXP_RETENTION_APP_LABELS
+
+def requires_gxp_retention(model) -> bool:
+    """Return whether generic physical deletion is forbidden for this model."""
+
+    return (
+        model._meta.app_label in GXP_RETENTION_APP_LABELS
+        or model._meta.label_lower in GXP_RETENTION_MODEL_LABELS
+    )

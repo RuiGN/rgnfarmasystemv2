@@ -95,6 +95,12 @@ class CriticalActionExecutionViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ComplianceChecklistItemViewSet(viewsets.ReadOnlyModelViewSet):
+    action_permission_map = {
+        'evaluate_module': (
+            'compliance.add_compliancechecklistitem',
+            'compliance.change_compliancechecklistitem',
+        ),
+    }
     permission_classes = (SingleInstanceDjangoModelPermissions,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
     queryset = ComplianceChecklistItem.objects.select_related('checked_by')

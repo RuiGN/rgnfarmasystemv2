@@ -1,0 +1,22 @@
+{
+  "delegation_id": "deleg_725be29a",
+  "status": "completed",
+  "format": "plain-text reviewer response; no formal ship verdict requested or inferred",
+  "scope": "Correção de impressão por linha na listagem de lotes",
+  "review_type": "independent static read-only inspection",
+  "findings": [],
+  "summary": "Nenhum achado concreto no delta de impressão.",
+  "checked_clean": [
+    "Disponibilidade restrita a StockLot e inventory.view_stocklot em base/ui/views.py:1248-1250",
+    "Formulário, CSRF e URL próprios em cada linha de templates/app/resource_list.html:140-152",
+    "Associação de todos os botões ao formulário ancestral em static/js/local-printing.js:12-40",
+    "Confirmação, bloqueio de cliques durante o envio e ausência de reenvio automático",
+    "Compatibilidade estrutural dos consumidores existentes no detalhe e cockpit",
+    "Testes inspecionados cobrem múltiplas linhas, CSRF, cancelamento, duplicidade e falha de transporte"
+  ],
+  "could_not_assess": [
+    "Testes e navegador não foram reexecutados pelo revisor",
+    "Não houve acesso do revisor a banco, credenciais, rede ou impressora",
+    "Não constitui aprovação de release geral ou validação de impressão física"
+  ]
+}

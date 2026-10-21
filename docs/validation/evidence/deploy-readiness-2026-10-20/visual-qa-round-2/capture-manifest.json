@@ -1,0 +1,698 @@
+[
+  {
+    "page": "personal-assigned",
+    "url": "http://127.0.0.1:8767/personal-assigned.html",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/personal-assigned-1440.png",
+    "captured_at": "2026-10-20T07:54:42.630372+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 1440,
+      "height": 1000,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": 0,
+      "headingLevels": [
+        {
+          "tag": "H1",
+          "text": "Minha \u00e1rea"
+        },
+        {
+          "tag": "H2",
+          "text": "CAPAs sob minha responsabilidade"
+        }
+      ],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14,
+      "activityGeometry": [
+        {
+          "titleWidth": 422,
+          "titleScrollWidth": 575,
+          "hasFullTitle": true,
+          "titleRight": 749.234375,
+          "cardRight": 847,
+          "badgeRight": 831
+        }
+      ]
+    }
+  },
+  {
+    "page": "personal-assigned",
+    "url": "http://127.0.0.1:8767/personal-assigned.html",
+    "viewport": {
+      "width": 375,
+      "height": 900
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/personal-assigned-375.png",
+    "captured_at": "2026-10-20T07:54:43.140417+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 375,
+      "height": 900,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": 0,
+      "headingLevels": [
+        {
+          "tag": "H1",
+          "text": "Minha \u00e1rea"
+        },
+        {
+          "tag": "H2",
+          "text": "CAPAs sob minha responsabilidade"
+        }
+      ],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14,
+      "activityGeometry": [
+        {
+          "titleWidth": 219,
+          "titleScrollWidth": 575,
+          "hasFullTitle": true,
+          "titleRight": 256.234375,
+          "cardRight": 354,
+          "badgeRight": 338
+        }
+      ]
+    }
+  },
+  {
+    "page": "personal-no-access",
+    "url": "http://127.0.0.1:8767/personal-no-access.html",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/personal-no-access-1440.png",
+    "captured_at": "2026-10-20T07:54:52.213818+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 1440,
+      "height": 1000,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": 0,
+      "headingLevels": [
+        {
+          "tag": "H1",
+          "text": "Minha \u00e1rea"
+        },
+        {
+          "tag": "H2",
+          "text": "Nenhuma fila pessoal dispon\u00edvel"
+        }
+      ],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14,
+      "activityGeometry": []
+    }
+  },
+  {
+    "page": "personal-no-access",
+    "url": "http://127.0.0.1:8767/personal-no-access.html",
+    "viewport": {
+      "width": 375,
+      "height": 900
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/personal-no-access-375.png",
+    "captured_at": "2026-10-20T07:54:52.710707+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 375,
+      "height": 900,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": 0,
+      "headingLevels": [
+        {
+          "tag": "H1",
+          "text": "Minha \u00e1rea"
+        },
+        {
+          "tag": "H2",
+          "text": "Nenhuma fila pessoal dispon\u00edvel"
+        }
+      ],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14,
+      "activityGeometry": []
+    }
+  },
+  {
+    "page": "personal-empty",
+    "url": "http://127.0.0.1:8767/personal-empty.html",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/personal-empty-1440.png",
+    "captured_at": "2026-10-20T07:55:00.631695+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 1440,
+      "height": 1000,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": 0,
+      "headingLevels": [
+        {
+          "tag": "H1",
+          "text": "Minha \u00e1rea"
+        },
+        {
+          "tag": "H2",
+          "text": "CAPAs sob minha responsabilidade"
+        }
+      ],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14,
+      "activityGeometry": []
+    }
+  },
+  {
+    "page": "personal-empty",
+    "url": "http://127.0.0.1:8767/personal-empty.html",
+    "viewport": {
+      "width": 375,
+      "height": 900
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/personal-empty-375.png",
+    "captured_at": "2026-10-20T07:55:01.212264+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 375,
+      "height": 900,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": 0,
+      "headingLevels": [
+        {
+          "tag": "H1",
+          "text": "Minha \u00e1rea"
+        },
+        {
+          "tag": "H2",
+          "text": "CAPAs sob minha responsabilidade"
+        }
+      ],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14,
+      "activityGeometry": []
+    }
+  },
+  {
+    "page": "reports-readonly",
+    "url": "http://127.0.0.1:8767/reports-readonly.html",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/reports-readonly-1440.png",
+    "captured_at": "2026-10-20T07:55:10.312796+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 1440,
+      "height": 1000,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": -5,
+      "headingLevels": [],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14,
+      "activityGeometry": []
+    }
+  },
+  {
+    "page": "reports-readonly",
+    "url": "http://127.0.0.1:8767/reports-readonly.html",
+    "viewport": {
+      "width": 375,
+      "height": 900
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/reports-readonly-375.png",
+    "captured_at": "2026-10-20T07:55:10.961049+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 375,
+      "height": 900,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": -5,
+      "headingLevels": [],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14,
+      "activityGeometry": []
+    }
+  },
+  {
+    "page": "reports-runner",
+    "url": "http://127.0.0.1:8767/reports-runner.html",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/reports-runner-1440.png",
+    "captured_at": "2026-10-20T07:55:45.051479+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 1440,
+      "height": 1000,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": -5,
+      "headingLevels": [],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14,
+      "activityGeometry": []
+    }
+  },
+  {
+    "page": "reports-runner",
+    "url": "http://127.0.0.1:8767/reports-runner.html",
+    "viewport": {
+      "width": 375,
+      "height": 900
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/reports-runner-375.png",
+    "captured_at": "2026-10-20T07:55:45.581835+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 375,
+      "height": 900,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": -5,
+      "headingLevels": [],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14,
+      "activityGeometry": []
+    }
+  },
+  {
+    "page": "report-form",
+    "url": "http://127.0.0.1:8767/report-form.html",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/report-form-1440.png",
+    "captured_at": "2026-10-20T07:55:53.010246+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 1440,
+      "height": 1000,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": 0,
+      "headingLevels": [],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14,
+      "activityGeometry": []
+    }
+  },
+  {
+    "page": "report-form",
+    "url": "http://127.0.0.1:8767/report-form.html",
+    "viewport": {
+      "width": 375,
+      "height": 900
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/report-form-375.png",
+    "captured_at": "2026-10-20T07:55:53.570057+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 375,
+      "height": 900,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": -5,
+      "headingLevels": [],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14,
+      "activityGeometry": []
+    }
+  },
+  {
+    "page": "report-errors",
+    "url": "http://127.0.0.1:8767/report-errors.html",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/report-errors-1440.png",
+    "captured_at": "2026-10-20T07:56:06.047653+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 1440,
+      "height": 1000,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": 0,
+      "headingLevels": [],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14,
+      "activityGeometry": []
+    }
+  },
+  {
+    "page": "report-errors",
+    "url": "http://127.0.0.1:8767/report-errors.html",
+    "viewport": {
+      "width": 375,
+      "height": 900
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/report-errors-375.png",
+    "captured_at": "2026-10-20T07:56:06.561247+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 375,
+      "height": 900,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": -5,
+      "headingLevels": [],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14,
+      "activityGeometry": []
+    }
+  },
+  {
+    "page": "unit-list",
+    "url": "http://127.0.0.1:8767/unit-list.html",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/unit-list-1440.png",
+    "captured_at": "2026-10-20T07:56:14.831639+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 1440,
+      "height": 1000,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": 0,
+      "headingLevels": [],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 15,
+      "activityGeometry": []
+    }
+  },
+  {
+    "page": "unit-list",
+    "url": "http://127.0.0.1:8767/unit-list.html",
+    "viewport": {
+      "width": 375,
+      "height": 900
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/unit-list-375.png",
+    "captured_at": "2026-10-20T07:56:15.408746+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 375,
+      "height": 900,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": -5,
+      "headingLevels": [],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 15,
+      "activityGeometry": []
+    }
+  },
+  {
+    "page": "unit-detail",
+    "url": "http://127.0.0.1:8767/unit-detail.html",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/unit-detail-1440.png",
+    "captured_at": "2026-10-20T07:56:28.949364+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 1440,
+      "height": 1000,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": -5,
+      "headingLevels": [
+        {
+          "tag": "H2",
+          "text": "QA-RENDER - Unidade de medida de valida\u00e7\u00e3o visual"
+        }
+      ],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 15,
+      "activityGeometry": []
+    }
+  },
+  {
+    "page": "unit-detail",
+    "url": "http://127.0.0.1:8767/unit-detail.html",
+    "viewport": {
+      "width": 375,
+      "height": 900
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/unit-detail-375.png",
+    "captured_at": "2026-10-20T07:56:29.485809+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 375,
+      "height": 900,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": -5,
+      "headingLevels": [
+        {
+          "tag": "H2",
+          "text": "QA-RENDER - Unidade de medida de valida\u00e7\u00e3o visual"
+        }
+      ],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 15,
+      "activityGeometry": []
+    }
+  },
+  {
+    "page": "production-detail",
+    "url": "http://127.0.0.1:8767/production-detail.html",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/production-detail-1440.png",
+    "captured_at": "2026-10-20T07:56:42.516985+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 1440,
+      "height": 1000,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": -5,
+      "headingLevels": [
+        {
+          "tag": "H2",
+          "text": "A\u00e7\u00f5es dispon\u00edveis"
+        },
+        {
+          "tag": "H2",
+          "text": "OP-RENDER-QA - PA-renderqa"
+        },
+        {
+          "tag": "H2",
+          "text": "Resumo operacional"
+        }
+      ],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 15,
+      "activityGeometry": []
+    }
+  },
+  {
+    "page": "production-detail",
+    "url": "http://127.0.0.1:8767/production-detail.html",
+    "viewport": {
+      "width": 375,
+      "height": 900
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/production-detail-375.png",
+    "captured_at": "2026-10-20T07:56:43.077736+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 375,
+      "height": 900,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": -5,
+      "headingLevels": [
+        {
+          "tag": "H2",
+          "text": "A\u00e7\u00f5es dispon\u00edveis"
+        },
+        {
+          "tag": "H2",
+          "text": "OP-RENDER-QA - PA-renderqa"
+        },
+        {
+          "tag": "H2",
+          "text": "Resumo operacional"
+        }
+      ],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 15,
+      "activityGeometry": []
+    }
+  },
+  {
+    "page": "reports-module",
+    "url": "http://127.0.0.1:8767/reports-module.html",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/reports-module-1440.png",
+    "captured_at": "2026-10-20T07:57:08.317470+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 1440,
+      "height": 1000,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": 0,
+      "headingLevels": [
+        {
+          "tag": "H1",
+          "text": "Relat\u00f3rios e BI"
+        },
+        {
+          "tag": "H2",
+          "text": "Cat\u00e1logo de relat\u00f3rios"
+        },
+        {
+          "tag": "H2",
+          "text": "Execu\u00e7\u00f5es de relat\u00f3rio"
+        }
+      ],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14,
+      "activityGeometry": []
+    }
+  },
+  {
+    "page": "reports-module",
+    "url": "http://127.0.0.1:8767/reports-module.html",
+    "viewport": {
+      "width": 375,
+      "height": 900
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/reports-module-375.png",
+    "captured_at": "2026-10-20T07:57:08.820340+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 375,
+      "height": 900,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": -5,
+      "headingLevels": [
+        {
+          "tag": "H1",
+          "text": "Relat\u00f3rios e BI"
+        },
+        {
+          "tag": "H2",
+          "text": "Cat\u00e1logo de relat\u00f3rios"
+        },
+        {
+          "tag": "H2",
+          "text": "Execu\u00e7\u00f5es de relat\u00f3rio"
+        }
+      ],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14,
+      "activityGeometry": []
+    }
+  },
+  {
+    "page": "avatar",
+    "url": "http://127.0.0.1:8767/avatar.html",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/avatar-1440.png",
+    "captured_at": "2026-10-20T07:57:16.973497+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 1440,
+      "height": 1000,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": 0,
+      "headingLevels": [
+        {
+          "tag": "H2",
+          "text": "served-visual-qa-no-access"
+        }
+      ],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14,
+      "activityGeometry": []
+    }
+  },
+  {
+    "page": "avatar",
+    "url": "http://127.0.0.1:8767/avatar.html",
+    "viewport": {
+      "width": 375,
+      "height": 900
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/avatar-375.png",
+    "captured_at": "2026-10-20T07:57:17.445248+00:00",
+    "target_revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "metrics": {
+      "width": 375,
+      "height": 900,
+      "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+      "overflow": 0,
+      "headingLevels": [
+        {
+          "tag": "H2",
+          "text": "served-visual-qa-no-access"
+        }
+      ],
+      "outsideControls": [],
+      "errors": [],
+      "localFailedResources": [],
+      "localResourceCount": 14,
+      "activityGeometry": []
+    }
+  }
+]

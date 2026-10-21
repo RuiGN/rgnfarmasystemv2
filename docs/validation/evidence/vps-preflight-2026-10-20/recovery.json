@@ -1,0 +1,271 @@
+{
+  "captured_at": "2026-10-20T10:10:17.123205+00:00",
+  "scope": "Metadata only; no archive contents/checksums read, no restore, no DB queries, no dotenv/credentials.",
+  "candidate_source_comparison": {
+    "expected_count": 999,
+    "matching": 942,
+    "missing": [
+      "base/ui/form_layouts.py",
+      "static/js/resource-form-tabs.js",
+      "templates/app/includes/resource_form_field.html",
+      "templates/app/includes/resource_form_tabs.html",
+      "templates/app/includes/resource_inline_formset.html",
+      "tests/js/local-printing.test.cjs",
+      "tests/test_local_printing_js.py",
+      "tests/test_p1_collection_permissions.py",
+      "tests/test_p1_production_stale_updates.py",
+      "tests/test_p1_stock_balance_retention.py",
+      "tests/test_p1_stock_lot_identity.py",
+      "tests/test_rabbitmq_healthcheck_identity.py",
+      "tests/test_release_gate_corrections.py",
+      "tests/test_resource_form_tabs.py"
+    ],
+    "different": [
+      ".github/workflows/quality.yml",
+      ".github/workflows/release.yml",
+      ".gitignore",
+      "base/permissions.py",
+      "base/retention.py",
+      "base/ui/actions/discovery.py",
+      "base/ui/registry.py",
+      "base/ui/views.py",
+      "compliance/views.py",
+      "docker-compose.vps.yml",
+      "docker-compose.yml",
+      "finance/views.py",
+      "fiscal/views.py",
+      "inventory/admin.py",
+      "inventory/models.py",
+      "inventory/serializers.py",
+      "procurement/views.py",
+      "production/serializers.py",
+      "risks/views.py",
+      "scripts/backup_scheduler.sh",
+      "scripts/ci/quality-gate.sh",
+      "static/css/app.css",
+      "static/js/local-printing.js",
+      "templates/app/includes/inline_stacked.html",
+      "templates/app/module.html",
+      "templates/app/personal_area.html",
+      "templates/app/report_catalog.html",
+      "templates/app/report_run.html",
+      "templates/app/resource_detail.html",
+      "templates/app/resource_form.html",
+      "templates/app/resource_list.html",
+      "templates/base.html",
+      "templates/includes/components/detail_summary.html",
+      "tests/test_accounts_avatar.py",
+      "tests/test_app_ui.py",
+      "tests/test_backup_scheduler_script.py",
+      "tests/test_direct_label_printing.py",
+      "tests/test_formula_inline_components_ui.py",
+      "tests/test_master_data.py",
+      "tests/test_native_postgres_deployment.py",
+      "tests/test_personal_area.py",
+      "tests/test_readiness_deadline_corrections.py",
+      "tests/test_responsive_layout_css.py"
+    ],
+    "refused_symlinks": [],
+    "unreadable": []
+  },
+  "parent_directory_metadata": [
+    {
+      "path": "/home/deploy",
+      "mode": "0o750",
+      "bytes": 4096,
+      "kind": "directory",
+      "modified_at": "2026-10-20T08:16:05.362145+00:00"
+    },
+    {
+      "path": "/home/deploy/rgnfarmasystemv2",
+      "mode": "0o775",
+      "bytes": 4096,
+      "kind": "directory",
+      "modified_at": "2026-10-20T05:42:20.511657+00:00"
+    }
+  ],
+  "backup_volume_metadata": {
+    "exit_code": 0,
+    "parsed": {
+      "directory": "/var/backups/rgnfarmasystem",
+      "archive_contents_read": false,
+      "directory_mode": "0o755",
+      "total_regular_file_count": 5,
+      "newest_files": [
+        {
+          "name": "last_backup_ok",
+          "bytes": 21,
+          "mode": "0o644",
+          "modified_at": "2026-10-20T03:00:01.458654+00:00",
+          "age_hours": 7.171,
+          "symlink": false
+        },
+        {
+          "name": "media-20261020-030000.tar.gz",
+          "bytes": 105,
+          "mode": "0o600",
+          "modified_at": "2026-10-20T03:00:01.432654+00:00",
+          "age_hours": 7.171,
+          "symlink": false
+        },
+        {
+          "name": "postgres-20261020-030000.sql.gz",
+          "bytes": 114699,
+          "mode": "0o600",
+          "modified_at": "2026-10-20T03:00:01.400654+00:00",
+          "age_hours": 7.171,
+          "symlink": false
+        },
+        {
+          "name": "media-20261019-030002.tar.gz",
+          "bytes": 105,
+          "mode": "0o600",
+          "modified_at": "2026-10-19T03:00:05.556253+00:00",
+          "age_hours": 31.17,
+          "symlink": false
+        },
+        {
+          "name": "postgres-20261019-030002.sql.gz",
+          "bytes": 114585,
+          "mode": "0o600",
+          "modified_at": "2026-10-19T03:00:05.496253+00:00",
+          "age_hours": 31.17,
+          "symlink": false
+        }
+      ],
+      "subdirectories": [
+        "logs"
+      ],
+      "scheduler_health_marker": {
+        "name": "backup_scheduler_ready",
+        "bytes": 21,
+        "mode": "0o644",
+        "modified_at": "2026-10-20T03:00:01.458654+00:00",
+        "age_hours": 7.171,
+        "symlink": false
+      }
+    }
+  },
+  "host_release_backup_locations": [
+    {
+      "metadata": {
+        "path": "/var/backups/rgnfarmasystem/releases",
+        "mode": "0o700",
+        "bytes": 4096,
+        "kind": "directory",
+        "modified_at": "2026-10-19T19:07:36.483875+00:00"
+      },
+      "directory_count": 14,
+      "newest_directories": [
+        {
+          "path": "/var/backups/rgnfarmasystem/releases/release-20261019T190736Z",
+          "mode": "0o700",
+          "bytes": 4096,
+          "kind": "directory",
+          "modified_at": "2026-10-19T19:07:37.804880+00:00"
+        },
+        {
+          "path": "/var/backups/rgnfarmasystem/releases/release-20261010T045328Z",
+          "mode": "0o700",
+          "bytes": 4096,
+          "kind": "directory",
+          "modified_at": "2026-10-10T04:53:29.894223+00:00"
+        },
+        {
+          "path": "/var/backups/rgnfarmasystem/releases/verified-e57fff4-20261003T064030Z",
+          "mode": "0o700",
+          "bytes": 4096,
+          "kind": "directory",
+          "modified_at": "2026-10-03T07:21:56.831480+00:00"
+        },
+        {
+          "path": "/var/backups/rgnfarmasystem/releases/release-20260922T215343Z",
+          "mode": "0o700",
+          "bytes": 4096,
+          "kind": "directory",
+          "modified_at": "2026-09-22T21:53:45.382170+00:00"
+        },
+        {
+          "path": "/var/backups/rgnfarmasystem/releases/release-20260922T213120Z",
+          "mode": "0o700",
+          "bytes": 4096,
+          "kind": "directory",
+          "modified_at": "2026-09-22T21:31:21.949765+00:00"
+        },
+        {
+          "path": "/var/backups/rgnfarmasystem/releases/release-20260922T211459Z",
+          "mode": "0o700",
+          "bytes": 4096,
+          "kind": "directory",
+          "modified_at": "2026-09-22T21:15:01.318911+00:00"
+        },
+        {
+          "path": "/var/backups/rgnfarmasystem/releases/release-20260922T205309Z",
+          "mode": "0o700",
+          "bytes": 4096,
+          "kind": "directory",
+          "modified_at": "2026-09-22T20:53:12.022252+00:00"
+        },
+        {
+          "path": "/var/backups/rgnfarmasystem/releases/release-20260922T194244Z",
+          "mode": "0o700",
+          "bytes": 4096,
+          "kind": "directory",
+          "modified_at": "2026-09-22T19:42:46.360683+00:00"
+        },
+        {
+          "path": "/var/backups/rgnfarmasystem/releases/release-20260922T185327Z",
+          "mode": "0o700",
+          "bytes": 4096,
+          "kind": "directory",
+          "modified_at": "2026-09-22T18:53:28.918901+00:00"
+        },
+        {
+          "path": "/var/backups/rgnfarmasystem/releases/release-20260922T182853Z",
+          "mode": "0o700",
+          "bytes": 4096,
+          "kind": "directory",
+          "modified_at": "2026-09-22T18:28:55.375531+00:00"
+        }
+      ]
+    },
+    {
+      "metadata": {
+        "path": "/home/deploy/releases/rgnfarmasystem",
+        "error_type": "FileNotFoundError"
+      },
+      "listing_error_type": "FileNotFoundError"
+    }
+  ],
+  "rollback_image_inventory": {
+    "exit_code": 0,
+    "stdout": "sha256:1afda8b358fa7e8f6b839607ef8398c59d293fe4afacf797cee606c2dce9486e\trgnfarmasystem:vps\t2026-10-19 16:09:05 -0300 -03"
+  },
+  "current_app_image": {
+    "exit_code": 0,
+    "stdout": "sha256:1afda8b358fa7e8f6b839607ef8398c59d293fe4afacf797cee606c2dce9486e"
+  },
+  "current_image_metadata": {
+    "id": "sha256:1afda8b358fa7e8f6b839607ef8398c59d293fe4afacf797cee606c2dce9486e",
+    "created": "2026-10-19T16:09:05.783935992-03:00",
+    "size_bytes": 2102717785,
+    "tags": [
+      "rgnfarmasystem:vps"
+    ],
+    "revision_label": null
+  },
+  "readiness_samples": [
+    {
+      "exit_code": 0,
+      "stdout": "200 2.710618"
+    },
+    {
+      "exit_code": 0,
+      "stdout": "200 2.355026"
+    },
+    {
+      "exit_code": 0,
+      "stdout": "200 2.509526"
+    }
+  ]
+}

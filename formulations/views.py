@@ -9,6 +9,7 @@ from formulations.serializers import (
     RouteStepSerializer,
 )
 from base.permissions import SingleInstanceDjangoModelPermissions
+from formulations.writers import WriterViewSetMixin
 
 
 class SingleInstanceFormulationViewSet(viewsets.ModelViewSet):
@@ -23,7 +24,7 @@ class SingleInstanceFormulationViewSet(viewsets.ModelViewSet):
         serializer.save()
 
 
-class MasterFormulaViewSet(SingleInstanceFormulationViewSet):
+class MasterFormulaViewSet(WriterViewSetMixin, SingleInstanceFormulationViewSet):
     queryset = MasterFormula.objects.select_related(
         'product', 'batch_unit', 'copied_from', 'approved_by'
     )
@@ -33,7 +34,7 @@ class MasterFormulaViewSet(SingleInstanceFormulationViewSet):
     ordering = ('product__code', '-version')
 
 
-class FormulaComponentViewSet(SingleInstanceFormulationViewSet):
+class FormulaComponentViewSet(WriterViewSetMixin, SingleInstanceFormulationViewSet):
     queryset = FormulaComponent.objects.select_related('formula', 'material', 'unit')
     serializer_class = FormulaComponentSerializer
     filterset_fields = ('formula', 'material', 'role', 'is_active')

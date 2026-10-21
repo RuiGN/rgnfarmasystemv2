@@ -813,9 +813,12 @@ através da VPN, mantenha a porta TCP 9100 quando essa for a configuração do
 equipamento, confira largura e altura da mídia e deixe somente uma impressora
 ativa.
 
-Para imprimir, abra **Estoque → Lotes**, acesse o detalhe do lote e selecione
-**Imprimir etiqueta**. Confirme o envio uma única vez. O botão é exibido apenas
-a usuários com permissão para visualizar lotes.
+Para imprimir, abra **Estoque → Lotes** e selecione **Etiqueta** na coluna
+**Ações** do lote desejado. Também é possível acessar o detalhe do lote e
+selecionar **Imprimir etiqueta**. Confirme o envio uma única vez. Cada botão
+envia somente a etiqueta do lote da respectiva linha; não há impressão em massa.
+O botão é exibido apenas a usuários com permissão para visualizar lotes e
+depende de JavaScript habilitado.
 
 A etiqueta apresenta:
 

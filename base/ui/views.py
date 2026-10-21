@@ -17,7 +17,7 @@ from django.core.exceptions import (
 from django.db import IntegrityError, models, transaction
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.forms import inlineformset_factory
+from django.forms import BaseInlineFormSet, inlineformset_factory
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect
 from django.utils.dateparse import parse_date, parse_datetime
@@ -29,10 +29,16 @@ from django.views.generic import TemplateView
 from auxiliary.models import City, StateProvince
 from base.ui.actions.context import available_actions
 from base.ui.audit import get_audit_entries
+from base.ui.form_layouts import build_resource_form_layout
 from base.ui.forms import _apply_widget_metadata, build_resource_form
 from base.ui.personal_area import build_personal_area
 from base.ui.presentation import ProgressMetric, build_detail_summary, resolve_status
 from base.ui.registry import get_module, get_visible_modules, get_resource
+from base.ui.related_fields import (
+    configure_inline_parent_fields,
+    configure_related_fields,
+    validate_related_fields,
+)
 from base.ui.search import search_visible_resources
 from base.ui.workspaces import get_workspace
 from base.templatetags.ui_query import build_query_string
@@ -93,6 +99,12 @@ def _build_inline_form_class(inline):
             ):
                 setattr(self.instance, inline.actor_field, request.user)
 
+            configure_related_fields(self)
+
+        def clean(self):
+            cleaned_data = super().clean()
+            return validate_related_fields(self, cleaned_data)
+
         def _update_errors(self, errors):
             """Keep validation of server-controlled fields on the form safely.
 
@@ -109,6 +121,10 @@ def _build_inline_form_class(inline):
             super()._update_errors(errors)
 
         def _post_clean(self):
+            # A discarded new row has no model values to validate or persist.
+            # Formset deletion and its permission check still run normally.
+            if self.instance.pk is None and self.cleaned_data.get('DELETE'):
+                return
             # An immutable persisted child is rendered as disabled controls.
             # Do not round-trip its dates/derived values through ModelForm's
             # coercion merely because the parent form is being submitted.
@@ -137,12 +153,19 @@ def _build_inline_formset(
     instance=None,
     allow_add=True,
     initial=None,
+    parent_form=None,
 ):
+    class RelatedInlineFormSet(BaseInlineFormSet):
+        def add_fields(self, form, index):
+            super().add_fields(form, index)
+            configure_inline_parent_fields(form, parent_form)
+
     formset_class = inlineformset_factory(
         resource.model,
         inline.child_model,
         fk_name=inline.parent_field,
         form=_build_inline_form_class(inline),
+        formset=RelatedInlineFormSet,
         fields=inline.fields,
         extra=(
             max(inline.extra, len(initial or ()))
@@ -1240,6 +1263,9 @@ class ResourceListView(LoginRequiredMixin, ResourceContextMixin, TemplateView):
         context['headers'] = [
             _field_label(resource.model, field) for field in resource.list_display
         ]
+        context['can_print_labels'] = resource.model is StockLot and self.request.user.has_perm(
+            'inventory.view_stocklot'
+        )
         context['collection_actions'] = available_actions(self.request, resource)
         return context
 
@@ -1676,7 +1702,9 @@ class ResourceCreateView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
         del form, error
         return False
 
-    def get_inline_formsets(self, *, data=None, instance=None, initial_by_key=None):
+    def get_inline_formsets(
+        self, *, data=None, instance=None, initial_by_key=None, parent_form=None
+    ):
         resource = self.get_resource()
         inline_formsets = []
         initial_by_key = initial_by_key or {}
@@ -1698,6 +1726,7 @@ class ResourceCreateView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
                     instance=instance,
                     allow_add=allow_add,
                     initial=initial_by_key.get(inline.key) if data is None else None,
+                    parent_form=parent_form,
                 )
             inline_formsets.append(
                 {
@@ -1752,10 +1781,29 @@ class ResourceCreateView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
 
     def save_object_and_inline_formsets(self, form, inline_formsets, *, action):
         from governance.models import GovernanceAuditLog
+        from contextlib import nullcontext
+        from formulations.writers import (
+            supports,
+            write_gate,
+            locked_instance,
+            form_changes,
+            save_form,
+            delete_instance,
+        )
 
-        with transaction.atomic():
+        with transaction.atomic(), write_gate() if supports(form.instance) else nullcontext():
             obj = form.save(commit=False)
-            obj = self.prepare_object_for_save(obj, action=action)
+            is_formula_writer = supports(obj)
+            if is_formula_writer:
+                try:
+                    with locked_instance(obj, form_changes(form)) as current:
+                        obj = self.prepare_object_for_save(current, action=action)
+                        obj.full_clean()
+                        obj.save(**form.resource_save_kwargs())
+                except ValidationError as exc:
+                    raise _OrderRevalidationError(form, exc) from exc
+            else:
+                obj = self.prepare_object_for_save(obj, action=action)
             is_production_order_ui = (
                 isinstance(obj, ProductionOrder)
                 and self.get_module().slug == 'production'
@@ -1776,7 +1824,7 @@ class ResourceCreateView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
                     raise _OrderRevalidationError(form, exc) from exc
                 locked_order.save()
                 obj = locked_order
-            else:
+            elif not is_formula_writer:
                 obj.save(**form.resource_save_kwargs())
             form.instance = obj
             form.save_m2m()
@@ -1788,6 +1836,25 @@ class ResourceCreateView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
                     inline_change_counts[inline['key']] = 0
                     continue
                 formset.instance = obj
+                if is_formula_writer:
+                    changed_count = 0
+                    for bound_form in formset.forms:
+                        if not bound_form.has_changed():
+                            continue
+                        if bound_form.cleaned_data.get('DELETE'):
+                            if bound_form.instance.pk:
+                                delete_instance(bound_form.instance)
+                        else:
+                            setattr(bound_form.instance, config.parent_field, obj)
+                            if config.parent_field in bound_form.cleaned_data:
+                                bound_form.cleaned_data[config.parent_field] = obj
+                            try:
+                                save_form(bound_form, final=False)
+                            except ValidationError as exc:
+                                raise _InlineRevalidationError(inline, bound_form, exc) from exc
+                        changed_count += 1
+                    inline_change_counts[inline['key']] = changed_count
+                    continue
                 if not is_production_order_ui:
                     children = formset.save(commit=False)
                     for deleted_object in formset.deleted_objects:
@@ -1849,6 +1916,60 @@ class ResourceCreateView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
                 # Operational inlines intentionally have no M2M fields.  Calling
                 # formset.save_m2m() here would require formset.save(commit=False)
                 # and would reintroduce stale instance persistence.
+            if is_production_order_ui:
+                # Include unsubmitted/unviewable rows while holding the same
+                # parent lock used by allocation writes; never trust TOTAL_FORMS.
+                checks = (
+                    (
+                        'formula',
+                        obj.material_consumptions.filter(component__isnull=False).exclude(
+                            component__formula_id=obj.formula_id
+                        ),
+                        'Os consumos devem pertencer à fórmula da ordem.',
+                    ),
+                    (
+                        'route',
+                        obj.operation_executions.filter(route_step__isnull=False).exclude(
+                            route_step__route_id=obj.route_id
+                        ),
+                        'As operações devem pertencer ao roteiro da ordem.',
+                    ),
+                    (
+                        'product',
+                        obj.outputs.exclude(product_id=obj.product_id),
+                        'Os resultados devem pertencer ao produto da ordem.',
+                    ),
+                )
+                errors = {name: message for name, rows, message in checks if rows.exists()}
+                if errors:
+                    raise _OrderRevalidationError(form, ValidationError(errors))
+            if (
+                obj._meta.label_lower == 'procurement.purchasereceipt'
+                and obj.items.exclude(order_item__order_id=obj.order_id).exists()
+            ):
+                # Include rows omitted from the POST. Receipt.save holds the
+                # same parent lock used by receipt-item writes until commit.
+                raise _OrderRevalidationError(
+                    form,
+                    ValidationError(
+                        {'order': 'Os itens devem pertencer ao pedido do recebimento.'}
+                    ),
+                )
+            if obj._meta.label_lower == 'formulations.masterformula' and obj.status == 'approved':
+                # Management forms and view permission must not hide persisted
+                # components from the final approval/business-rule check.
+                for component in obj.components.select_related(
+                    'formula', 'material__unit', 'material__category'
+                ):
+                    try:
+                        component.clean()
+                    except ValidationError as exc:
+                        raise _OrderRevalidationError(
+                            form,
+                            ValidationError(
+                                'A fórmula contém componentes incompatíveis com a aprovação.'
+                            ),
+                        ) from exc
             if action == 'created' and isinstance(obj, ControlledDocument):
                 obj.record_audit(
                     DocumentAuditTrail.Action.CREATED,
@@ -1887,10 +2008,19 @@ class ResourceCreateView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
             inline_formsets = self.get_inline_formsets(
                 instance=getattr(form, 'instance', None),
                 initial_by_key=self.get_inline_initial(),
+                parent_form=form,
             )
         context['inline_formsets'] = inline_formsets
         context['has_inline_formsets'] = bool(inline_formsets)
+        context.update(build_resource_form_layout(self.get_resource(), form, inline_formsets))
         context['form_mode'] = 'create'
+        if (self.get_resource().app_label, self.get_resource().slug) == (
+            'formulations',
+            'formulas',
+        ):
+            from masters.related_create import related_context
+
+            context.update(related_context(self.request))
         context['cancel_url'] = reverse(
             'app:resource_list',
             kwargs={
@@ -1902,12 +2032,22 @@ class ResourceCreateView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
 
     def post(self, request, *args, **kwargs):
         form = self.get_form_class()(request.POST, request=request)
+        if (self.get_resource().app_label, self.get_resource().slug) == (
+            'formulations',
+            'formulas',
+        ):
+            from masters.related_create import RELATED_ACTIONS, handle_formula_related_post
+
+            if request.POST.get('workflow_action') in RELATED_ACTIONS:
+                return handle_formula_related_post(self)
         form_is_valid = form.is_valid()
         if form_is_valid:
             obj = form.save(commit=False)
         else:
             obj = getattr(form, 'instance', None)
-        inline_formsets = self.get_inline_formsets(data=request.POST, instance=obj)
+        inline_formsets = self.get_inline_formsets(
+            data=request.POST, instance=obj, parent_form=form
+        )
         inline_formsets_are_valid = all(
             not inline['available'] or inline['formset'].is_valid() for inline in inline_formsets
         )
@@ -1977,7 +2117,7 @@ class ResourceUpdateView(ResourceCreateView):
         form = kwargs.get('form') or self.get_form_class()(instance=obj, request=self.request)
         inline_formsets = kwargs.get('inline_formsets')
         if inline_formsets is None:
-            inline_formsets = self.get_inline_formsets(instance=obj)
+            inline_formsets = self.get_inline_formsets(instance=obj, parent_form=form)
         context = super().get_context_data(
             **{**kwargs, 'form': form, 'inline_formsets': inline_formsets}
         )
@@ -1996,7 +2136,17 @@ class ResourceUpdateView(ResourceCreateView):
     def post(self, request, *args, **kwargs):
         obj = self.get_object()
         form = self.get_form_class()(request.POST, instance=obj, request=request)
-        inline_formsets = self.get_inline_formsets(data=request.POST, instance=obj)
+        if (self.get_resource().app_label, self.get_resource().slug) == (
+            'formulations',
+            'formulas',
+        ):
+            from masters.related_create import RELATED_ACTIONS, handle_formula_related_post
+
+            if request.POST.get('workflow_action') in RELATED_ACTIONS:
+                return handle_formula_related_post(self, instance=obj)
+        inline_formsets = self.get_inline_formsets(
+            data=request.POST, instance=obj, parent_form=form
+        )
         form_is_valid = form.is_valid()
         inline_formsets_are_valid = all(
             not inline['available'] or inline['formset'].is_valid() for inline in inline_formsets
@@ -2112,7 +2262,12 @@ class ResourceDeleteView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
                 target_model = obj.__class__.__name__
                 target_record_id = obj.pk
                 module = obj._meta.app_label
-                obj.delete()
+                from formulations.writers import supports, delete_instance
+
+                if supports(obj):
+                    delete_instance(obj)
+                else:
+                    obj.delete()
                 GovernanceAuditLog.record(
                     log_type=GovernanceAuditLog.LogType.FUNCTIONAL,
                     severity=GovernanceAuditLog.Severity.WARNING,

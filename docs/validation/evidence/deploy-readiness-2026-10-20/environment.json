@@ -1,0 +1,9 @@
+{
+  "python": "3.14.7",
+  "django": "6.0.8",
+  "platform": "macOS-26.7.2-x86_64-i386-64bit-Mach-O",
+  "node": "v24.21.0",
+  "bash": "GNU bash, version 3.2.57(1)-release (x86_64-apple-darwin25)",
+  "shell_test_image_id": "sha256:424055b1b37d9a3234f828379a4505022fff7018dd342fee1cafbcf165bf02fd",
+  "fingerprint": "sha256:122e2946f9a0e09ea9e15c7626b583b46ca574064c3d45a45715d95d8437709f"
+}

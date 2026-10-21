@@ -1,0 +1,156 @@
+{
+  "schema": "release_gate_verdict/v1",
+  "captured_at": "2026-10-20T10:20:26.936660+00:00",
+  "verdict": "HOLD",
+  "audit_completed": true,
+  "local_engineering_verdict_unchanged": "PASS",
+  "production_mutations_performed": false,
+  "reasons": [
+    "VPS dotenv0664 instead of0600",
+    "Validated candidate is local, not yet published/promoted",
+    "Fresh verified backup and preserved rollback image required before promotion",
+    "Actual project path and occupied tunnel ports differ from generic runbook assumptions",
+    "Formal external approvals/provisioning remain unverified"
+  ],
+  "readiness_matrix": [
+    {
+      "id": "SSH",
+      "status": "PASS",
+      "observed": "Existing deploy access; strict host-key verification; correct project labels; actual checkout discovered",
+      "evidence": [
+        "discovery-sanitized.json",
+        "preflight.json"
+      ]
+    },
+    {
+      "id": "RUNTIME",
+      "status": "PASS",
+      "observed": "Nine project containers running/healthy; restart counts zero; identities stable through final capture",
+      "evidence": [
+        "preflight.json",
+        "final-stability.json"
+      ]
+    },
+    {
+      "id": "HTTP_TLS",
+      "status": "PASS",
+      "observed": "Internal/public health and readiness200; public TLS verification result0; three additional internal readiness200",
+      "evidence": [
+        "preflight.json",
+        "recovery.json"
+      ]
+    },
+    {
+      "id": "PRIVATE_BACKENDS",
+      "status": "PASS",
+      "observed": "PostgreSQL/Redis/RabbitMQ have no host port bindings; nginx published on127.0.0.1:8081 only",
+      "evidence": [
+        "preflight.json"
+      ]
+    },
+    {
+      "id": "DOTENV_MODE",
+      "status": "FAIL",
+      "origin": "unknown",
+      "expected": "0600",
+      "observed": "0664 both captures; ownerUID/GID1000; contents not read; parent home0750 limits traversal but does not meet required mode",
+      "evidence": [
+        "preflight.json",
+        "recovery.json",
+        "final-stability.json"
+      ]
+    },
+    {
+      "id": "CANDIDATE_DELIVERY",
+      "status": "PENDING",
+      "observed": {
+        "expected_count": 999,
+        "matching": 942,
+        "missing": 14,
+        "different": 43,
+        "refused_symlinks": 0,
+        "unreadable": 0
+      },
+      "required": "Create/publish an authorized immutable release tied to the validated source snapshot; current HEAD alone excludes local changes",
+      "evidence": [
+        "recovery.json"
+      ]
+    },
+    {
+      "id": "CAPACITY",
+      "status": "OBSERVED_ONLY",
+      "observed": {
+        "cpu_count": 4,
+        "load_average": [
+          1.94482421875,
+          1.591796875,
+          1.49267578125
+        ],
+        "root_free_gib": 182.83,
+        "available_ram_gib": 2.71,
+        "swap_used_gib": 1.3,
+        "host_total_container_count": 50
+      },
+      "limits": "Point-in-time observation, not load test or proof that building on this shared host is safe",
+      "evidence": [
+        "discovery-sanitized.json",
+        "preflight.json"
+      ]
+    },
+    {
+      "id": "BACKUP",
+      "status": "PARTIAL",
+      "observed": "Daily dump/media artifacts20Oct03:00UTC, nonzero/0600; latest release has two-entry checksum manifest and previous gitref",
+      "missing": "Fresh pre-promotion backup, archive/checksum verification and isolated restore proof; offsite durability not checked",
+      "evidence": [
+        "recovery.json",
+        "final-stability.json"
+      ]
+    },
+    {
+      "id": "ROLLBACK",
+      "status": "PARTIAL",
+      "observed": "Current image ID exists, onlyvps tag observed, revision label absent; previous releasegitref recorded",
+      "missing": "Preserve current image immutably and define data/schema-compatible recovery; no rollback or DB/media restore exercised",
+      "evidence": [
+        "recovery.json",
+        "final-stability.json",
+        "../../../../scripts/deploy-vps.sh"
+      ]
+    },
+    {
+      "id": "RUNBOOK",
+      "status": "HOLD",
+      "observed": "Runbook/default script path/opt absent; actual path/home/deploy/rgnfarmasystemv2. Port20242 already listened on shared host; loopback20249/ready returns200",
+      "required": "Use verified explicit PROJECT_DIR; reconcile tunnel address without moving/stopping other products or blindly applying20242",
+      "evidence": [
+        "discovery-sanitized.json",
+        "preflight.json",
+        "../../../../docs/DEPLOY_VPS.md"
+      ]
+    },
+    {
+      "id": "COMPLIANCE_ADMIN",
+      "status": "NOT_OBSERVED",
+      "observed": "Existing external sign-offs/provisioning remain outside this read-only audit; no operator approval fabricated",
+      "evidence": [
+        "../../known-pending-items.md"
+      ]
+    },
+    {
+      "id": "OBSERVABILITY_SUPPORT",
+      "status": "PARTIAL",
+      "observed": "Runtime and HTTP health captured",
+      "missing": "Alerting/log retention, release window, support/rollback owner and release communication not established by this audit",
+      "evidence": [
+        "preflight.json"
+      ]
+    }
+  ],
+  "not_evidence": [
+    "No deploy, commit, push, migration, restart, chmod or restore",
+    "No dotenv content, credential, arbitrary argv, log or operational DB record read",
+    "No backup archive content inspected or checksum recomputed",
+    "No load/restore/rollback/industrial printer test or formal human acceptance claimed"
+  ]
+}

@@ -13,8 +13,8 @@
                     </div>
                     <div>
                         <span class="fs-11 fw-bold text-uppercase text-muted">Gestão Individual de Tarefas</span>
-                        <h4 class="fw-bold mb-1" id="personal-area-heading">Minha Área de Trabalho</h4>
-                        <p class="text-muted mb-0">Pendências regulatórias, aprovações e atividades sob sua responsabilidade direta.</p>
+                        <h1 class="h4 fw-bold mb-1" id="personal-area-heading">Minha área</h1>
+                        <p class="text-muted mb-0">Pendências e atividades sob sua responsabilidade, incluindo aprovações regulatórias.</p>
                     </div>
                 </div>
                 <div class="d-flex align-items-center gap-2">
@@ -34,7 +34,7 @@
                         <span class="avatar-text avatar-md bg-soft-primary text-primary" aria-hidden="true">
                             <i class="{{ section.icon }}"></i>
                         </span>
-                        <h5 id="personal-area-{{ section.key }}-heading" class="fw-bold mb-0">{{ section.title }}</h5>
+                        <h2 id="personal-area-{{ section.key }}-heading" class="h5 fw-bold mb-0">{{ section.title }}</h2>
                     </div>
                     <span class="badge bg-soft-primary text-primary">{{ section.items|length }}</span>
                 </div>
@@ -42,8 +42,8 @@
                     {% for item in section.items %}
                     <li class="list-group-item p-3 border-bottom">
                         <div class="d-flex align-items-start justify-content-between gap-3">
-                            <div class="min-w-0">
-                                <a href="{{ item.url }}" class="fw-bold text-dark d-block text-truncate hover-primary">{{ item.title }}</a>
+                            <div class="flex-grow-1 overflow-hidden">
+                                <a href="{{ item.url }}" class="fw-bold text-dark d-block text-truncate hover-primary" title="{{ item.title }}">{{ item.title }}</a>
                                 <span class="text-muted fs-12 d-block mt-1">{{ item.subtitle }}</span>
                             </div>
                             <span class="badge bg-soft-primary text-primary flex-shrink-0">{{ item.status_label }}</span>
@@ -68,10 +68,10 @@
     <div class="card stretch stretch-full border border-gray-2">
         <div class="card-body p-5 text-center">
             <span class="avatar-text avatar-xl bg-soft-primary text-primary mx-auto mb-3" aria-hidden="true">
-                <i class="feather-check-circle fs-28"></i>
+                <i class="feather-inbox fs-28"></i>
             </span>
-            <h4 class="fw-bold mb-2">Nenhuma fila pessoal pendente</h4>
-            <p class="text-muted mb-0">Todas as suas tarefas operacionais e aprovações estão em dia.</p>
+            <h2 class="h4 fw-bold mb-2">Nenhuma fila pessoal disponível</h2>
+            <p class="text-muted mb-0">Você não possui acesso a filas pessoais neste momento.</p>
         </div>
     </div>
     {% endif %}

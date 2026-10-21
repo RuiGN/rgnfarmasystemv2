@@ -5,12 +5,12 @@
 {% block page_header %}
 <div class="page-header" id="section-0">
     <div class="page-header-left d-flex align-items-center">
-        <div class="page-header-title"><h5 class="m-b-10">Gerar Relatório</h5></div>
         <ul class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
             <li class="breadcrumb-item"><a href="{% url 'app:report_catalog' %}">Catálogo de relatórios</a></li>
             <li class="breadcrumb-item active">{{ definition.title }}</li>
         </ul>
+        <div class="page-header-title"><h5 class="m-b-10">Gerar relatório</h5></div>
     </div>
     <div class="page-header-right ms-auto d-flex align-items-center gap-2">
         <a href="{% url 'app:report_catalog' %}" class="btn btn-light-brand d-inline-flex align-items-center gap-2">
@@ -56,18 +56,10 @@
                 </h6>
             </div>
 
+            {% for field in form.hidden_fields %}{{ field }}{% endfor %}
             <div class="form-grid">
-                {% for field in form %}
-                <div class="form-field">
-                    <label for="{{ field.id_for_label }}" class="form-label fw-semibold text-dark">
-                        {{ field.label }}
-                        {% if field.field.required %}<span class="text-danger ms-1" title="Campo obrigatório">*</span>{% endif %}
-                    </label>
-                    {{ field }}
-                    {% if field.errors %}
-                        <span class="invalid-feedback d-block field-error" id="{{ field.id_for_label }}_errors" role="alert">{{ field.errors }}</span>
-                    {% endif %}
-                </div>
+                {% for field in form.visible_fields %}
+                    {% include 'app/includes/resource_form_field.html' with horizontal=False %}
                 {% endfor %}
             </div>
 
@@ -76,7 +68,7 @@
                     <i class="feather-x" aria-hidden="true"></i>Cancelar
                 </a>
                 <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2">
-                    <i class="feather-play" aria-hidden="true"></i>Executar Relatório
+                    <i class="feather-play" aria-hidden="true"></i>Gerar relatório
                 </button>
             </div>
         </form>

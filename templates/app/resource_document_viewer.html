@@ -6,9 +6,6 @@
 {% block page_header %}
 <div class="page-header" id="section-0">
     <div class="page-header-left d-flex align-items-center">
-        <div class="page-header-title">
-            <h5 class="m-b-10"><i class="feather-book-open me-2"></i>Leitura EDMS - {{ object }}</h5>
-        </div>
         <ul class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
             <li class="breadcrumb-item"><a href="{% url 'app:module' module.slug %}">{{ module.label }}</a></li>
@@ -16,6 +13,9 @@
             <li class="breadcrumb-item"><a href="{% url 'app:resource_detail' module.slug resource.slug object.pk %}">Detalhe</a></li>
             <li class="breadcrumb-item">Visualização</li>
         </ul>
+        <div class="page-header-title">
+            <h5 class="m-b-10"><i class="feather-book-open me-2"></i>Leitura EDMS - {{ object }}</h5>
+        </div>
     </div>
     <div class="page-header-right ms-auto">
         <div class="page-header-right-items">
@@ -39,107 +39,24 @@
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <!-- Leitor Principal -->
-    <div class="col-xl-9 col-lg-8">
-        <section class="card stretch stretch-full border-dark shadow-sm">
-            <div class="card-header bg-soft-dark border-bottom border-dark d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="avatar-text avatar-md bg-dark text-white"><i class="feather-file-text"></i></div>
-                    <div>
-                        <h4 class="h5 mb-1">{{ object.code }} - {{ object.title }}</h4>
-                        <span class="text-muted fs-12">Versão: {{ object.version|default:"1.0" }} | Status: <span class="badge bg-soft-success text-success">{{ object.get_status_display|default:object.status }}</span></span>
-                    </div>
-                </div>
-                <div class="card-header-action">
-                    <button type="button" class="btn btn-icon btn-light-brand" title="Imprimir cópia controlada" aria-label="Imprimir cópia controlada"><i class="feather-printer" aria-hidden="true"></i></button>
-                    <button type="button" class="btn btn-icon btn-light-brand" title="Tela cheia" aria-label="Tela cheia"><i class="feather-maximize" aria-hidden="true"></i></button>
-                </div>
-            </div>
-            <!-- Bloqueio de cópia e seleção de texto no Viewer -->
-            <div class="card-body bg-light p-4" style="min-height: 60vh; user-select: none; -webkit-user-select: none;" oncontextmenu="return false;">
-                
-                <div class="bg-white p-5 border rounded shadow-sm mx-auto" style="max-width: 800px; min-height: 900px; position: relative;">
-                    <!-- Marca d'água -->
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 6rem; color: rgba(0,0,0,0.03); white-space: nowrap; pointer-events: none;">
-                        CÓPIA CONTROLADA
-                    </div>
-                    
-                    <div class="text-center mb-5 border-bottom pb-4">
-                        <h2 class="h4 text-uppercase fw-bold">{{ object.title }}</h2>
-                        <h5 class="text-muted mb-0">{{ object.code }}</h5>
-                    </div>
-                    
-                    <div class="document-content text-dark lh-lg">
-                        <p><strong>1. OBJETIVO</strong></p>
-                        <p>Estabelecer os procedimentos e diretrizes para a correta execução das operações descritas neste documento, garantindo a conformidade com as Boas Práticas de Fabricação (BPF).</p>
-                        
-                        <p class="mt-4"><strong>2. APLICAÇÃO</strong></p>
-                        <p>Aplica-se à área: {{ object.area_ref|default:"Geral" }}.</p>
-                        
-                        <p class="mt-4"><strong>3. RESPONSABILIDADES</strong></p>
-                        <ul>
-                            <li><strong>Responsável Técnico:</strong> Assegurar a implementação e manutenção das regras contidas neste POP.</li>
-                            <li><strong>Operador/Colaborador:</strong> Seguir rigorosamente as instruções e assinar o protocolo de treinamento após a leitura.</li>
-                        </ul>
-                        
-                        <p class="mt-4"><strong>4. PROCEDIMENTO</strong></p>
-                        <p>[Conteúdo do documento original será renderizado aqui a partir do repositório EDMS seguro.]</p>
-
-                        <div class="mt-5 p-4 bg-soft-warning border-warning border-start border-3 rounded position-relative z-1">
-                            <h6 class="text-warning fw-bold"><i class="feather-alert-triangle me-2"></i>Aviso de Restrição de Uso (CFR 21 Part 11)</h6>
-                            <p class="mb-0 fs-12 text-dark">Este documento está sendo visualizado eletronicamente em ambiente controlado. A reprodução não autorizada (print screen, cópia textual ou download não auditado) constitui infração grave às regras de Data Integrity.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+<section class="card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h2 class="h5 mb-0">{{ object.code }} — {{ object.title }}</h2>
+        <span class="badge bg-secondary">{{ object.get_status_display }}</span>
     </div>
-    
-    <!-- Painel Lateral -->
-    <div class="col-xl-3 col-lg-4">
-        <div class="card mb-4 border-primary">
-            <div class="card-header bg-soft-primary border-bottom border-primary">
-                <h5 class="card-title mb-0 text-primary"><i class="feather-award me-2"></i>Certificação</h5>
-            </div>
-            <div class="card-body text-center">
-                <div class="avatar-text avatar-xl bg-soft-primary text-primary mx-auto mb-3 rounded-circle">
-                    <i class="feather-check-square fs-3"></i>
-                </div>
-                <h6 class="mb-2">Treinamento Pendente</h6>
-                <p class="text-muted fs-12 mb-4">Você foi designado para ler e atestar compreensão deste POP para manter sua certificação ativa.</p>
-                <button type="button" class="btn btn-primary w-100 mb-2 d-inline-flex align-items-center justify-content-center gap-2"><i class="feather-edit-3" aria-hidden="true"></i>Assinar "Li e Entendi"</button>
-                <div class="fs-11 text-muted text-start mt-3">
-                    <i class="feather-info me-1"></i> A assinatura digital será registrada na Trilha de Auditoria.
-                </div>
-            </div>
-        </div>
-        
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Metadados EDMS</h5>
-            </div>
-            <div class="card-body p-0">
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-4 py-3">
-                        <span class="text-muted fs-13">Proprietário</span>
-                        <span class="fw-medium text-dark">{{ object.owner|default:"QA" }}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-4 py-3">
-                        <span class="text-muted fs-13">Publicação</span>
-                        <span class="fw-medium text-dark">{{ object.published_at|date:"d/m/Y"|default:"-" }}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-4 py-3">
-                        <span class="text-muted fs-13">Revisão</span>
-                        <span class="fw-medium text-dark">{{ object.version|default:"1.0" }}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-4 py-3">
-                        <span class="text-muted fs-13">Classificação</span>
-                        <span class="fw-medium text-dark">{{ object.get_document_type_display|default:object.document_type }}</span>
-                    </li>
-                </ul>
-            </div>
-        </div>
+    <div class="card-body">
+        <dl class="row border-bottom pb-3">
+            <dt class="col-sm-3">Versão</dt><dd class="col-sm-9">{{ object.version }}</dd>
+            <dt class="col-sm-3">Tipo</dt><dd class="col-sm-9">{{ object.get_document_type_display }}</dd>
+            <dt class="col-sm-3">Responsável</dt><dd class="col-sm-9">{{ object.owner }}</dd>
+            <dt class="col-sm-3">Área</dt><dd class="col-sm-9">{{ object.area_ref|default:object.area }}</dd>
+            <dt class="col-sm-3">Publicação</dt><dd class="col-sm-9">{{ object.published_at|date:"d/m/Y"|default:"—" }}</dd>
+        </dl>
+        {% if object.content %}
+        <div class="document-content text-break lh-lg">{{ object.content|linebreaks }}</div>
+        {% else %}
+        <p class="text-muted mb-0" role="status">Este documento ainda não possui conteúdo cadastrado.</p>
+        {% endif %}
     </div>
-</div>
+</section>
 {% endblock %}

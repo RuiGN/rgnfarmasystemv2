@@ -1,0 +1,27 @@
+{
+  "checked_at": "2026-10-20T10:31:52.999331+00:00",
+  "target": "/home/deploy/rgnfarmasystemv2/.env",
+  "authorized_operation": "chmod 0600 only",
+  "permission_changed": true,
+  "before": {
+    "mode": "0664",
+    "uid": 1000,
+    "gid": 1000,
+    "device": 2049,
+    "inode": 1605073,
+    "bytes": 3582,
+    "mtime_ns": 1792474909413535174
+  },
+  "after": {
+    "mode": "0600",
+    "uid": 1000,
+    "gid": 1000,
+    "device": 2049,
+    "inode": 1605073,
+    "bytes": 3582,
+    "mtime_ns": 1792474909413535174
+  },
+  "contents_read": false,
+  "contents_hashed": false,
+  "restart_commands_executed": false
+}

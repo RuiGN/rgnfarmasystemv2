@@ -1,0 +1,23 @@
+{
+  "schema_version": "independent_review_receipt/v1",
+  "delegation_id": "deleg_440a72e9",
+  "base_sha": "d8b179c77787806f463d1d637a526bbdf0436d22",
+  "head_sha": "d8b179c77787806f463d1d637a526bbdf0436d22",
+  "declared_historical_snapshot": "source-sha256:02b90c16a704880a329e1f55ce82d41031228894721327389efc8e5a39f0122f",
+  "verdict": "ship",
+  "confidence": "medium",
+  "findings": [],
+  "spec_axis": "The static delta executes the original RabbitMQ diagnostics ping under su-exec rabbitmq in both Compose files. Reviewer did not assess the full requirements document because the exclusive inspection allowlist omitted it. Approval is only for that static delta.",
+  "checked_clean": [
+    "HEAD and noncommitted diff inspected: both Compose changes restricted to RabbitMQ healthcheck command identity.",
+    "docker-compose.yml:110 and docker-compose.vps.yml:130 preserve CMD, rabbitmq-diagnostics, -q and ping while adding su-exec rabbitmq; other service settings unchanged in the reviewed diff.",
+    "New configuration test and existing two-case RED/GREEN receipts inspected, without executing tests.",
+    "No demonstrable P0-P3 finding in the exclusive scope."
+  ],
+  "could_not_assess": [
+    "Runtime startup, cookie ownership race, UID/GID or su-exec availability in the image were not independently exercised.",
+    "Historical source fingerprint linkage was not independently verified.",
+    "Full suite/coverage, existing root-owned cookie remediation, production state and deploy readiness were not assessed."
+  ],
+  "parent_disposition": "Late historical review retained without treating it as approval of the current999-source candidate. Parent re-read the exact current Compose commands and confirmed that both still use su-exec rabbitmq rabbitmq-diagnostics -q ping. Current integration startup reached all three backends but failed the application readiness deadline; that separate failure remains open."
+}

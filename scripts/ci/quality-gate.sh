@@ -39,6 +39,12 @@ STATIC_ANALYSIS_PACKAGES=(
   workflow
 )
 
+node --version
+for script in static/js/*.js; do
+  node --check "$script"
+done
+node --test tests/js/*.test.cjs
+
 python manage.py check
 python manage.py makemigrations --check --dry-run
 python -m ruff check .

@@ -55,7 +55,7 @@
 
 **Interfaces:** Produce `inspect_identity_cutover(apps, schema_editor) -> IdentityReport` (dataclass with `models`, `legacy_counts`, `issues`, `incoming_relations`) and `assert_identity_preconditions(report: IdentityReport) -> None`. Migration code gets historical models via `apps`, never `from masters.models import ...`.
 
-- [ ] Confirm the `TEST_DATABASE_URL` exported in Task 1 targets only the isolated Docker service; never run cleanup commands against an existing volume.
+- [ ] Confirm the `TEST_DATABASE_URL` exported in Task 1 targets only the isolated PostgreSQL test container; never run cleanup commands against an existing volume.
 - [ ] Write migration-state tests `test_preflight_inventories_all_49_models_and_incoming_relations`, `test_preflight_rejects_empty_or_whitespace_code_without_writes`, `test_preflight_rejects_composite_collision_or_oversize_id`, and `test_preflight_rejects_orphan_fk`; assert old rows/counts remain identical after each failure.
 - [ ] Run `.venv/bin/pytest tests/test_business_id_migrations.py -q` using the exported isolated test URL; confirm missing preflight failure.
 - [ ] Implement read-only preflight; enumerate concrete models through historical `apps`, list FK/OneToOne/M2M including auto-through/self, validate uniqueness on the computed ID and max lengths; report model label + old PK, never dump customer fields. Keep a frozen copy of the Task 1 codec in `identity_cutover_support.py` (not a runtime import), and assert matching vectors in tests so future runtime changes cannot alter old migrations. Do not import runtime `business_id` from a migration.

@@ -299,6 +299,14 @@ def test_deploy_uses_compose_with_env_file_without_sourcing_secrets():
     assert 'compose up -d --build --remove-orphans --wait' in source
 
 
+def deploy_functions_script(tmp_path):
+    source = (ROOT / 'scripts' / 'deploy-vps.sh').read_text(encoding='utf-8')
+    assert source.rstrip().endswith('main "$@"')
+    script = tmp_path / 'deploy-functions.sh'
+    script.write_text(source.rsplit('main "$@"', maxsplit=1)[0], encoding='utf-8')
+    return script
+
+
 def test_deploy_rejects_duplicate_env_keys_without_leaking_values(tmp_path):
     env_file = tmp_path / '.env'
     env_file.write_text(
@@ -310,9 +318,9 @@ def test_deploy_rejects_duplicate_env_keys_without_leaking_values(tmp_path):
         [
             'bash',
             '-c',
-            'source <(sed \'$d\' "$1"); read_env_value POSTGRES_PASSWORD',
+            'source "$1"; read_env_value POSTGRES_PASSWORD',
             'bash',
-            ROOT / 'scripts' / 'deploy-vps.sh',
+            deploy_functions_script(tmp_path),
         ],
         cwd=tmp_path,
         capture_output=True,
@@ -334,9 +342,9 @@ def test_deploy_rejects_invalid_tunnel_metrics_port(tmp_path):
         [
             'bash',
             '-c',
-            'source <(sed \'$d\' "$1"); ENV_FILE="$2"; configure_tunnel_readiness',
+            'source "$1"; ENV_FILE="$2"; configure_tunnel_readiness',
             'bash',
-            ROOT / 'scripts' / 'deploy-vps.sh',
+            deploy_functions_script(tmp_path),
             env_file,
         ],
         capture_output=True,

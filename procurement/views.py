@@ -220,6 +220,8 @@ class PurchaseOrderItemViewSet(SingleInstanceProcurementViewSet):
 
 
 class PurchaseReceiptViewSet(SingleInstanceProcurementViewSet):
+    action_permission_map = {'import_xml': ('procurement.add_purchasereceipt',)}
+
     def perform_create(self, serializer):
         from rest_framework.exceptions import ValidationError
 

@@ -1,0 +1,28 @@
+{
+  "reviewer": "deleg_8a21d997",
+  "base_sha": "36a5cd694de9c39876057f96e3220f26d9c97daa",
+  "head_sha_before_correction": "36a5cd694de9c39876057f96e3220f26d9c97daa",
+  "reviewed_scope": "Seven staged correction files against base; this receipt and later documentation links were not part of that independent review",
+  "verdict": "ship",
+  "confidence": "high",
+  "findings": [],
+  "spec_axis": "Atende localmente ao Claim de docs/validation/ci-secrets-2026-10-20.md: alteração mínima das exceções, vinculada ao commit imutável, sem relaxamento da política ou das fronteiras negativas. Não aprova CI, merge ou deploy.",
+  "open_questions": [],
+  "checked_clean": [
+    "Inspecionados os sete arquivos staged, política e testes; sem edição pelo revisor.",
+    "Política idêntica ao baseline, regras padrão habilitadas, sem allowlist ou regras desabilitadas.",
+    "2398 bytes anteriores do ignore preservados integralmente; acréscimo contém exatamente os 84 fingerprints do manifesto, sem entradas extras.",
+    "Manifesto e digests confirmados; novas identidades fixam commit, caminho literal, regra e linha positiva, sem padrões ou isenções de namespace.",
+    "84 localizações conferidas nos blobs imutáveis dos seis arquivos. 83 registros individuais correspondem aos blobs referenciados. EXPECTED_SOURCES coincide com o snapshot e suas 999 entradas tiveram proveniência dos hashes verificada.",
+    "Entre as 999 fontes, somente tests/test_gitleaks_commit_hash_exceptions.py difere no índice.",
+    "Fronteiras negativas preservadas: ausência/outro commit, namespace/sufixo, regra e linha. Continuidade dos nove testes anteriores, um renomeado com conjunto exato ampliado, mais quatro novos.",
+    "13 testes unitários executados independentemente e aprovados. RED reproduzido em memória com ignore anterior: seis falhas, zero erros, sem editar arquivos.",
+    "git diff --cached --check aprovado. Sem bypass, segredo desconhecido ocultado ou fronteira negativa removida sem equivalente."
+  ],
+  "could_not_assess": [
+    "Igualdade entre SARIF remoto e reprodução não reexecutada: rede e relatórios privados fora do escopo. Recibos não tratados como execução própria.",
+    "Cinco cenários de scanner real avaliados somente pelos metadados e política; não reexecutados nesta revisão.",
+    "CI do novo head, suíte integral, merge, release e deploy pendentes ou fora do escopo."
+  ],
+  "parent_contract_check": "Required verdict/confidence/findings/checked_clean fields validated against dispatched schema; no findings requiring a fix"
+}

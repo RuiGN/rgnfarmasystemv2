@@ -103,16 +103,21 @@ class MasterFormula(AutoCodeMixin, ReleasedVersionMixin, SingleInstanceModel):
         super().clean()
         errors = {}
 
-        if self.batch_size <= 0:
+        if self.batch_size is not None and self.batch_size <= 0:
             errors['batch_size'] = 'O tamanho do lote deve ser maior que zero.'
-        if self.expected_yield_percent <= 0 or self.expected_yield_percent > 100:
+        if self.expected_yield_percent is not None and (
+            self.expected_yield_percent <= 0 or self.expected_yield_percent > 100
+        ):
             errors['expected_yield_percent'] = 'O rendimento esperado deve estar entre 0 e 100.'
         if self.effective_from and self.effective_to and self.effective_to < self.effective_from:
             errors['effective_to'] = (
                 'A data final de vigência não pode ser anterior à data inicial.'
             )
         if self.status == self.Status.APPROVED:
-            if not self.product.is_operationally_available:
+            if (
+                not (self.product_id or self._state.fields_cache.get('product'))
+                or not self.product.is_operationally_available
+            ):
                 errors['product'] = (
                     'A fórmula aprovada exige produto aprovado e operacionalmente disponível.'
                 )
@@ -191,16 +196,16 @@ class FormulaComponent(SingleInstanceModel):
     def clean(self):
         super().clean()
         errors = {}
-        if self.quantity <= 0:
+        if self.quantity is not None and self.quantity <= 0:
             errors['quantity'] = 'A quantidade deve ser maior que zero.'
-        if self.expected_loss_percent < 0:
+        if self.expected_loss_percent is not None and self.expected_loss_percent < 0:
             errors['expected_loss_percent'] = 'A perda prevista não pode ser negativa.'
-        if self.conversion_factor <= 0:
+        if self.conversion_factor is not None and self.conversion_factor <= 0:
             errors['conversion_factor'] = 'O fator de conversão deve ser maior que zero.'
         if (
-            self.formula
+            (self.formula_id or self._state.fields_cache.get('formula'))
             and self.formula.status == MasterFormula.Status.APPROVED
-            and not self.material.is_operationally_available
+            and (not self.material_id or not self.material.is_operationally_available)
         ):
             errors['material'] = (
                 'Fórmula aprovada exige material aprovado e operacionalmente disponível.'

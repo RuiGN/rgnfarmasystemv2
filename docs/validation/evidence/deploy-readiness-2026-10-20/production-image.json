@@ -1,0 +1,22 @@
+{
+  "image_tag": "rgnfarmasystem:release-check-20261020",
+  "image_id": "sha256:3f6680ba56371957cbc2cc570dae5b472b25dbdfa5de0c37b19b4e8700fa9df2",
+  "build_exit_code": 0,
+  "smoke": {
+    "scope": "actual production image; offline synthetic settings; no operational database",
+    "production_check": "pass",
+    "dotenv_files_excluded": true,
+    "static_files_collected": 1489,
+    "liveness_status": 200,
+    "readiness_status_with_backends_unavailable": 503,
+    "readiness_checks": {
+      "database": false,
+      "cache": false,
+      "broker": false
+    },
+    "readiness_duration_seconds": 4.925,
+    "production_probe_timeout_seconds": 2,
+    "boundary": "No healthy Redis/RabbitMQ/PostgreSQL or live production readiness claimed."
+  },
+  "boundary": "Local build and offline smoke only; no push, deploy, healthy backends or operational access."
+}

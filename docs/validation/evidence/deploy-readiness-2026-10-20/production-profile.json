@@ -1,0 +1,6 @@
+{
+  "exit_code": 0,
+  "settings": "core.settings.production",
+  "environment": "synthetic; dotenv disabled; no deployment or operational database access",
+  "output": "/Users/rgnsystems/.hermes/cache/scratch/release-production-check.log"
+}

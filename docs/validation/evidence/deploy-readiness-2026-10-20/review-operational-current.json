@@ -1,0 +1,29 @@
+{
+  "schema_version": "independent_review_receipt/v1",
+  "delegation_id": "deleg_88a95133",
+  "base_sha": "d8b179c77787806f463d1d637a526bbdf0436d22",
+  "head_sha": "d8b179c77787806f463d1d637a526bbdf0436d22",
+  "target_revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+  "verdict": "ship",
+  "confidence": "medium",
+  "findings": [],
+  "spec_axis": "Aderente por inspeção estática ao Claim operacional/CI e às seções de backup, higiene/readiness e consolidação de CI do relatório. Nenhum defeito demonstrável bloqueante P0/P1. Ship restrito ao lote estático; não aprova deploy nem encerra gates globais.",
+  "checked_clean": [
+    "Revisor confirmou HEAD e hashes dirigidos de scripts, workflows, Compose, quatro testes e core/views.py contra o snapshot corrente63af.",
+    "Backup scheduler verifica produtor, artefatos e publicação explicitamente em contexto condicional; tenta remover saúde e retorna erro na falha. Consumidores rastreados.",
+    "Harness regular e regressões cobrem produtor falho com artefatos e falha de publicação em condição Bash.",
+    "Dois Compose e CI usam su-exec rabbitmq antes de diagnostics; teste cobre os três consumidores sem enfraquecer permissões do cookie.",
+    "Workflows provisionam Node24; release instala dev deps e chama quality gate antes do build, preservando validação de versão/revisão.",
+    "Gate exige Node e testes JS, mantém análise/auditoria/cobertura80/OpenAPI/readiness/check production com falha em WARNING.",
+    "Runbook/Compose/probes alinham endereço autoritativo CLOUDFLARED_METRICS_ADDRESS em127.0.0.1:20242.",
+    "Readiness mantém2s e encerramento supervisionado;8s somente no teste de invariância, sem relaxar pares silenciosos.",
+    "Revisão somente leitura, sem edição, testes, scripts, Docker, DB ou rede."
+  ],
+  "could_not_assess": [
+    "Execução independente dos testes/gate e resultado integral com cobertura.",
+    "GitHub workflows e runtime dos healthchecks nas imagens resolvidas.",
+    "Manifesto integral/imagem completa: revisão verificou hashes dirigidos, não todas as fontes.",
+    "Destino operacional, backup/restore/rollback, impressão física e aceites humanos."
+  ],
+  "parent_disposition": "Parecer corrente e as duas revisões visuais registrados. As pendências industriais/operacionais permanecem explícitas. A falha observada de integração/readiness não é anulada por esta aprovação estática; gates globais continuam abertos."
+}

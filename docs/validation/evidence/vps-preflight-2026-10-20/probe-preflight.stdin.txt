@@ -1,0 +1,72 @@
+"""Project-scoped read-only VPS preflight; never read dotenv/argv/DB records."""
+from datetime import datetime, UTC
+import json
+import os
+from pathlib import Path
+import stat
+import subprocess
+
+ROOT = Path('/home/deploy/rgnfarmasystemv2')
+PROJECT = 'rgnfarmasystem'
+DOMAIN = 'rgnfarmasystem.rgnsystems.com.br'
+
+
+def run(args, timeout=20):
+    result = subprocess.run(args, capture_output=True, text=True, timeout=timeout, env={**os.environ, 'GIT_OPTIONAL_LOCKS':'0'})
+    return {'exit_code': result.returncode, 'stdout': result.stdout.strip()}
+
+
+def file_metadata(path):
+    try:
+        if path.is_symlink():
+            return {'path':str(path),'symlink':True}
+        s=path.stat()
+        return {'path':str(path),'mode':oct(stat.S_IMODE(s.st_mode)),'uid':s.st_uid,'gid':s.st_gid,'bytes':s.st_size,'modified_at':datetime.fromtimestamp(s.st_mtime,UTC).isoformat()}
+    except OSError as error:
+        return {'path':str(path),'error_type':type(error).__name__}
+
+result={'captured_at':datetime.now(UTC).isoformat(),'root':str(ROOT),'project':PROJECT,'mode':'read-only; no dotenv/config environment, argv, logs, DB records, restart, deploy or restore'}
+assert ROOT.is_dir()
+git=['git','--no-optional-locks','-c','core.fsmonitor=false','-C',str(ROOT)]
+result['git']={name:run(git+args) for name,args in [('head',['rev-parse','HEAD']),('branch',['symbolic-ref','--short','-q','HEAD']),('status',['status','--porcelain=v1','--untracked-files=normal']),('cached_origin_main',['rev-parse','--verify','refs/remotes/origin/main'])]}
+result['dotenv_metadata']=[file_metadata(ROOT/name) for name in ['.env','.env.local']]
+ids=run(['docker','ps','--all','--filter','label=com.docker.compose.project='+PROJECT,'--format','{{.ID}}'])['stdout'].splitlines()
+result['container_count']=len(ids)
+result['containers']=[]
+fmt='{"id":{{json .Id}},"name":{{json .Name}},"image_id":{{json .Image}},"status":{{json .State.Status}},"health":{{if .State.Health}}{{json .State.Health.Status}}{{else}}null{{end}},"restarts":{{json .RestartCount}},"network_mode":{{json .HostConfig.NetworkMode}},"port_bindings":{{json .HostConfig.PortBindings}},"mounts":{{json .Mounts}},"compose_files":{{json (index .Config.Labels "com.docker.compose.project.config_files")}}}'
+for identifier in ids:
+    inspected=run(['docker','inspect','--format',fmt,identifier])
+    if inspected['exit_code']!=0:
+        result['containers'].append({'id':identifier,'inspect_exit_code':inspected['exit_code']})
+        continue
+    row=json.loads(inspected['stdout'])
+    result['containers'].append(row)
+result['project_stats']=run(['docker','stats','--no-stream','--format','{{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.PIDs}}',*ids],timeout=25) if ids else None
+result['http']={}
+for label,url,headers in [
+    ('internal_health','http://127.0.0.1:8081/health/',['Host: '+DOMAIN,'X-Forwarded-Proto: https']),
+    ('internal_readiness','http://127.0.0.1:8081/ready/',['Host: '+DOMAIN,'X-Forwarded-Proto: https']),
+    ('public_health','https://'+DOMAIN+'/health/',[]),
+    ('public_readiness','https://'+DOMAIN+'/ready/',[]),
+    ('tunnel_loopback_20249','http://127.0.0.1:20249/ready',[]),
+]:
+    args=['curl','--silent','--show-error','--connect-timeout','4','--max-time','15','--output','/dev/null','--write-out','%{http_code} %{time_total} %{ssl_verify_result}']
+    for h in headers:
+        args+=['--header',h]
+    result['http'][label]=run(args+[url],timeout=20)
+result['backup_locations']=[]
+paths=[ROOT/'backups',Path('/home/deploy/backups/rgnfarmasystem')]
+for container in result['containers']:
+    if 'backup_scheduler' in container.get('name',''):
+        paths.extend(Path(m['Source']) for m in container.get('mounts',[]) if m.get('Type')=='bind' and m.get('Destination','').startswith('/backups'))
+for directory in dict.fromkeys(paths):
+    data={'directory':str(directory),'metadata':file_metadata(directory),'files':[]}
+    try:
+        candidates=[p for p in directory.iterdir() if p.is_file() and not p.is_symlink()]
+        data['total_regular_file_count']=len(candidates)
+        data['files']=[file_metadata(p) for p in sorted(candidates,key=lambda p:p.stat().st_mtime,reverse=True)[:15]]
+        data['subdirectories']=[p.name for p in directory.iterdir() if p.is_dir() and not p.is_symlink()][:30]
+    except OSError as error:
+        data['listing_error_type']=type(error).__name__
+    result['backup_locations'].append(data)
+print(json.dumps(result,indent=2))

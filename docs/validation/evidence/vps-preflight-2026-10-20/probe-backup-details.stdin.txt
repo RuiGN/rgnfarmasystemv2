@@ -1,0 +1,56 @@
+"""Final read-only recovery metadata and stability receipt."""
+from datetime import datetime, UTC
+import json
+import os
+from pathlib import Path
+import re
+import stat
+import subprocess
+
+
+def run(args, input=None):
+    p=subprocess.run(args,input=input,text=True,capture_output=True,timeout=25,env={**os.environ,'GIT_OPTIONAL_LOCKS':'0'})
+    return {'exit_code':p.returncode,'stdout':p.stdout.strip()}
+
+result={'captured_at':datetime.now(UTC).isoformat(),'scope':'Project-only filesystem metadata; no archives, dotenv, credentials or DB records read.'}
+root=Path('/var/backups/rgnfarmasystem/releases')
+directories=sorted([p for p in root.iterdir() if p.is_dir() and not p.is_symlink()],key=lambda p:p.stat().st_mtime,reverse=True)
+result['latest_release_backup']={'directory':str(directories[0]),'regular_files':[]}
+for p in sorted(directories[0].iterdir()):
+    if p.is_symlink() or not p.is_file():
+        continue
+    s=p.stat()
+    result['latest_release_backup']['regular_files'].append({'name':p.name,'bytes':s.st_size,'mode':oct(stat.S_IMODE(s.st_mode)),'modified_at':datetime.fromtimestamp(s.st_mtime,UTC).isoformat()})
+    if p.name=='previous-release.gitref' and s.st_size<=128:
+        text=p.read_text().strip()
+        result['latest_release_backup']['recorded_previous_revision']=text if re.fullmatch(r'[0-9a-f]{40}',text) else 'invalid-format-not-disclosed'
+    if p.name=='SHA256SUMS' and s.st_size<=16384:
+        lines=p.read_text().splitlines()
+        result['latest_release_backup']['checksum_manifest_entry_count']=len(lines)
+        result['latest_release_backup']['checksum_manifest_schema_valid']=all(re.fullmatch(r'[0-9a-fA-F]{64}\s+\*?.+',line) for line in lines)
+        result['latest_release_backup']['archive_checksums_recomputed']=False
+media_code='''import os,stat,json
+from pathlib import Path
+p=Path('/app/media')
+r={'directory':str(p),'regular_file_count':0,'total_regular_bytes':0,'symlink_count':0,'traversal_error_count':0,'file_contents_read':False}
+def error(e):
+ r['traversal_error_count']+=1
+for base,dirs,files in os.walk(p,followlinks=False,onerror=error):
+ r['symlink_count']+=sum((Path(base)/n).is_symlink() for n in dirs)
+ dirs[:]=[n for n in dirs if not (Path(base)/n).is_symlink()]
+ for name in files:
+  s=(Path(base)/name).lstat()
+  if stat.S_ISLNK(s.st_mode): r['symlink_count']+=1
+  elif stat.S_ISREG(s.st_mode):
+   r['regular_file_count']+=1
+   r['total_regular_bytes']+=s.st_size
+print(json.dumps(r))'''
+media=run(['docker','exec','-i','rgnfarmasystem-backup_scheduler-1','python','-I','-S','-B','-'],input=media_code)
+result['live_media_metadata']=json.loads(media['stdout']) if media['exit_code']==0 else {'exit_code':media['exit_code']}
+git=['git','--no-optional-locks','-c','core.fsmonitor=false','-C','/home/deploy/rgnfarmasystemv2']
+result['final_git_head']=run(git+['rev-parse','HEAD'])
+result['final_git_status']=run(git+['status','--porcelain=v1','--untracked-files=normal'])
+result['final_dotenv_mode']=oct(stat.S_IMODE(Path('/home/deploy/rgnfarmasystemv2/.env').stat().st_mode))
+ids=run(['docker','ps','--all','--filter','label=com.docker.compose.project=rgnfarmasystem','--format','{{.ID}}'])['stdout'].splitlines()
+result['final_project_container_states']=run(['docker','inspect','--format','{{.Id}}\t{{.State.Status}}\t{{if .State.Health}}{{.State.Health.Status}}{{else}}unknown{{end}}\t{{.RestartCount}}',*ids])
+print(json.dumps(result,indent=2))

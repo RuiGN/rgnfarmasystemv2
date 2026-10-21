@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from pathlib import Path
+import re
 from unittest.mock import Mock
 
 import pytest
@@ -265,6 +266,118 @@ def test_authorized_lot_detail_renders_print_button(client, django_user_model):
     assert 'data-label-print-button' in content
     assert reverse('inventory:lot-print-label', args=(lot.pk,)) in content
     assert 'js/local-printing.js' in content
+
+
+def test_authorized_lot_list_renders_a_csrf_print_form_for_each_lot(client, django_user_model):
+    from inventory.models import StockLot
+
+    user = django_user_model.objects.create_user(
+        username='operador-lista', email='operador-lista@example.com'
+    )
+    user.user_permissions.add(Permission.objects.get(codename='view_stocklot'))
+    client.force_login(user)
+    first = make_lot()
+    second = StockLot.objects.create(
+        product=first.product,
+        lot_number='LOTE-002',
+        expiry_date=date(2027, 8, 1),
+    )
+
+    response = client.get(
+        reverse(
+            'app:resource_list',
+            kwargs={'module_slug': 'inventory', 'resource_slug': 'lots'},
+        )
+    )
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    forms = re.findall(r'<form\b[^>]*data-label-print-form[^>]*>(.*?)</form>', content, re.S)
+    assert len(forms) == 2
+    for lot in (first, second):
+        url = reverse('inventory:lot-print-label', args=(lot.pk,))
+        matching = [form for form in forms if f'data-label-print-url="{url}"' in form]
+        assert len(matching) == 1
+        assert 'name="csrfmiddlewaretoken"' in matching[0]
+    assert content.count('data-label-print-status') == 1
+    assert content.count('js/local-printing.js') == 1
+
+
+def test_lot_list_denies_users_without_lot_permission(client, django_user_model):
+    user = django_user_model.objects.create_user(
+        username='lista-sem-permissao', email='lista-sem-permissao@example.com'
+    )
+    client.force_login(user)
+
+    response = client.get(
+        reverse(
+            'app:resource_list',
+            kwargs={'module_slug': 'inventory', 'resource_slug': 'lots'},
+        )
+    )
+
+    assert response.status_code == 403
+    assert 'data-label-print-button' not in response.content.decode()
+
+
+def test_lot_list_csrf_token_allows_printing_the_selected_row(monkeypatch, django_user_model):
+    from inventory.models import StockLot
+
+    user = django_user_model.objects.create_user(
+        username='operador-lista-csrf', email='operador-lista-csrf@example.com'
+    )
+    user.user_permissions.add(Permission.objects.get(codename='view_stocklot'))
+    csrf_client = APIClient(enforce_csrf_checks=True)
+    csrf_client.force_login(user)
+    first = make_lot()
+    selected = StockLot.objects.create(
+        product=first.product, lot_number='LOTE-SELECIONADO', expiry_date=date(2027, 8, 1)
+    )
+    response = csrf_client.get(
+        reverse(
+            'app:resource_list',
+            kwargs={'module_slug': 'inventory', 'resource_slug': 'lots'},
+        )
+    )
+    assert response.status_code == 200
+    token_match = re.search(
+        r'name="csrfmiddlewaretoken" value="([^"]+)"', response.content.decode()
+    )
+    assert token_match is not None
+    token = token_match.group(1)
+    send = Mock(return_value={'lot_number': selected.lot_number})
+    monkeypatch.setattr('inventory.views.print_lot_label', send)
+
+    printed = csrf_client.post(
+        reverse('inventory:lot-print-label', args=(selected.pk,)), HTTP_X_CSRFTOKEN=token
+    )
+
+    assert printed.status_code == 200
+    assert printed.data['lot_number'] == selected.lot_number
+    send.assert_called_once_with(selected, user)
+
+
+def test_product_list_does_not_offer_lot_label_printing(client, django_user_model):
+    user = django_user_model.objects.create_user(
+        username='operador-produtos', email='operador-produtos@example.com'
+    )
+    user.user_permissions.add(
+        Permission.objects.get(codename='view_product'),
+        Permission.objects.get(codename='view_stocklot'),
+    )
+    client.force_login(user)
+    make_lot()
+
+    response = client.get(
+        reverse(
+            'app:resource_list',
+            kwargs={'module_slug': 'masters', 'resource_slug': 'products'},
+        )
+    )
+
+    assert response.status_code == 200
+    assert 'data-label-print-button' not in response.content.decode()
+    assert 'js/local-printing.js' not in response.content.decode()
 
 
 def test_local_printing_script_has_no_retry_and_uses_safe_feedback():

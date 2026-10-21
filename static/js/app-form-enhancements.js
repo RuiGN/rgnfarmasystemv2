@@ -417,7 +417,142 @@
         renderGovernanceControls();
     }
 
+    // Keep the server's single ISO field/name. Only its narrow-screen editor
+    // changes: a native date calendar plus an explicit HH:MM:SS editor.
+    function enhanceDateTime(source) {
+        if (source.hidden || source.readOnly || source.disabled || source.dataset.datetimeSplitReady) return;
+        var validator = source.cloneNode(false);
+        var label = source.labels && source.labels[0];
+        var title = source.getAttribute('aria-label') || (label && label.textContent.trim()) || 'Data e hora';
+        var group = document.createElement('div');
+        group.className = 'datetime-split';
+        group.setAttribute('role', 'group');
+        group.setAttribute('aria-label', title);
+        var controls = {};
+        ['date', 'time'].forEach(function (part) {
+            var wrapper = document.createElement('div');
+            var caption = document.createElement('label');
+            var control = document.createElement('input');
+            control.type = part === 'date' ? 'date' : 'text';
+            control.id = source.id + '__' + part;
+            control.className = source.className;
+            control.dataset.datetimePart = part;
+            control.setAttribute('aria-label', title + ' — ' + (part === 'date' ? 'Data' : 'Hora, com segundos'));
+            ['aria-describedby', 'aria-invalid'].forEach(function (attribute) {
+                if (source.hasAttribute(attribute)) control.setAttribute(attribute, source.getAttribute(attribute));
+            });
+            caption.htmlFor = control.id;
+            caption.className = 'datetime-split__label';
+            caption.textContent = part === 'date' ? 'Data' : 'Hora (HH:MM:SS, 24 h)';
+            if (part === 'time') {
+                control.pattern = '([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\\.[0-9]{1,3})?';
+                control.placeholder = 'HH:MM:SS';
+                control.title = 'Informe horas, minutos e segundos (24 horas), por exemplo 09:51:17.';
+                control.autocomplete = 'off';
+            }
+            wrapper.appendChild(caption);
+            wrapper.appendChild(control);
+            if (part === 'date' && typeof control.showPicker === 'function') {
+                var picker = document.createElement('button');
+                picker.type = 'button';
+                picker.className = 'btn btn-outline-secondary btn-sm mt-1';
+                picker.dataset.datetimePicker = part;
+                picker.textContent = 'Abrir calendário';
+                picker.setAttribute('aria-label', title + ' — ' + picker.textContent);
+                picker.addEventListener('click', function () {
+                    control.focus();
+                    control.showPicker();
+                });
+                wrapper.appendChild(picker);
+            }
+            group.appendChild(wrapper);
+            controls[part] = control;
+        });
+        var parts = source.value.split('T');
+        controls.date.value = parts[0] || '';
+        controls.time.value = parts[1] && parts[1].length === 5 ? parts[1] + ':00' : parts[1] || '';
+        source.dataset.datetimeSplitReady = 'true';
+        source.hidden = true;
+        // Text keeps invalid/partial edits intact in POSTs that bypass client
+        // validation; the unchanged Django field must reject them, not clear them.
+        // Unlike type=hidden, changing a text value does not mutate defaultValue.
+        source.type = 'text';
+        source.readOnly = true;
+        source.classList.add('datetime-split-source');
+        source.removeAttribute('aria-invalid');
+        source.insertAdjacentElement('afterend', group);
+        if (label) label.htmlFor = controls.date.id;
+
+        var syncing = false;
+        function validateParts() {
+            var date = controls.date, time = controls.time;
+            var complete = date.value && time.value;
+            ['required', 'min', 'max', 'step'].forEach(function (attribute) {
+                if (source.hasAttribute(attribute)) validator.setAttribute(attribute, source.getAttribute(attribute));
+                else validator.removeAttribute(attribute);
+            });
+            validator.value = source.value;
+            date.min = source.min.split('T')[0];
+            date.max = source.max.split('T')[0];
+            date.required = source.required || !!time.value || time.validity.badInput;
+            time.required = source.required || !!date.value || date.validity.badInput;
+            date.disabled = time.disabled = source.disabled;
+            group.querySelectorAll('[data-datetime-picker]').forEach(function (picker) { picker.disabled = source.disabled; });
+            date.setCustomValidity('');
+            time.setCustomValidity('');
+            if (complete && !time.validity.patternMismatch && !validator.validity.valid) {
+                time.setCustomValidity(validator.validationMessage);
+            }
+        }
+        function hydrate() {
+            var value = source.value.split('T');
+            controls.date.value = value[0] || '';
+            controls.time.value = value[1] && value[1].length === 5 ? value[1] + ':00' : value[1] || '';
+            validateParts();
+        }
+        function sync(event) {
+            var date = controls.date, time = controls.time;
+            source.value = date.value || time.value || date.validity.badInput
+                ? date.value + 'T' + time.value : '';
+            validateParts();
+            syncing = true;
+            source.dispatchEvent(new Event(event.type, { bubbles: true }));
+            syncing = false;
+        }
+        [controls.date, controls.time].forEach(function (control) {
+            control.addEventListener('input', sync);
+            control.addEventListener('change', sync);
+        });
+        source.addEventListener('input', function () { if (!syncing) hydrate(); });
+        source.addEventListener('change', function () { if (!syncing) hydrate(); });
+        new MutationObserver(validateParts).observe(source, {
+            attributes: true, attributeFilter: ['disabled', 'required', 'min', 'max', 'step']
+        });
+        if (source.form) source.form.addEventListener('reset', function () { queueMicrotask(hydrate); });
+        validateParts();
+    }
+
+    function initResponsiveDateTimes() {
+        var narrow = window.matchMedia('(max-width: 575.98px)');
+        function scan(root) {
+            if (!narrow.matches) return;
+            if (root.matches && root.matches('input[type="datetime-local"]')) enhanceDateTime(root);
+            root.querySelectorAll('input[type="datetime-local"]').forEach(enhanceDateTime);
+        }
+        scan(document);
+        narrow.addEventListener('change', function () { scan(document); });
+        // Inline templates are inert; new rendered rows receive their own IDs.
+        new MutationObserver(function (records) {
+            records.forEach(function (record) {
+                record.addedNodes.forEach(function (node) {
+                    if (node.nodeType === 1) scan(node);
+                });
+            });
+        }).observe(document.body, { childList: true, subtree: true });
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
+        initResponsiveDateTimes();
         initGovernanceParameterForm();
         document.querySelectorAll('[data-mask]').forEach(bindInput);
         document.querySelectorAll('form').forEach(function (form) {

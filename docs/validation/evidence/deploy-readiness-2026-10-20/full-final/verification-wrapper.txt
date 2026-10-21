@@ -1,0 +1,70 @@
+"""Bounded, isolated full release run; no dotenv/operational targets."""
+from pathlib import Path
+from datetime import datetime, UTC
+import hashlib
+import json
+import os
+import signal
+import subprocess
+import sys
+import time
+
+ROOT = Path('/Users/rgnsystems/Documents/rgnfarmasystemv2')
+SCRATCH = Path('/Users/rgnsystems/.hermes/cache/scratch')
+snapshot = json.loads((ROOT / 'docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot-final.json').read_text())
+bootstrap = SCRATCH / 'release-test-bootstrap/sitecustomize.py'
+bootstrap_sha256 = hashlib.sha256(bootstrap.read_bytes()).hexdigest()
+for name, digest in snapshot['sources'].items():
+    assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == digest, name
+started_at = datetime.now(UTC).isoformat()
+command = [
+    str(ROOT / '.venv/bin/python'),
+    str(SCRATCH / 'run_release_verification.py'),
+    '--create-db', '-q', '--tb=short', '--cov=.',
+    '--cov-report=term:skip-covered',
+    f'--cov-report=xml:{SCRATCH / "release-full-coverage.xml"}',
+    f'--cov-report=json:{SCRATCH / "release-full-coverage.json"}',
+    '--cov-fail-under=80',
+    f'--junitxml={SCRATCH / "release-full-junit.xml"}',
+]
+started = time.monotonic()
+with (SCRATCH / 'release-full-output.log').open('w') as log:
+    process = subprocess.Popen(
+        command, cwd=ROOT, stdout=log, stderr=subprocess.STDOUT,
+        start_new_session=True,
+        env={**os.environ, 'COVERAGE_FILE': str(SCRATCH / 'release-full.coverage')},
+    )
+    def forward_signal(signum, _frame):
+        try:
+            os.killpg(process.pid, signum)
+        except ProcessLookupError:
+            pass
+    signal.signal(signal.SIGTERM, forward_signal)
+    signal.signal(signal.SIGINT, forward_signal)
+    try:
+        code = process.wait(timeout=5400)
+        terminal_state = 'finished'
+    except subprocess.TimeoutExpired:
+        os.killpg(process.pid, signal.SIGTERM)
+        try:
+            process.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            os.killpg(process.pid, signal.SIGKILL)
+            process.wait()
+        code = 124
+        terminal_state = 'timed_out'
+result = {
+    'attempt': 4,
+    'source_revision': snapshot['revision'],
+    'started_at': started_at,
+    'bootstrap_sha256': bootstrap_sha256,
+    'resource_policy': 'No concurrent Docker build/integration or separate test runs.',
+    'exit_code': code, 'state': terminal_state,
+    'duration_seconds': round(time.monotonic() - started, 3),
+    'junit': str(SCRATCH / 'release-full-junit.xml'),
+    'coverage_json': str(SCRATCH / 'release-full-coverage.json'),
+    'output': str(SCRATCH / 'release-full-output.log'),
+}
+(SCRATCH / 'release-full-run.json').write_text(json.dumps(result, indent=2) + '\n')
+print(json.dumps(result, indent=2), flush=True)
+sys.exit(code)

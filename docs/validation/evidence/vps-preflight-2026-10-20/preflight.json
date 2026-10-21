@@ -1,0 +1,317 @@
+{
+  "captured_at": "2026-10-20T10:07:26.237867+00:00",
+  "root": "/home/deploy/rgnfarmasystemv2",
+  "project": "rgnfarmasystem",
+  "mode": "read-only; no dotenv/config environment, argv, logs, DB records, restart, deploy or restore",
+  "git": {
+    "head": {
+      "exit_code": 0,
+      "stdout": "d8b179c77787806f463d1d637a526bbdf0436d22"
+    },
+    "branch": {
+      "exit_code": 0,
+      "stdout": "main"
+    },
+    "status": {
+      "exit_code": 0,
+      "stdout": ""
+    },
+    "cached_origin_main": {
+      "exit_code": 0,
+      "stdout": "d8b179c77787806f463d1d637a526bbdf0436d22"
+    }
+  },
+  "dotenv_metadata": [
+    {
+      "path": "/home/deploy/rgnfarmasystemv2/.env",
+      "mode": "0o664",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 3582,
+      "modified_at": "2026-10-20T05:41:49.413535+00:00"
+    },
+    {
+      "path": "/home/deploy/rgnfarmasystemv2/.env.local",
+      "error_type": "FileNotFoundError"
+    }
+  ],
+  "container_count": 9,
+  "containers": [
+    {
+      "id": "56de7cec9e2c5b723af5de04e9624ed3add35318bad1442326be996df8cbb6b4",
+      "name": "/rgnfarmasystem-cloudflared-1",
+      "image_id": "sha256:a15a3b50b8dabd57ac2090e9484c0247dba9dfa1f0df4d298d4317f9d69eb2d5",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "network_mode": "host",
+      "port_bindings": {},
+      "mounts": [],
+      "compose_files": "/home/deploy/rgnfarmasystemv2/docker-compose.vps.yml"
+    },
+    {
+      "id": "cbc3fa60676703609384ba6f9730bc0258fbcca9d27f2ada01d31b2954d64d41",
+      "name": "/rgnfarmasystem-backup_scheduler-1",
+      "image_id": "sha256:1afda8b358fa7e8f6b839607ef8398c59d293fe4afacf797cee606c2dce9486e",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "network_mode": "rgnfarmasystem_backend",
+      "port_bindings": {},
+      "mounts": [
+        {
+          "Destination": "/app/media",
+          "Driver": "local",
+          "Mode": "ro",
+          "Name": "rgnfarmasystem_media",
+          "Propagation": "",
+          "RW": false,
+          "Source": "/var/lib/docker/volumes/rgnfarmasystem_media/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/var/backups/rgnfarmasystem",
+          "Driver": "local",
+          "Mode": "rw",
+          "Name": "rgnfarmasystem_backups",
+          "Propagation": "",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/rgnfarmasystem_backups/_data",
+          "Type": "volume"
+        }
+      ],
+      "compose_files": "/home/deploy/rgnfarmasystemv2/docker-compose.vps.yml"
+    },
+    {
+      "id": "941346ba5ddc57b37d393bd6bfcec1bceda3ce9a46af652e44b9f29a1491ebe7",
+      "name": "/rgnfarmasystem-celery_worker-1",
+      "image_id": "sha256:1afda8b358fa7e8f6b839607ef8398c59d293fe4afacf797cee606c2dce9486e",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "network_mode": "rgnfarmasystem_backend",
+      "port_bindings": {},
+      "mounts": [
+        {
+          "Destination": "/app/media",
+          "Driver": "local",
+          "Mode": "rw",
+          "Name": "rgnfarmasystem_media",
+          "Propagation": "",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/rgnfarmasystem_media/_data",
+          "Type": "volume"
+        }
+      ],
+      "compose_files": "/home/deploy/rgnfarmasystemv2/docker-compose.vps.yml"
+    },
+    {
+      "id": "7965021e1f295dcf80ab1838e7ba6bc65d776b372410915ce555265cd0721d2f",
+      "name": "/rgnfarmasystem-celery_beat-1",
+      "image_id": "sha256:1afda8b358fa7e8f6b839607ef8398c59d293fe4afacf797cee606c2dce9486e",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "network_mode": "rgnfarmasystem_backend",
+      "port_bindings": {},
+      "mounts": [],
+      "compose_files": "/home/deploy/rgnfarmasystemv2/docker-compose.vps.yml"
+    },
+    {
+      "id": "6d1cc58854619aed09a7f4dcf8a07f5c250a88bf37ed9061f22982279a1f8954",
+      "name": "/rgnfarmasystem-app-1",
+      "image_id": "sha256:1afda8b358fa7e8f6b839607ef8398c59d293fe4afacf797cee606c2dce9486e",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "network_mode": "rgnfarmasystem_backend",
+      "port_bindings": {},
+      "mounts": [
+        {
+          "Destination": "/app/media",
+          "Driver": "local",
+          "Mode": "rw",
+          "Name": "rgnfarmasystem_media",
+          "Propagation": "",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/rgnfarmasystem_media/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/app/staticfiles",
+          "Driver": "local",
+          "Mode": "rw",
+          "Name": "rgnfarmasystem_staticfiles",
+          "Propagation": "",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/rgnfarmasystem_staticfiles/_data",
+          "Type": "volume"
+        }
+      ],
+      "compose_files": "/home/deploy/rgnfarmasystemv2/docker-compose.vps.yml"
+    },
+    {
+      "id": "05a379410c935e1a283f6e80d99956922ddc41f268a2c3cf015431d6713b47ca",
+      "name": "/rgnfarmasystem-nginx-1",
+      "image_id": "sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "network_mode": "rgnfarmasystem_backend",
+      "port_bindings": {
+        "80/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "8081"
+          }
+        ]
+      },
+      "mounts": [
+        {
+          "Destination": "/var/www/media",
+          "Driver": "local",
+          "Mode": "ro",
+          "Name": "rgnfarmasystem_media",
+          "Propagation": "",
+          "RW": false,
+          "Source": "/var/lib/docker/volumes/rgnfarmasystem_media/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/var/www/static",
+          "Driver": "local",
+          "Mode": "ro",
+          "Name": "rgnfarmasystem_staticfiles",
+          "Propagation": "",
+          "RW": false,
+          "Source": "/var/lib/docker/volumes/rgnfarmasystem_staticfiles/_data",
+          "Type": "volume"
+        },
+        {
+          "Destination": "/etc/nginx/conf.d/default.conf",
+          "Mode": "ro",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/home/deploy/rgnfarmasystemv2/deploy/nginx/rgnfarmasystem.conf",
+          "Type": "bind"
+        }
+      ],
+      "compose_files": "/home/deploy/rgnfarmasystemv2/docker-compose.vps.yml"
+    },
+    {
+      "id": "b7f1721ad44eb0208fd967a6ae2bce485b944eaa269bdb7f5ab18bf2a47c1a34",
+      "name": "/rgnfarmasystem-redis-1",
+      "image_id": "sha256:6ab0b6e7381779332f97b8ca76193e45b0756f38d4c0dcda72dbb3c32061ab99",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "network_mode": "rgnfarmasystem_backend",
+      "port_bindings": {},
+      "mounts": [
+        {
+          "Destination": "/data",
+          "Driver": "local",
+          "Mode": "rw",
+          "Name": "rgnfarmasystem_redis_data",
+          "Propagation": "",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/rgnfarmasystem_redis_data/_data",
+          "Type": "volume"
+        }
+      ],
+      "compose_files": "/home/deploy/rgnfarmasystemv2/docker-compose.vps.yml"
+    },
+    {
+      "id": "4cbfe1d2876aadeb534c6a165c016416abfbbc18824796a57db00d891b5ad3c0",
+      "name": "/rgnfarmasystem-db-1",
+      "image_id": "sha256:3d0f7584ed7d04e27fa050d6683a74746608faf21f202be78460d679cc56461f",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "network_mode": "rgnfarmasystem_backend",
+      "port_bindings": {},
+      "mounts": [
+        {
+          "Destination": "/var/lib/postgresql/data",
+          "Driver": "local",
+          "Mode": "rw",
+          "Name": "rgnfarmasystem_postgres_data",
+          "Propagation": "",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/rgnfarmasystem_postgres_data/_data",
+          "Type": "volume"
+        }
+      ],
+      "compose_files": "/home/deploy/rgnfarmasystemv2/docker-compose.vps.yml"
+    },
+    {
+      "id": "bccf8811fa1bc8411a58ac0cd28f01b577b01b894c5654640ab046448a2e167a",
+      "name": "/rgnfarmasystem-rabbitmq-1",
+      "image_id": "sha256:606d8c0d6b3c18d1da9afc53bc7cdb2a8d5486df91b5a9830e9e07626c9ae281",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0,
+      "network_mode": "rgnfarmasystem_backend",
+      "port_bindings": {},
+      "mounts": [
+        {
+          "Destination": "/var/lib/rabbitmq",
+          "Driver": "local",
+          "Mode": "rw",
+          "Name": "rgnfarmasystem_rabbitmq_data",
+          "Propagation": "",
+          "RW": true,
+          "Source": "/var/lib/docker/volumes/rgnfarmasystem_rabbitmq_data/_data",
+          "Type": "volume"
+        }
+      ],
+      "compose_files": "/home/deploy/rgnfarmasystemv2/docker-compose.vps.yml"
+    }
+  ],
+  "project_stats": {
+    "exit_code": 0,
+    "stdout": "rgnfarmasystem-cloudflared-1\t0.41%\t17.72MiB / 7.75GiB\t12\nrgnfarmasystem-backup_scheduler-1\t0.00%\t1.238MiB / 7.75GiB\t2\nrgnfarmasystem-celery_worker-1\t0.00%\t313.3MiB / 7.75GiB\t3\nrgnfarmasystem-celery_beat-1\t0.00%\t177.7MiB / 7.75GiB\t4\nrgnfarmasystem-app-1\t0.01%\t206.9MiB / 7.75GiB\t6\nrgnfarmasystem-nginx-1\t0.00%\t4.652MiB / 7.75GiB\t5\nrgnfarmasystem-redis-1\t0.42%\t3.68MiB / 7.75GiB\t6\nrgnfarmasystem-db-1\t0.00%\t39.61MiB / 7.75GiB\t7\nrgnfarmasystem-rabbitmq-1\t0.28%\t107.4MiB / 7.75GiB\t32"
+  },
+  "http": {
+    "internal_health": {
+      "exit_code": 0,
+      "stdout": "200 0.003935 0"
+    },
+    "internal_readiness": {
+      "exit_code": 0,
+      "stdout": "200 2.555331 0"
+    },
+    "public_health": {
+      "exit_code": 0,
+      "stdout": "200 0.157890 0"
+    },
+    "public_readiness": {
+      "exit_code": 0,
+      "stdout": "200 2.747100 0"
+    },
+    "tunnel_loopback_20249": {
+      "exit_code": 0,
+      "stdout": "200 0.000826 0"
+    }
+  },
+  "backup_locations": [
+    {
+      "directory": "/home/deploy/rgnfarmasystemv2/backups",
+      "metadata": {
+        "path": "/home/deploy/rgnfarmasystemv2/backups",
+        "error_type": "FileNotFoundError"
+      },
+      "files": [],
+      "listing_error_type": "FileNotFoundError"
+    },
+    {
+      "directory": "/home/deploy/backups/rgnfarmasystem",
+      "metadata": {
+        "path": "/home/deploy/backups/rgnfarmasystem",
+        "error_type": "FileNotFoundError"
+      },
+      "files": [],
+      "listing_error_type": "FileNotFoundError"
+    }
+  ]
+}

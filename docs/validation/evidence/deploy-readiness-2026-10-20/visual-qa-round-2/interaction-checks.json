@@ -1,0 +1,265 @@
+[
+  {
+    "name": "mobile-avatar-menu-keyboard",
+    "url": "http://127.0.0.1:8767/personal-no-access.html",
+    "width": 375,
+    "height": 900,
+    "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "errors": [],
+    "observation": {
+      "menuOpen": true,
+      "avatarVisible": true,
+      "focusedText": "Alterar avatar",
+      "focusedHref": "/accounts/avatar/",
+      "overflow": 0
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/mobile-avatar-menu-keyboard.png"
+  },
+  {
+    "name": "mobile-avatar-menu-settled",
+    "url": "http://127.0.0.1:8767/personal-no-access.html",
+    "width": 375,
+    "height": 900,
+    "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "errors": [],
+    "observation": {
+      "phase": "after transition",
+      "focused": "Alterar avatar"
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/mobile-avatar-menu-settled.png"
+  },
+  {
+    "name": "mobile-avatar-keyboard-destination",
+    "url": "http://127.0.0.1:8767/accounts/avatar/",
+    "width": 375,
+    "height": 900,
+    "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "errors": [],
+    "observation": {
+      "path": "/accounts/avatar/",
+      "uploadVisible": true,
+      "noUploadPerformed": true
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/mobile-avatar-keyboard-destination.png"
+  },
+  {
+    "name": "mobile-sidebar-open",
+    "url": "http://127.0.0.1:8767/accounts/avatar/",
+    "width": 375,
+    "height": 900,
+    "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "errors": [],
+    "observation": {
+      "nav": {
+        "x": 0,
+        "y": 0,
+        "width": 280,
+        "height": 900,
+        "top": 0,
+        "right": 280,
+        "bottom": 900,
+        "left": 0
+      },
+      "bodyClasses": "pace-running ",
+      "overflow": 0
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/mobile-sidebar-open.png"
+  },
+  {
+    "name": "mobile-report-errors-bottom",
+    "url": "http://127.0.0.1:8767/report-errors.html",
+    "width": 375,
+    "height": 900,
+    "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "errors": [],
+    "observation": {
+      "scrollY": 0,
+      "errors": [
+        {
+          "text": "Este campo \u00e9 obrigat\u00f3rio.",
+          "rect": {
+            "x": 45,
+            "y": 996.3125,
+            "width": 280,
+            "height": 24.796875,
+            "top": 996.3125,
+            "right": 325,
+            "bottom": 1021.109375,
+            "left": 45
+          }
+        },
+        {
+          "text": "Este campo \u00e9 obrigat\u00f3rio.",
+          "rect": {
+            "x": 45,
+            "y": 1126.5625,
+            "width": 280,
+            "height": 24.796875,
+            "top": 1126.5625,
+            "right": 325,
+            "bottom": 1151.359375,
+            "left": 45
+          }
+        }
+      ],
+      "invalid": [
+        {
+          "name": "period_end",
+          "label": "Data final\n                        *",
+          "describedBy": "id_period_end_errors"
+        },
+        {
+          "name": "period_start",
+          "label": "Data inicial\n                        *",
+          "describedBy": "id_period_start_errors"
+        }
+      ],
+      "submitRect": {
+        "x": 161.734375,
+        "y": 1250.359375,
+        "width": 163.265625,
+        "height": 42,
+        "top": 1250.359375,
+        "right": 325,
+        "bottom": 1292.359375,
+        "left": 161.734375
+      },
+      "overflow": -5
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/mobile-report-errors-bottom.png"
+  },
+  {
+    "name": "mobile-report-errors-controls-visible",
+    "url": "http://127.0.0.1:8767/report-errors.html",
+    "width": 375,
+    "height": 900,
+    "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "errors": [],
+    "observation": {
+      "scrollY": 546,
+      "errorRects": [
+        {
+          "text": "Este campo \u00e9 obrigat\u00f3rio.",
+          "top": 450.3125,
+          "bottom": 475.109375
+        },
+        {
+          "text": "Este campo \u00e9 obrigat\u00f3rio.",
+          "top": 580.5625,
+          "bottom": 605.359375
+        }
+      ],
+      "submit": {
+        "x": 161.734375,
+        "y": 704.359375,
+        "width": 163.265625,
+        "height": 42,
+        "top": 704.359375,
+        "right": 325,
+        "bottom": 746.359375,
+        "left": 161.734375
+      },
+      "cancel": {
+        "x": 205.515625,
+        "y": 654.359375,
+        "width": 119.484375,
+        "height": 42,
+        "top": 654.359375,
+        "right": 325,
+        "bottom": 696.359375,
+        "left": 205.515625
+      }
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/mobile-report-errors-controls-visible.png"
+  },
+  {
+    "name": "mobile-cancel-catalog-destination",
+    "url": "http://127.0.0.1:8767/app/reports/catalog/",
+    "width": 375,
+    "height": 900,
+    "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "errors": [],
+    "observation": {
+      "path": "/app/reports/catalog/",
+      "reportCards": 4
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/mobile-cancel-catalog-destination.png"
+  },
+  {
+    "name": "desktop-report-click-path",
+    "url": "http://127.0.0.1:8767/app/reports/catalog/3/run/",
+    "width": 1440,
+    "height": 1000,
+    "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "errors": [],
+    "observation": {
+      "journey": [
+        "module",
+        "catalog",
+        "report form"
+      ],
+      "actualPath": "/app/reports/catalog/3/run/",
+      "formVisible": true,
+      "noSubmission": true
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/desktop-report-click-path.png"
+  },
+  {
+    "name": "desktop-production-visuals-tab-settled",
+    "url": "http://127.0.0.1:8767/production-detail.html",
+    "width": 1440,
+    "height": 1000,
+    "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "errors": [],
+    "observation": {
+      "activePanel": "tab-views",
+      "mapsVisible": true,
+      "errors": []
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/desktop-production-visuals-tab-settled.png"
+  },
+  {
+    "name": "mobile-production-overlap-before-fix",
+    "url": "http://127.0.0.1:8767/production-detail.html",
+    "width": 375,
+    "height": 900,
+    "revision": "source-sha256:58a4831135f6c1744da45fa25d479a2b609751cb434a7ed898e8a435bf154cf1",
+    "errors": [],
+    "observation": {
+      "summary": {
+        "x": 20,
+        "y": 442.78125,
+        "width": 325,
+        "height": 625.125,
+        "top": 442.78125,
+        "right": 345,
+        "bottom": 1067.90625,
+        "left": 20
+      },
+      "data": {
+        "x": 20,
+        "y": 466.78125,
+        "width": 325,
+        "height": 303.796875,
+        "top": 466.78125,
+        "right": 345,
+        "bottom": 770.578125,
+        "left": 20
+      },
+      "tab": {
+        "x": 21,
+        "y": 467.78125,
+        "width": 323,
+        "height": 64.5,
+        "top": 467.78125,
+        "right": 344,
+        "bottom": 532.28125,
+        "left": 21
+      },
+      "tabHit": "Dados do Registro",
+      "overlapPixels": 303.796875,
+      "activePanel": "tab-views"
+    },
+    "screenshot_path": "/Users/rgnsystems/Documents/rgnfarmasystemv2/docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/mobile-production-overlap-before-fix.png"
+  }
+]

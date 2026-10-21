@@ -1,0 +1,17 @@
+<input type="hidden" name="loaded_formula_selection" value="{{ formula_selection }}">
+{% if can_view_formulas %}
+<div class="mb-4">
+    <label class="form-label" for="id_formula_selection">Versão da fórmula</label>
+    <select name="formula_selection" id="id_formula_selection" class="form-select" aria-describedby="formula-selection-help">
+        <option value="none"{% if formula_selection == 'none' %} selected{% endif %}>Somente produto — não alterar fórmulas</option>
+        {% if can_add_formula %}<option value="new"{% if formula_selection == 'new' %} selected{% endif %}>Nova versão</option>{% endif %}
+        {% for version in formula_versions %}
+        <option value="{{ version.pk }}"{% if formula_selection == version.pk|stringformat:'s' %} selected{% endif %}>{{ version.code }} · v{{ version.version }} · {{ version.get_status_display }}</option>
+        {% endfor %}
+    </select>
+    <p class="form-text" id="formula-selection-help">Escolha e carregue explicitamente a versão. Carregar substitui apenas os campos da fórmula e seus componentes; os dados do produto são mantidos. Salvar altera somente a versão carregada.</p>
+    <button class="btn btn-light-brand" type="submit" name="workflow_action" value="load_formula" formnovalidate>Carregar seleção</button>
+</div>
+{% else %}
+<p>Você não possui permissão para visualizar fórmulas.</p>
+{% endif %}

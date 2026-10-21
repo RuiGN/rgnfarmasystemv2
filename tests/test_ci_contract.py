@@ -111,6 +111,7 @@ def test_runtime_dependencies_use_audited_compatible_versions():
     requirements.update(Path('requirements-dev.txt').read_text(encoding='utf-8').splitlines())
 
     required_versions = {
+        'certifi==2026.10.19',
         'Django==6.0.8',
         'langchain==1.3.17',
         'langchain-openai==1.6.0',
@@ -118,8 +119,9 @@ def test_runtime_dependencies_use_audited_compatible_versions():
         'langgraph-checkpoint==4.2.0',
         'langgraph-sdk==0.4.4',
         'openai==3.3.1',
+        'pillow==13.0.0',
         'protobuf==7.36.0',
-        'pypdf==6.19.0',
+        'pypdf==6.20.1',
         'pytest==9.1.1',
         'websockets==16.1.1',
     }

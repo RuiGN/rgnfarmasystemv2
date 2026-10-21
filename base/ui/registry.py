@@ -251,7 +251,7 @@ from compliance.models import (
     RecordStatusHistory,
     TransversalRequirementPolicy,
 )
-from base.retention import GXP_RETENTION_APP_LABELS
+from base.retention import requires_gxp_retention
 
 
 @dataclass(frozen=True)
@@ -287,7 +287,7 @@ class InlineResourceConfig:
         return _user_has_model_permission(user, self.child_model, 'change')
 
     def can_delete(self, user):
-        if self.app_label in GXP_RETENTION_APP_LABELS:
+        if requires_gxp_retention(self.child_model):
             return False
         return _user_has_model_permission(user, self.child_model, 'delete')
 
@@ -382,7 +382,7 @@ class ResourceConfig:
         return self._can_write(user, 'change')
 
     def can_delete(self, user):
-        if not self.allow_delete or self.app_label in GXP_RETENTION_APP_LABELS:
+        if not self.allow_delete or requires_gxp_retention(self.model):
             return False
         return self._can_write(user, 'delete')
 
@@ -720,7 +720,7 @@ MODULES = (
                         ),
                         'Informe todos os materiais, quantidades e perdas previstas desta fórmula.',
                         'Adicionar componente',
-                        inline_style='tabular',
+                        inline_style='stacked',
                     ),
                 ),
                 audit_trail=True,
@@ -1273,6 +1273,16 @@ MODULES = (
                 ),
                 (
                     'product',
+                    'lot_number',
+                    'sublot_number',
+                    'supplier',
+                    'source_purchase_receipt_item',
+                    'source_production_order',
+                    'manufacturing_date',
+                    'expiry_date',
+                    'notes',
+                ),
+                update_form_fields=(
                     'lot_number',
                     'sublot_number',
                     'supplier',

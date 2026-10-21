@@ -5,10 +5,15 @@ from django.db.models import Model
 
 from base.ui.forms import _apply_widget_metadata
 from base.ui.actions.types import ActionConfig, ActionField, FieldKind
+from base.ui.related_fields import configure_related_fields, validate_related_fields
 
 
 class ActionForm(forms.Form):
     declared_action_fields: tuple[ActionField, ...] = ()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        configure_related_fields(self)
 
     def cleaned_payload(self):
         payload = {}
@@ -49,7 +54,7 @@ def build_action_form(config: ActionConfig, request, obj=None):
         cleaned_data = forms.Form.clean(form)
         if typed_phrase and cleaned_data.get('confirmation_phrase') != typed_phrase:
             form.add_error('confirmation_phrase', 'Digite a frase de confirmação exatamente.')
-        return cleaned_data
+        return validate_related_fields(form, cleaned_data)
 
     dynamic_form = type(
         f'{config.model.__name__}{config.action_name.title()}ActionForm',

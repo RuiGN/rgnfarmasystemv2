@@ -1,0 +1,16 @@
+{% if not inline.available %}
+<section class="card border border-gray-2 mt-4 resource-inline-formset" data-inline-formset="{{ inline.key }}">
+    <div class="card-header bg-light p-3 border-bottom"><h2 class="h6 fw-bold mb-0">{{ inline.title }}</h2></div>
+    <div class="card-body p-4">
+        <div class="alert alert-secondary mb-0" role="status">
+            <i class="feather-lock me-2" aria-hidden="true"></i>Você não possui permissão para visualizar estes registros.
+        </div>
+    </div>
+</section>
+{% elif inline.inline_style == 'tabular' %}
+    {% include 'app/includes/inline_tabular.html' %}
+{% elif inline.inline_style == 'qc_grid' %}
+    {% include 'app/includes/inline_qc_grid.html' %}
+{% else %}
+    {% include 'app/includes/inline_stacked.html' %}
+{% endif %}

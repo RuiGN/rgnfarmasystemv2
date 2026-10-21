@@ -1,0 +1,28 @@
+{
+  "delegation_id": "deleg_9aa7d503",
+  "model": "gpt-6.1-sol",
+  "scope": "Final progressive-deletion delta only",
+  "code_fingerprint": "a2a35a1ff3b84114cd48662e787c5fcf94a2ad4463e7a41bf9e5ea46884ae464",
+  "report": {
+    "verdict": "ship",
+    "confidence": "high",
+    "findings": [],
+    "spec_axis": "Claim atendido no delta de exclusão progressiva dos inlines stacked: nenhum novo defeito concreto identificado. O parecer é restrito a essa correção; não aprova a release geral.",
+    "checked_clean": [
+      "inline_stacked.html:31-40,57-66: formulário existente e empty_form preservam checkbox DELETE dentro de label Remover, com associação for/id e sem ancestral d-none.",
+      "resource_form.html:84-122: data-inline-ready é definido após o registro do listener delegado; novas linhas permanecem cobertas pela delegação.",
+      "app.css:1395-1405: ícone oculto sem readiness; fallback oculto e ícone exibido com readiness. Especificidade conferida contra o tema.",
+      "resource_execution_board.html:97-142: sem readiness ou listener de exclusão por ícone, mantém o checkbox nativo, inclusive em linhas adicionadas.",
+      "Hashes dos arquivos do delta e fingerprint agregado conferidos contra manifest.json.",
+      "Artefatos conferidos: 101 testes verdes, RED anterior e 24 verificações de navegador aprovadas, incluindo exclusão sem scripts e leitura de volta.",
+      "HEAD coincide com a base informada; git diff --check sem problemas. Nenhum arquivo alterado pelo revisor."
+    ],
+    "could_not_assess": [
+      "Não reexecutou testes, navegador ou submissões; conferiu evidências existentes.",
+      "Execução do board verificada estaticamente, sem ensaio próprio em navegador.",
+      "Backend, permissões, arquitetura e release geral fora do escopo deste delta."
+    ]
+  },
+  "parent_validation": "Returned JSON contains required verdict, confidence, findings and nonempty checked_clean; original functional evidence was separately observed by the parent.",
+  "snapshot_manifest": "manifest-before-bootstrap.json"
+}

@@ -1,0 +1,33 @@
+{
+  "artifact_saved_at": "2026-10-20T10:00:33.316048+00:00",
+  "capture_time_note": "Discovery preceded the timestamped preflight; this time is the local result-file save, not an emitted remote observation time.",
+  "target_host": "13.140.139.122",
+  "ssh_user": "deploy",
+  "documented_checkout_present": false,
+  "actual_checkout": "/home/deploy/rgnfarmasystemv2",
+  "resources": {
+    "cpu_count": 4,
+    "load_average": [
+      1.94482421875,
+      1.591796875,
+      1.49267578125
+    ],
+    "root_free_gib": 182.83,
+    "available_ram_gib": 2.71,
+    "swap_used_gib": 1.3,
+    "host_total_container_count": 50
+  },
+  "relevant_listeners": [
+    "0.0.0.0:443",
+    "0.0.0.0:22",
+    "0.0.0.0:80",
+    "127.0.0.1:20249",
+    "127.0.0.1:8081",
+    "[::]:443",
+    "[::]:22",
+    "[::]:80",
+    "*:20242",
+    "*:20243"
+  ],
+  "other_project_details_omitted": true
+}

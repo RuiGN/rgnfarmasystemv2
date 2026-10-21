@@ -7,6 +7,7 @@ from crm.ui_views import SalesOrderCockpitView
 from deviations.ui_views import QualityEventCockpitView
 from documents.ui_views import ControlledDocumentCockpitView
 from formulations.ui_views import MasterFormulaCockpitView, MasterFormulaReuseView
+from masters.ui_views import ProductCreateView, ProductUpdateView
 from production.ui_views import ProductionOrderCockpitView
 from procurement.ui_views import SupplierCockpitView
 from qa.ui_views import LotReleaseCockpitView, StockLotDossierView
@@ -54,6 +55,18 @@ urlpatterns = [
         'reports/catalog/<int:pk>/run/',
         views.ReportRunView.as_view(),
         name='report_run',
+    ),
+    path(
+        'masters/products/new/',
+        ProductCreateView.as_view(),
+        {'module_slug': 'masters', 'resource_slug': 'products'},
+        name='product_create',
+    ),
+    path(
+        'masters/products/<int:pk>/edit/',
+        ProductUpdateView.as_view(),
+        {'module_slug': 'masters', 'resource_slug': 'products'},
+        name='product_edit',
     ),
     path('<slug:module_slug>/', views.ModuleView.as_view(), name='module'),
     path(

@@ -37,32 +37,43 @@ write_health_markers() {
   local timestamp="$1"
   local health_tmp="${HEALTH_FILE}.tmp.$$"
   local last_run_tmp="${LAST_RUN_FILE}.tmp.$$"
-  printf '%s\n' "$timestamp" > "$health_tmp"
-  printf '%s\n' "$timestamp" > "$last_run_tmp"
-  mv -f -- "$health_tmp" "$HEALTH_FILE"
-  mv -f -- "$last_run_tmp" "$LAST_RUN_FILE"
+  if ! {
+    printf '%s\n' "$timestamp" > "$health_tmp" &&
+      printf '%s\n' "$timestamp" > "$last_run_tmp" &&
+      mv -f -- "$health_tmp" "$HEALTH_FILE" &&
+      mv -f -- "$last_run_tmp" "$LAST_RUN_FILE"
+  }; then
+    rm -f -- "$health_tmp" "$last_run_tmp" "$HEALTH_FILE"
+    return 1
+  fi
 }
 
 run_backup_cycle() {
   local cycle_marker postgres_artifact media_artifact completed_at
   mkdir -p -- "$BACKUP_DIR" "$LOG_DIR" "$(dirname -- "$HEALTH_FILE")" \
-    "$(dirname -- "$LAST_RUN_FILE")" "$(dirname -- "$LOCK_FILE")"
-  rm -f -- "$HEALTH_FILE"
-  cycle_marker=$(mktemp "${BACKUP_DIR}/.backup-cycle.XXXXXX")
+    "$(dirname -- "$LAST_RUN_FILE")" "$(dirname -- "$LOCK_FILE")" || return 1
+  rm -f -- "$HEALTH_FILE" || return 1
+  cycle_marker=$(mktemp "${BACKUP_DIR}/.backup-cycle.XXXXXX") || return 1
   trap "rm -f -- '$cycle_marker'" RETURN
 
   log 'Iniciando ciclo de backup local.'
-  BACKUP_DIR="$BACKUP_DIR" bash "$BACKUP_SCRIPT"
+  if ! BACKUP_DIR="$BACKUP_DIR" bash "$BACKUP_SCRIPT"; then
+    log 'Falha: o processo de backup terminou com erro; saúde não será publicada.'
+    return 1
+  fi
 
-  postgres_artifact=$(latest_new_artifact "$cycle_marker" 'postgres-*.sql.gz')
-  media_artifact=$(latest_new_artifact "$cycle_marker" 'media-*.tar.gz')
+  postgres_artifact=$(latest_new_artifact "$cycle_marker" 'postgres-*.sql.gz') || return 1
+  media_artifact=$(latest_new_artifact "$cycle_marker" 'media-*.tar.gz') || return 1
   if [[ -z "$postgres_artifact" || -z "$media_artifact" ]]; then
     log 'Falha: o ciclo não produziu artefato novo e não vazio de PostgreSQL e mídia.'
     return 1
   fi
 
-  completed_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-  write_health_markers "$completed_at"
+  completed_at=$(date -u +%Y-%m-%dT%H:%M:%SZ) || return 1
+  if ! write_health_markers "$completed_at"; then
+    log 'Falha: não foi possível publicar os marcadores de saúde do backup.'
+    return 1
+  fi
   log "Backup local concluído: $(basename -- "$postgres_artifact"), $(basename -- "$media_artifact")."
 }
 

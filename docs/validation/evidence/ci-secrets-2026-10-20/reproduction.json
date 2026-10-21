@@ -1,0 +1,26 @@
+{
+  "command": [
+    "gitleaks",
+    "git",
+    "--log-opts=d8b179c77787806f463d1d637a526bbdf0436d22..HEAD",
+    "--redact=100",
+    "--no-banner",
+    "--no-color",
+    "--report-format",
+    "json",
+    "--report-path",
+    "/Users/rgnsystems/.hermes/cache/scratch/ci-secrets-git-repro-red.json",
+    "."
+  ],
+  "exit_status": 1,
+  "remote_finding_count": 103,
+  "local_finding_count": 103,
+  "same_locations_and_rules_as_remote": true,
+  "unique_commit_bound_fingerprints": 84,
+  "commits": [
+    "36a5cd694de9c39876057f96e3220f26d9c97daa"
+  ],
+  "origin": "introduced: findings are new evidence lines in36a5cd6",
+  "raw_content_disclosed": false,
+  "sarif_declared_driver_version": "v8.0.0"
+}

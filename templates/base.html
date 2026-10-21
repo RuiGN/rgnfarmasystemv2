@@ -29,8 +29,8 @@
             <div class="m-header" style="height: 88px; padding: 0 16px;">
                 {% static 'vendor/duralux/images/logo_header.webp' as default_brand_logo %}
                 <a href="{% url 'home' %}" class="b-brand" aria-label="Início {{ institution_name|default:'RGN Farma System' }}" title="Início {{ institution_name|default:'RGN Farma System' }}" style="height: 84px; max-width: 100%;">
-                    <img src="{{ institution_logo_url|default:default_brand_logo }}" alt="{{ institution_name|default:'RGN Farma System' }}" class="logo logo-lg app-brand-logo" style="max-height: 80px !important; width: auto !important;">
-                    <img src="{{ institution_logo_url|default:default_brand_logo }}" alt="{{ institution_name|default:'RGN Farma System' }}" class="logo logo-sm app-brand-logo" style="max-height: 60px !important; width: auto !important;">
+                    <img src="{{ institution_logo_url|default:default_brand_logo }}" alt="{{ institution_name|default:'RGN Farma System' }}" class="logo logo-lg app-brand-logo">
+                    <img src="{{ institution_logo_url|default:default_brand_logo }}" alt="{{ institution_name|default:'RGN Farma System' }}" class="logo logo-sm app-brand-logo">
                 </a>
             </div>
             <div class="navbar-content">
@@ -157,6 +157,10 @@
                                     </div>
                                 </div>
                                 <div class="dropdown-divider"></div>
+                                <a href="{% url 'accounts:avatar' %}" class="dropdown-item d-flex align-items-center gap-2">
+                                    <i class="feather-camera fs-16" aria-hidden="true"></i>
+                                    <span>Alterar avatar</span>
+                                </a>
                                 <form method="post" action="{% url 'accounts:logout' %}" class="dropdown-item p-0">
                                     {% csrf_token %}
                                     <button type="submit" class="dropdown-item text-danger d-flex align-items-center gap-2" style="background: none; border: none; width: 100%; text-align: left;">
@@ -193,7 +197,7 @@
         <!-- [ Footer ] end -->
     </main>
     {% block global_rag_chat %}
-        {% if request.user.is_authenticated and perms.knowledge.view_ragchatsession %}
+        {% if not form and request.user.is_authenticated and perms.knowledge.view_ragchatsession %}
             {% include 'includes/rag_chat.html' %}
             <script src="{% static 'js/rag-chat.js' %}" defer></script>
         {% endif %}
@@ -201,6 +205,7 @@
     <script src="{% static 'vendor/duralux/js/vendors.min.js' %}" defer></script>
     <script src="{% static 'vendor/duralux/js/common-init.min.js' %}" defer></script>
     <script src="{% static 'js/app-form-enhancements.js' %}" defer></script>
+    <script src="{% static 'js/related-fields.js' %}" defer></script>
     <script src="{% static 'js/resource-actions.js' %}" defer></script>
     <script src="{% static 'js/global-search.js' %}" defer></script>
     <script src="{% static 'js/command-palette.js' %}" defer></script>

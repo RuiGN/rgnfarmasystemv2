@@ -1,0 +1,101 @@
+[
+  {
+    "command": ".venv/bin/python /Users/rgnsystems/.hermes/cache/scratch/run_release_full.py",
+    "source": "/Users/rgnsystems/Documents/rgnfarmasystemv2",
+    "exit_status": 0,
+    "summary": "2613 passed,42 subtests passed; coverage86.40%",
+    "scope": "Complete local pytest suite with coverage80 threshold, isolated synthetic PostgreSQL and unchanged production deadlines.",
+    "freshness": {
+      "started_at": "2026-10-20T09:16:52.719287+00:00",
+      "sources_match_after_run": true,
+      "revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+      "environment": "sha256:3a3ac0b1df015bcfa317db82fdcbbea4a91330b3237dc7a19cc004b65d73a3cb"
+    },
+    "evidence": "full-final/run.json"
+  },
+  {
+    "command": ".venv/bin/python /Users/rgnsystems/.hermes/cache/scratch/run_release_live_integration.py > /Users/rgnsystems/.hermes/cache/scratch/release-live-integration-quiet-wrapper.log 2>&1",
+    "source": "/Users/rgnsystems/Documents/rgnfarmasystemv2",
+    "exit_status": 0,
+    "summary": "Liveness200 and three readiness200 samples; original2s per probe; settings unchanged and cleanup checked.",
+    "scope": "Immutable candidate with ephemeral real PostgreSQL/Redis/RabbitMQ in internal network; no production.",
+    "freshness": {
+      "revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+      "image_id": "sha256:2b3211d4c19535b92332928d5990470f8d1b6d8bf545330949d334c0bae28cc3",
+      "receipt_matches_current_candidate": true
+    },
+    "evidence": "live-integration-candidate-quiet.json"
+  },
+  {
+    "command": "/Users/rgnsystems/Documents/rgnfarmasystemv2/.venv/bin/python /Users/rgnsystems/.hermes/cache/scratch/run_release_verification.py --manage check",
+    "source": "/Users/rgnsystems/Documents/rgnfarmasystemv2",
+    "exit_status": 0,
+    "summary": "Management gate completed with exit0.",
+    "scope": "Synthetic local structural/configuration check, not target observation.",
+    "freshness": {
+      "revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+      "sources_unchanged": true
+    },
+    "evidence": "docs/validation/evidence/deploy-readiness-2026-10-20/final-check.log"
+  },
+  {
+    "command": "/Users/rgnsystems/Documents/rgnfarmasystemv2/.venv/bin/python /Users/rgnsystems/.hermes/cache/scratch/run_release_verification.py --manage makemigrations --check --dry-run",
+    "source": "/Users/rgnsystems/Documents/rgnfarmasystemv2",
+    "exit_status": 0,
+    "summary": "Management gate completed with exit0.",
+    "scope": "Synthetic local structural/configuration check, not target observation.",
+    "freshness": {
+      "revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+      "sources_unchanged": true
+    },
+    "evidence": "docs/validation/evidence/deploy-readiness-2026-10-20/final-makemigrations.log"
+  },
+  {
+    "command": "/Users/rgnsystems/Documents/rgnfarmasystemv2/.venv/bin/python /Users/rgnsystems/.hermes/cache/scratch/run_release_verification.py --manage check_operational_readiness --fail-on-error",
+    "source": "/Users/rgnsystems/Documents/rgnfarmasystemv2",
+    "exit_status": 0,
+    "summary": "Management gate completed with exit0.",
+    "scope": "Synthetic local structural/configuration check, not target observation.",
+    "freshness": {
+      "revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+      "sources_unchanged": true
+    },
+    "evidence": "docs/validation/evidence/deploy-readiness-2026-10-20/final-check_operational_readiness.log"
+  },
+  {
+    "command": "/Users/rgnsystems/Documents/rgnfarmasystemv2/.venv/bin/python /Users/rgnsystems/.hermes/cache/scratch/run_release_verification.py --manage check_backup_restore_readiness --fail-on-error",
+    "source": "/Users/rgnsystems/Documents/rgnfarmasystemv2",
+    "exit_status": 0,
+    "summary": "Management gate completed with exit0.",
+    "scope": "Synthetic local structural/configuration check, not target observation.",
+    "freshness": {
+      "revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+      "sources_unchanged": true
+    },
+    "evidence": "docs/validation/evidence/deploy-readiness-2026-10-20/final-check_backup_restore_readiness.log"
+  },
+  {
+    "command": "/Users/rgnsystems/Documents/rgnfarmasystemv2/.venv/bin/python /Users/rgnsystems/.hermes/cache/scratch/run_release_verification.py --manage check_product_acceptance --fail-on-error",
+    "source": "/Users/rgnsystems/Documents/rgnfarmasystemv2",
+    "exit_status": 0,
+    "summary": "Management gate completed with exit0.",
+    "scope": "Synthetic local structural/configuration check, not target observation.",
+    "freshness": {
+      "revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+      "sources_unchanged": true
+    },
+    "evidence": "docs/validation/evidence/deploy-readiness-2026-10-20/final-check_product_acceptance.log"
+  },
+  {
+    "command": "/Users/rgnsystems/Documents/rgnfarmasystemv2/.venv/bin/python /Users/rgnsystems/.hermes/cache/scratch/run_release_verification.py --manage check_release_readiness --fail-on-error",
+    "source": "/Users/rgnsystems/Documents/rgnfarmasystemv2",
+    "exit_status": 0,
+    "summary": "Management gate completed with exit0.",
+    "scope": "Synthetic local structural/configuration check, not target observation.",
+    "freshness": {
+      "revision": "source-sha256:63af02efc3d7a640607ff9b2d841a3a80b8f9abfd2cc6c55aab7f13037e17694",
+      "sources_unchanged": true
+    },
+    "evidence": "docs/validation/evidence/deploy-readiness-2026-10-20/final-check_release_readiness.log"
+  }
+]

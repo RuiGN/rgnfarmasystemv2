@@ -1,19 +1,20 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{% if form_mode == 'edit' %}Editar registro{% else %}Novo registro{% endif %} - {{ resource.label }} | RGN Farma System{% endblock %}
 
 {% block page_header %}
 <div class="page-header" id="section-0">
     <div class="page-header-left d-flex align-items-center">
-        <div class="page-header-title">
-            <h5 class="m-b-10">{% if form_mode == 'edit' %}Editar registro{% else %}Novo registro{% endif %} - {{ resource.label }}</h5>
-        </div>
         <ul class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
             <li class="breadcrumb-item"><a href="{% url 'app:module' module.slug %}">{{ module.label }}</a></li>
             <li class="breadcrumb-item"><a href="{% url 'app:resource_list' module.slug resource.slug %}">{{ resource.label }}</a></li>
             <li class="breadcrumb-item">{% if form_mode == 'edit' %}Editar registro{% else %}Novo registro{% endif %}</li>
         </ul>
+        <div class="page-header-title">
+            <h5 class="m-b-10">{% if form_mode == 'edit' %}Editar registro{% else %}Novo registro{% endif %} - {{ resource.label }}</h5>
+        </div>
     </div>
     <div class="page-header-right ms-auto d-none d-md-flex">
         <a href="{% url 'app:resource_list' module.slug resource.slug %}" class="btn btn-light-brand d-inline-flex align-items-center gap-2"><i class="feather-arrow-left" aria-hidden="true"></i>Voltar</a>
@@ -22,6 +23,15 @@
 {% endblock %}
 
 {% block content %}
+<form method="post" class="resource-form" data-ui="resource-form"{% if form.is_multipart %} enctype="multipart/form-data"{% endif %}>
+    {% csrf_token %}
+    {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger mb-4" id="{{ resource.slug }}-form-errors" role="alert" tabindex="-1">{{ form.non_field_errors }}</div>
+    {% endif %}
+    {% if form_tabs %}
+        {% include 'app/includes/resource_form_tabs.html' %}
+    {% else %}
 <section class="card stretch stretch-full border border-gray-2">
     <div class="card-header p-4 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-3">
         <div class="d-flex align-items-center gap-3">
@@ -30,78 +40,46 @@
             </div>
             <div>
                 <h5 class="fw-bold mb-1">{% if form_mode == 'edit' %}Editar {{ resource.label }}{% else %}Novo Registro em {{ resource.label }}{% endif %}</h5>
-                <span class="fs-12 text-muted">Controle de integridade e boas práticas de fabricação (BPF / GMP & ALCOA+)</span>
+
             </div>
         </div>
         <div class="d-flex align-items-center gap-2">
             <span class="badge bg-soft-primary text-primary"><i class="feather-tag me-1"></i>{{ resource.label }}</span>
-            <span class="badge bg-soft-info text-info"><i class="feather-shield me-1"></i>Conformidade BPF</span>
+
         </div>
     </div>
     <div class="card-body p-4">
-        <form method="post" class="resource-form" data-ui="resource-form"{% if form.is_multipart %} enctype="multipart/form-data"{% endif %}>
-            {% csrf_token %}
-            {% if form.non_field_errors %}
-                <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" id="{{ resource.slug }}-form-errors" role="alert">
-                    <i class="feather-alert-triangle fs-18"></i>
-                    <div>{{ form.non_field_errors }}</div>
-                </div>
-            {% endif %}
 
             <div class="mb-4 d-flex align-items-center justify-content-between border-bottom pb-3">
                 <h6 class="fw-bold mb-0">
                     <span class="d-block mb-1">Campos do Registro</span>
-                    <span class="fs-12 fw-normal text-muted">Preencha os campos obrigatórios com precisão técnica e documental.</span>
+
                 </h6>
             </div>
 
             <div class="form-grid">
-                {% for field in form %}
-                <div class="form-field {{ field.field.rgn_layout_class }}{% if field.field.widget.input_type == 'checkbox' %} form-field-inline{% endif %}">
-                    <label for="{{ field.id_for_label }}" class="form-label fw-semibold text-dark">
-                        {{ field.label }}
-                        {% if field.field.required %}<span class="text-danger ms-1" title="Campo obrigatório">*</span>{% endif %}
-                    </label>
-                    {{ field }}
-                    {% if field.help_text %}
-                        <span class="form-text fs-11 text-muted" id="{{ field.id_for_label }}_help">{{ field.help_text }}</span>
-                    {% endif %}
-                    {% if field.errors %}
-                        <span class="invalid-feedback d-block field-error" id="{{ field.id_for_label }}_errors" role="alert">{{ field.errors }}</span>
-                    {% endif %}
-                </div>
+                {% for field in form.visible_fields %}
+                    {% include 'app/includes/resource_form_field.html' with horizontal=False %}
                 {% endfor %}
             </div>
             {% if has_inline_formsets %}
                 {% for inline in inline_formsets %}
-                    {% if not inline.available %}
-                        <section class="card border border-gray-2 mt-4 resource-inline-formset" data-inline-formset="{{ inline.key }}">
-                            <div class="card-header bg-light p-3 border-bottom">
-                                <h6 class="fw-bold mb-0">{{ inline.title }}</h6>
-                            </div>
-                            <div class="card-body p-4">
-                                <div class="alert alert-secondary mb-0" role="status">
-                                    <i class="feather-lock me-2"></i>Você não possui permissão para visualizar estes registros.
-                                </div>
-                            </div>
-                        </section>
-                    {% elif inline.inline_style == 'tabular' %}
-                        {% include 'app/includes/inline_tabular.html' %}
-                    {% elif inline.inline_style == 'qc_grid' %}
-                        {% include 'app/includes/inline_qc_grid.html' %}
-                    {% else %}
-                        {% include 'app/includes/inline_stacked.html' %}
-                    {% endif %}
+                    {% include 'app/includes/resource_inline_formset.html' %}
                 {% endfor %}
             {% endif %}
-            {% include 'includes/form_actions.html' %}
-        </form>
+
     </div>
 </section>
+    {% endif %}
+    {% include 'includes/form_actions.html' %}
+</form>
 {% endblock %}
 
 {% block scripts %}
 {{ block.super }}
+{% if form_tabs %}
+<script src="{% static 'js/resource-form-tabs.js' %}" defer></script>
+{% endif %}
 <script>
 document.addEventListener('click', function (event) {
     const deleteButton = event.target.closest('[data-inline-formset-delete]');
@@ -109,7 +87,10 @@ document.addEventListener('click', function (event) {
         const row = deleteButton.closest('[data-inline-formset-form]');
         const deleteField = row ? row.querySelector('input[type="checkbox"][name$="-DELETE"]') : null;
 
-        if (deleteField) {
+        if (deleteField && !deleteField.disabled) {
+            row.querySelectorAll('input, select, textarea').forEach(function (control) {
+                if (control !== deleteField && control.type !== 'hidden') control.disabled = true;
+            });
             deleteField.checked = true;
             row.classList.add('d-none');
         }
@@ -137,6 +118,10 @@ document.addEventListener('click', function (event) {
     // Using insertAdjacentHTML directly allows <tr> to be inserted into <tbody>
     container.insertAdjacentHTML('beforeend', templateHtml);
     totalForms.value = index + 1;
+});
+
+document.querySelectorAll('[data-inline-formset]').forEach(function (formset) {
+    formset.dataset.inlineReady = 'true';
 });
 
 document.addEventListener('change', function(event) {

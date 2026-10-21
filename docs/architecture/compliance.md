@@ -26,6 +26,13 @@ Endpoints REST devem usar `IsAuthenticated` e permissões Django de modelo. A UI
 operacional em `/app/` deve usar o shell, cards, tabelas, formulários, badges,
 modais, paginação e estados do design system.
 
+A avaliação por `POST /api/compliance/checklist-items/evaluate_module/`
+cria e atualiza checks. Exige `add_compliancechecklistitem` e
+`change_compliancechecklistitem` conjuntamente. O mesmo contrato vale para
+`/api/v1/` e a action HTML; possuir apenas `add` ou apenas `change` não permite
+sobrescrever evidência, autoria ou instante de avaliação. A administração de
+permissões continua no Django Admin, sem concessão automática a grupos.
+
 ## Verificação mínima
 
 ```bash

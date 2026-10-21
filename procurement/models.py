@@ -1234,17 +1234,27 @@ class PurchaseReceiptItem(SingleInstanceModel):
         super().clean()
         errors = {}
         for field_name in ('received_quantity', 'accepted_quantity', 'rejected_quantity'):
-            if getattr(self, field_name) < 0:
+            value = getattr(self, field_name)
+            if value is not None and value < 0:
                 errors[field_name] = 'A quantidade não pode ser negativa.'
-        if self.received_quantity <= 0:
+        if self.received_quantity is not None and self.received_quantity <= 0:
             errors['received_quantity'] = 'A quantidade recebida deve ser maior que zero.'
-        if self.accepted_quantity + self.rejected_quantity > self.received_quantity:
+        if (
+            self.received_quantity is not None
+            and self.accepted_quantity is not None
+            and self.rejected_quantity is not None
+            and self.accepted_quantity + self.rejected_quantity > self.received_quantity
+        ):
             errors['accepted_quantity'] = (
                 'A soma das quantidades aceita e rejeitada não pode superar a recebida.'
             )
-        if self.order_item and self.product and self.order_item.product_id != self.product_id:
+        if self.order_item_id and self.product_id and self.order_item.product_id != self.product_id:
             errors['product'] = 'O produto recebido deve ser o mesmo item do pedido.'
-        if self.order_item and self.received_quantity > self.order_item.quantity:
+        if (
+            self.order_item_id
+            and self.received_quantity is not None
+            and self.received_quantity > self.order_item.quantity
+        ):
             errors['received_quantity'] = (
                 'A quantidade recebida não pode superar a quantidade do pedido.'
             )

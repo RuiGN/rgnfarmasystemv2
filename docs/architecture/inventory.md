@@ -26,6 +26,30 @@ Endpoints REST devem usar `IsAuthenticated` e permissões Django de modelo. A UI
 operacional em `/app/` deve usar o shell, cards, tabelas, formulários, badges,
 modais, paginação e estados do design system.
 
+## Integridade de saldos e identidade de lotes
+
+- `StockBalance` é retido pela política central por model, sem estender a
+  retenção a todo o app `inventory`. API legada e `/api/v1/`, formulário HTML,
+  inlines e Django Admin negam exclusão genérica, inclusive a superusuários e
+  à ação em lote do Admin. Correções de quantidade exigem movimento de domínio;
+  conceder `delete_stockbalance` não autoriza apagar a posição de estoque.
+- O produto de `StockLot` é imutável após o cadastro, inclusive antes do primeiro
+  movimento: evita a janela entre verificação de uso e criação de vínculos.
+  Para corrigir um cadastro sem uso, utilize outro lote com o produto correto.
+- A API exige `product` na criação e rejeita o campo em `PUT`/`PATCH`, mesmo com
+  o valor atual, seguindo o contrato das dimensões imutáveis de saldo. A UI
+  remove o campo da edição e o Admin o mantém somente leitura após a criação.
+  `clean()` e `save()` também recusam troca do produto em instâncias persistidas.
+- Observações e demais metadados autorizados continuam editáveis. Nenhum dado
+  histórico é corrigido ou apagado automaticamente por essa proteção.
+- `QuerySet.update()`, exclusão via ORM interno e SQL direto não passam pelas
+  interfaces genéricas; continuam restritos a serviços e rotinas administrativas
+  revisadas. Esta proteção não é um trigger de banco nem um saneamento de
+  inconsistências históricas.
+
+Regressões: `tests/test_p1_stock_balance_retention.py` e
+`tests/test_p1_stock_lot_identity.py`.
+
 ## Etiqueta de lote
 
 O detalhe de um lote apresenta **Imprimir etiqueta** somente ao usuário que
