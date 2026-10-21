@@ -3,6 +3,8 @@
 babel==2.18.0
 beautifulsoup4==4.15.0
 celery==5.6.3
+# GHSA-6q48-6c7w-9gw2: remove compromised emSign intermediate trust chain.
+certifi==2026.10.19
 cryptography==50.0.1
 defusedxml==0.7.1
 dj-celery-panel==0.6.0
@@ -23,10 +25,11 @@ langgraph-sdk==0.4.4
 numpy==2.5.2
 openai==3.3.1
 openpyxl==3.1.5
-pillow==12.3.0
+pillow==13.0.0
 protobuf==7.36.0
 psycopg[binary]==3.3.5
-pypdf==6.19.0
+# CVE-2026-113792/113793/113794/113795: bounded stream work and cyclic trees.
+pypdf==6.20.1
 PyYAML==6.0.3
 redis==7.4.1
 reportlab==5.0.1

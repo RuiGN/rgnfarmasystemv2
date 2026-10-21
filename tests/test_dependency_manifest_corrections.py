@@ -50,4 +50,4 @@ def test_pdf_parser_includes_the_audited_denial_of_service_fixes():
             for line in (ROOT / manifest).read_text().splitlines()
             if line.casefold().startswith('pypdf==')
         )
-        assert Version(version) >= Version('6.19.0')
+        assert Version(version) >= Version('6.20.1')
