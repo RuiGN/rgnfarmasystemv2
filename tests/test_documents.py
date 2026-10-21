@@ -309,8 +309,10 @@ class TestControlledDocumentApi:
 
         assert invalid_response.status_code == 201
         assert create_response.status_code == 201
-        assert invalid_response.json()['code'] == 'DOC-0001'
-        assert create_response.json()['code'] == 'DOC-0002'
+        first_document = invalid_response.json()
+        second_document = create_response.json()
+        assert first_document['code'] == f'DOC-{first_document["id"]}'
+        assert second_document['code'] == f'DOC-{second_document["id"]}'
         assert submit_response.status_code == 200
         assert review_response.status_code == 200
         assert approve_response.status_code == 200
@@ -321,8 +323,8 @@ class TestControlledDocumentApi:
         assert revision_response.status_code == 201
         assert revision_response.json()['version'] == '2.0'
         assert {item['code'] for item in list_response.json()['results']} == {
-            'DOC-0001',
-            'DOC-0002',
+            first_document['code'],
+            second_document['code'],
             'POP-QA-999',
         }
 

@@ -1,9 +1,10 @@
 from collections.abc import Callable
+from copy import copy
 from dataclasses import dataclass
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from django.core.exceptions import ImproperlyConfigured
-from django.db import IntegrityError, models, transaction
+from django.db import IntegrityError, connections, models, router, transaction
 from django.utils import timezone
 
 from base.models import IdentifierSequence
@@ -142,7 +143,7 @@ def generate_code(
 
 
 class AutoCodeMixin:
-    """Mixin que gera ``code`` automaticamente no ``save()`` quando vazio.
+    """Gera ``PREFIX-ID`` usando a própria chave primária do registro.
 
     O modelo deve definir ``CODE_PREFIX`` (str). Se ``code`` já vier preenchido,
     é preservado.
@@ -150,13 +151,54 @@ class AutoCodeMixin:
 
     CODE_PREFIX: ClassVar[str | None] = None
     code: str
+    pk: Any
+    _meta: Any
+    _state: Any
 
     def save(self, *args, **kwargs):
-        generated = False
-        if not self.code and self.CODE_PREFIX:
-            self.code = generate_code(type(self), self.CODE_PREFIX)
-            generated = True
-        if generated and kwargs.get('update_fields') is not None:
-            kwargs['update_fields'] = set(kwargs['update_fields']) | {'code'}
         parent_save = getattr(super(), 'save')
-        return parent_save(*args, **kwargs)
+        if self.code or not self.CODE_PREFIX:
+            return parent_save(*args, **kwargs)
+
+        if kwargs.get('update_fields') is not None:
+            kwargs['update_fields'] = frozenset(kwargs['update_fields'])
+            if not kwargs['update_fields']:
+                return parent_save(*args, **kwargs)
+        if self.pk is None and (kwargs.get('force_update') or kwargs.get('update_fields')):
+            return parent_save(*args, **kwargs)
+        if not self.CODE_PREFIX.strip():
+            raise ImproperlyConfigured(f'O prefixo de {self._meta.label}.code é obrigatório.')
+        using = kwargs.get('using') or router.db_for_write(type(self), instance=self)
+        kwargs['using'] = using
+        original = (self.pk, self.code, copy(self._state))
+        try:
+            with transaction.atomic(using=using):
+                if self.pk is None:
+                    with connections[using].cursor() as cursor:
+                        cursor.execute(
+                            'SELECT nextval(pg_get_serial_sequence(%s, %s))',
+                            [self._meta.db_table, self._meta.pk.column],
+                        )
+                        self.pk = cursor.fetchone()[0]
+                    if self.pk is None:
+                        raise ImproperlyConfigured(
+                            f'{self._meta.label} não possui sequência de chave primária.'
+                        )
+                    if (
+                        kwargs.get('force_insert', False) is False
+                        or kwargs.get('force_insert') == ()
+                    ):
+                        kwargs['force_insert'] = True
+                self.pk = self._meta.pk.get_prep_value(self.pk)
+                self.code = f'{self.CODE_PREFIX}-{self.pk}'
+                max_length = self._meta.get_field('code').max_length
+                if max_length is not None and len(self.code) > max_length:
+                    raise ImproperlyConfigured(
+                        f'{self._meta.label}.code não comporta o código; max_length={max_length}.'
+                    )
+                if kwargs.get('update_fields') is not None:
+                    kwargs['update_fields'] = set(kwargs['update_fields']) | {'code'}
+                return parent_save(*args, **kwargs)
+        except Exception:
+            self.pk, self.code, self._state = original
+            raise
