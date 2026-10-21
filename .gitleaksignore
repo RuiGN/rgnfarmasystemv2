@@ -105,3 +105,9 @@ d54d6419383889da2159e2df080aacf63c1fedee:docs/superpowers/plans/2026-07-27-purch
 36a5cd694de9c39876057f96e3220f26d9c97daa:docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/screenshot-sha256.json:generic-api-key:26
 36a5cd694de9c39876057f96e3220f26d9c97daa:docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/screenshot-sha256.json:generic-api-key:27
 36a5cd694de9c39876057f96e3220f26d9c97daa:docs/validation/evidence/vps-preflight-2026-10-20/probe-recovery.stdin.txt:generic-api-key:11
+
+# Authorized exact historical findings; provenance in secrets-exceptions.json.
+428307f97ee9940c3b46074a3f49b4c6168a8d41:design_system/assets/vendors/js/quill.min.js:generic-api-key:1
+913f62bdbedf61430ab7e1edb16827cf32ac9853:docs/superpowers/plans/2026-07-27-purchase-nfe-xml-import.md:generic-api-key:14
+913f62bdbedf61430ab7e1edb16827cf32ac9853:tests/test_google_drive_uploader.py:private-key:26
+913f62bdbedf61430ab7e1edb16827cf32ac9853:tests/test_upload_backup_command.py:private-key:23

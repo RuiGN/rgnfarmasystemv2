@@ -61,7 +61,9 @@ def added_findings():
     """Parse only the appended entries, leaving the historical prefix intact."""
     raw = (ROOT / '.gitleaksignore').read_bytes()
     findings = []
-    for line in raw[PREFIX_LENGTH:].decode('utf-8').splitlines():
+    # The original 99-entry contract is immutable; new approved entries have
+    # their own exact manifest and independent assertions below.
+    for line in raw[PREFIX_LENGTH:14357].decode('utf-8').splitlines():
         if not line or line.startswith('#'):
             continue
         commit, path, rule, position = line.split(':')
@@ -202,18 +204,34 @@ class TestImmutableCommitHashExceptions(unittest.TestCase):
 
     def test_only_unsafe_historical_allowlist_is_removed(self):
         raw = (ROOT / '.gitleaks.toml').read_bytes()
-        self.assertEqual(hashlib.sha256(raw).hexdigest(), POLICY_SHA256)
+        # Preserve the complete previous 100-entry ignore, not just its older
+        # 2398-byte prefix. The four new tuples are tested separately.
+        raw_ignore = (ROOT / '.gitleaksignore').read_bytes()
+        self.assertEqual(
+            hashlib.sha256(raw_ignore[:14357]).hexdigest(),
+            '27c9cf8c77766e2d30c59482db18e427c3813314a84dcdec04598893b37795cc',
+        )
+        self.assertEqual(hashlib.sha256(raw[:79]).hexdigest(), POLICY_SHA256)
+        self.assertEqual(
+            hashlib.sha256(raw).hexdigest(),
+            'bde45e822b6777c244ddc5938e8b0829e0b87e14fdd77fb20810ce527153ab15',
+        )
         policy = tomllib.loads(raw.decode('utf-8'))
         self.assertEqual(policy['extend'], {'useDefault': True})
-        self.assertNotIn('allowlists', policy)
         self.assertNotIn('allowlist', policy)
-        self.assertEqual(
-            policy,
-            {
-                'title': 'RGN Farma System secret detection policy',
-                'extend': {'useDefault': True},
-            },
-        )
+        self.assertEqual(set(policy), {'title', 'extend', 'allowlists'})
+        self.assertEqual(len(policy['allowlists']), 120)
+        self.assertEqual(policy['title'], 'RGN Farma System secret detection policy')
+        for entry in policy['allowlists']:
+            self.assertEqual(
+                set(entry),
+                {'description', 'condition', 'targetRules', 'regexTarget', 'paths', 'regexes'},
+            )
+            self.assertEqual(entry['condition'], 'AND')
+            self.assertEqual(entry['targetRules'], ['generic-api-key'])
+            self.assertEqual(entry['regexTarget'], 'match')
+            self.assertEqual(len(entry['paths']), 1)
+            self.assertEqual(len(entry['regexes']), 1)
         self.assertNotIn('rules', policy)
 
     def test_known_locations_are_metadata_hash_values_not_secret_assertions(self):

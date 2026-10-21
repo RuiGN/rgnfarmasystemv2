@@ -2,3 +2,966 @@ title = "RGN Farma System secret detection policy"
 
 [extend]
 useDefault = true
+
+# Authorized exact public matches; path AND literal, only generic-api-key.
+# Invoke dir from the public scan root with target . (relative exact paths).
+
+[[allowlists]]
+description = "public-provenance-001"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^design_system/assets/vendors/js/quill\.min\.js$''']
+regexes = ['''^e\.SHORTKEY=e\.default=void $''']
+
+[[allowlists]]
+description = "public-provenance-002"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/superpowers/plans/2026-07-27-purchase-nfe-xml-import\.md$''']
+regexes = ['''^key, supplier/company $''']
+
+[[allowlists]]
+description = "public-provenance-003"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/corrections/current-main-v2-reconciliation\.json$''']
+regexes = ['''^current-main-v2-openapi\.yml": "5b88ebf03c17e8bf7d5f72b550bec87d76deacb293e78b75834a31c0c63bc13c"$''']
+
+[[allowlists]]
+description = "public-provenance-004"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/corrections/current-main-v3-suite-reconciliation\.json$''']
+regexes = ['''^current-main-v3-openapi\.yml": "5b88ebf03c17e8bf7d5f72b550bec87d76deacb293e78b75834a31c0c63bc13c"$''']
+
+[[allowlists]]
+description = "public-provenance-005"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/corrections/first-frozen-source-artifact-reconciliation\.json$''']
+regexes = ['''^final-openapi\.yml": "c75f07ff5ea84836bdc8c5e28f82e9d651d6fa03947438f9f245dc6b1e4bd3ec"$''']
+
+[[allowlists]]
+description = "public-provenance-006"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/screenshot-sha256\.json$''']
+regexes = ['''^personal-no-access-1440\.png": "1b3ecd772b272fd305638a87e852bdddb3a7f00c262e380628b6c9b210e6bb85"$''']
+
+[[allowlists]]
+description = "public-provenance-007"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/screenshot-sha256\.json$''']
+regexes = ['''^personal-no-access-375\.png": "c60a2b7aeebce628064e35b0331aa799ea54f799907444b0d52c84c4c8fa24d6"$''']
+
+[[allowlists]]
+description = "public-provenance-008"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/screenshot-sha256\.json$''']
+regexes = ['''^personal-no-access-desktop-mobile\.png": "36f6231a73aa0634fb03b258acca52d9106bcd611190bbd8ec31e9a39c458aa2"$''']
+
+[[allowlists]]
+description = "public-provenance-009"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot-final\.json$''']
+regexes = ['''^generate_data_encryption_key\.py": "4fef7e5583e4a1c9db5d1a3334de18a4b645c904f5143353fd3d290906f53461"$''']
+
+[[allowlists]]
+description = "public-provenance-010"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot-final\.json$''']
+regexes = ['''^api_v1_urls\.py": "8d67ae84b4c43655e8347abbc8a97f1b280e96da4d5e501bcbe87ce5a498c10a"$''']
+
+[[allowlists]]
+description = "public-provenance-011"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot-final\.json$''']
+regexes = ['''^auth-404-cover\.html": "e8aeb72c097ad8024321e501ffb849f21c82b00b5a2623a269e75f80b976a7cb"$''']
+
+[[allowlists]]
+description = "public-provenance-012"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot-final\.json$''']
+regexes = ['''^auth-404-creative\.html": "88df642b49be2fc59fce96ebe23c1da560d9a41566063856f2458975d8c2798c"$''']
+
+[[allowlists]]
+description = "public-provenance-013"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot-final\.json$''']
+regexes = ['''^auth-404-minimal\.html": "ac1f7bff1230614507004bb9271b6bb920552e66f7e8de73d38de15b75a39b81"$''']
+
+[[allowlists]]
+description = "public-provenance-014"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot-final\.json$''']
+regexes = ['''^auth-login-cover\.html": "ed42f69872747915a19df6f1378117b7c682aec1f3a13f60a17832022efc0be6"$''']
+
+[[allowlists]]
+description = "public-provenance-015"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot-final\.json$''']
+regexes = ['''^auth-login-creative\.html": "19dcb1ff924bae0bbb5300a75665969d171fc538e612bd1bccc6815fb4494f8f"$''']
+
+[[allowlists]]
+description = "public-provenance-016"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot-final\.json$''']
+regexes = ['''^auth-login-minimal\.html": "00feac7dfec940a55e8361a0aac707ab31ecdd4854e67e4fc0b118fe7de3023c"$''']
+
+[[allowlists]]
+description = "public-provenance-017"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot-final\.json$''']
+regexes = ['''^auth-register-cover\.html": "3814b5e4ff1f1d0ec119dd556dd5d6fd3988ea67480abb8f4d90aeb5c99cffd7"$''']
+
+[[allowlists]]
+description = "public-provenance-018"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot-final\.json$''']
+regexes = ['''^auth-reset-cover\.html": "f0ae520582b8798e82c167d2cdc64464ad379d9b34bf97a399a0e13bd88c5212"$''']
+
+[[allowlists]]
+description = "public-provenance-019"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot-final\.json$''']
+regexes = ['''^auth-reset-creative\.html": "d7a59f36475a862728b5992e2e8be0269527e4f9d9eeea82a4b4d22e9660e453"$''']
+
+[[allowlists]]
+description = "public-provenance-020"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot-final\.json$''']
+regexes = ['''^auth-reset-minimal\.html": "4544a7a49fc61994ff976a9e908e45c712f7a31adc5f4581661e46eb3169603e"$''']
+
+[[allowlists]]
+description = "public-provenance-021"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot-final\.json$''']
+regexes = ['''^auth-verify-cover\.html": "7581f67929dfb654b41e6a58f33d6c0281cf1ec2c69cb99c5aad8a4b9099f103"$''']
+
+[[allowlists]]
+description = "public-provenance-022"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot-final\.json$''']
+regexes = ['''^auth-verify-minimal\.html": "962ca7537c6067f61313cb043695537681cd03578b38aad15eced8bde6d47877"$''']
+
+[[allowlists]]
+description = "public-provenance-023"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot-final\.json$''']
+regexes = ['''^auth\.css": "9e72a38753dcbe000d9c9a7386caf69c793581ba8b7722c1d2f13e0a50214106"$''']
+
+[[allowlists]]
+description = "public-provenance-024"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot-final\.json$''']
+regexes = ['''^test_knowledge_api\.py": "c11c816746d76925d709c200d0ec8a3aa83b176a3d1dae156c3a1d6b7d0262fa"$''']
+
+[[allowlists]]
+description = "public-provenance-025"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot-final\.json$''']
+regexes = ['''^test_review_stock_api_corrections\.py": "50eef819dae7ec71fcadcc86b75aae280b4d675e6922c2d7a424dd0ef0c17ccb"$''']
+
+[[allowlists]]
+description = "public-provenance-026"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot-final\.json$''']
+regexes = ['''^test_secret_hygiene\.py": "174d11e307cd913761471e8a548a5a4c2548c78fe0ce31e014d45fb3f8ba4f0d"$''']
+
+[[allowlists]]
+description = "public-provenance-027"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot-final\.json$''']
+regexes = ['''^test_single_instance_auth_access\.py": "f6ecb45f579f951ffa06dccc0885c4d153539af09bf28e2a926d78885d18dbe3"$''']
+
+[[allowlists]]
+description = "public-provenance-028"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot-final\.json$''']
+regexes = ['''^test_single_instance_module_access\.py": "a6895fc1a453ec6dc13f067c90d238fed5c4c25151b4aab4aa1e179168f3c4e8"$''']
+
+[[allowlists]]
+description = "public-provenance-029"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/final-source-snapshot\.json$''']
+regexes = ['''^generate_data_encryption_key\.py": "4fef7e5583e4a1c9db5d1a3334de18a4b645c904f5143353fd3d290906f53461"$''']
+
+[[allowlists]]
+description = "public-provenance-030"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/final-source-snapshot\.json$''']
+regexes = ['''^api_v1_urls\.py": "8d67ae84b4c43655e8347abbc8a97f1b280e96da4d5e501bcbe87ce5a498c10a"$''']
+
+[[allowlists]]
+description = "public-provenance-031"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/final-source-snapshot\.json$''']
+regexes = ['''^auth-404-cover\.html": "e8aeb72c097ad8024321e501ffb849f21c82b00b5a2623a269e75f80b976a7cb"$''']
+
+[[allowlists]]
+description = "public-provenance-032"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/final-source-snapshot\.json$''']
+regexes = ['''^auth-404-creative\.html": "88df642b49be2fc59fce96ebe23c1da560d9a41566063856f2458975d8c2798c"$''']
+
+[[allowlists]]
+description = "public-provenance-033"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/final-source-snapshot\.json$''']
+regexes = ['''^auth-404-minimal\.html": "ac1f7bff1230614507004bb9271b6bb920552e66f7e8de73d38de15b75a39b81"$''']
+
+[[allowlists]]
+description = "public-provenance-034"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/final-source-snapshot\.json$''']
+regexes = ['''^auth-login-cover\.html": "ed42f69872747915a19df6f1378117b7c682aec1f3a13f60a17832022efc0be6"$''']
+
+[[allowlists]]
+description = "public-provenance-035"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/final-source-snapshot\.json$''']
+regexes = ['''^auth-login-creative\.html": "19dcb1ff924bae0bbb5300a75665969d171fc538e612bd1bccc6815fb4494f8f"$''']
+
+[[allowlists]]
+description = "public-provenance-036"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/final-source-snapshot\.json$''']
+regexes = ['''^auth-login-minimal\.html": "00feac7dfec940a55e8361a0aac707ab31ecdd4854e67e4fc0b118fe7de3023c"$''']
+
+[[allowlists]]
+description = "public-provenance-037"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/final-source-snapshot\.json$''']
+regexes = ['''^auth-register-cover\.html": "3814b5e4ff1f1d0ec119dd556dd5d6fd3988ea67480abb8f4d90aeb5c99cffd7"$''']
+
+[[allowlists]]
+description = "public-provenance-038"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/final-source-snapshot\.json$''']
+regexes = ['''^auth-reset-cover\.html": "f0ae520582b8798e82c167d2cdc64464ad379d9b34bf97a399a0e13bd88c5212"$''']
+
+[[allowlists]]
+description = "public-provenance-039"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/final-source-snapshot\.json$''']
+regexes = ['''^auth-reset-creative\.html": "d7a59f36475a862728b5992e2e8be0269527e4f9d9eeea82a4b4d22e9660e453"$''']
+
+[[allowlists]]
+description = "public-provenance-040"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/final-source-snapshot\.json$''']
+regexes = ['''^auth-reset-minimal\.html": "4544a7a49fc61994ff976a9e908e45c712f7a31adc5f4581661e46eb3169603e"$''']
+
+[[allowlists]]
+description = "public-provenance-041"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/final-source-snapshot\.json$''']
+regexes = ['''^auth-verify-cover\.html": "7581f67929dfb654b41e6a58f33d6c0281cf1ec2c69cb99c5aad8a4b9099f103"$''']
+
+[[allowlists]]
+description = "public-provenance-042"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/final-source-snapshot\.json$''']
+regexes = ['''^auth-verify-minimal\.html": "962ca7537c6067f61313cb043695537681cd03578b38aad15eced8bde6d47877"$''']
+
+[[allowlists]]
+description = "public-provenance-043"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/final-source-snapshot\.json$''']
+regexes = ['''^auth\.css": "9e72a38753dcbe000d9c9a7386caf69c793581ba8b7722c1d2f13e0a50214106"$''']
+
+[[allowlists]]
+description = "public-provenance-044"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/final-source-snapshot\.json$''']
+regexes = ['''^test_knowledge_api\.py": "c11c816746d76925d709c200d0ec8a3aa83b176a3d1dae156c3a1d6b7d0262fa"$''']
+
+[[allowlists]]
+description = "public-provenance-045"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/final-source-snapshot\.json$''']
+regexes = ['''^test_review_stock_api_corrections\.py": "50eef819dae7ec71fcadcc86b75aae280b4d675e6922c2d7a424dd0ef0c17ccb"$''']
+
+[[allowlists]]
+description = "public-provenance-046"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/final-source-snapshot\.json$''']
+regexes = ['''^test_secret_hygiene\.py": "174d11e307cd913761471e8a548a5a4c2548c78fe0ce31e014d45fb3f8ba4f0d"$''']
+
+[[allowlists]]
+description = "public-provenance-047"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/final-source-snapshot\.json$''']
+regexes = ['''^test_single_instance_auth_access\.py": "f6ecb45f579f951ffa06dccc0885c4d153539af09bf28e2a926d78885d18dbe3"$''']
+
+[[allowlists]]
+description = "public-provenance-048"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/final-source-snapshot\.json$''']
+regexes = ['''^test_single_instance_module_access\.py": "a6895fc1a453ec6dc13f067c90d238fed5c4c25151b4aab4aa1e179168f3c4e8"$''']
+
+[[allowlists]]
+description = "public-provenance-049"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/render-manifest\.json$''']
+regexes = ['''^generate_data_encryption_key\.py": "4fef7e5583e4a1c9db5d1a3334de18a4b645c904f5143353fd3d290906f53461"$''']
+
+[[allowlists]]
+description = "public-provenance-050"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/render-manifest\.json$''']
+regexes = ['''^api_v1_urls\.py": "8d67ae84b4c43655e8347abbc8a97f1b280e96da4d5e501bcbe87ce5a498c10a"$''']
+
+[[allowlists]]
+description = "public-provenance-051"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/render-manifest\.json$''']
+regexes = ['''^auth-404-cover\.html": "e8aeb72c097ad8024321e501ffb849f21c82b00b5a2623a269e75f80b976a7cb"$''']
+
+[[allowlists]]
+description = "public-provenance-052"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/render-manifest\.json$''']
+regexes = ['''^auth-404-creative\.html": "88df642b49be2fc59fce96ebe23c1da560d9a41566063856f2458975d8c2798c"$''']
+
+[[allowlists]]
+description = "public-provenance-053"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/render-manifest\.json$''']
+regexes = ['''^auth-404-minimal\.html": "ac1f7bff1230614507004bb9271b6bb920552e66f7e8de73d38de15b75a39b81"$''']
+
+[[allowlists]]
+description = "public-provenance-054"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/render-manifest\.json$''']
+regexes = ['''^auth-login-cover\.html": "ed42f69872747915a19df6f1378117b7c682aec1f3a13f60a17832022efc0be6"$''']
+
+[[allowlists]]
+description = "public-provenance-055"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/render-manifest\.json$''']
+regexes = ['''^auth-login-creative\.html": "19dcb1ff924bae0bbb5300a75665969d171fc538e612bd1bccc6815fb4494f8f"$''']
+
+[[allowlists]]
+description = "public-provenance-056"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/render-manifest\.json$''']
+regexes = ['''^auth-login-minimal\.html": "00feac7dfec940a55e8361a0aac707ab31ecdd4854e67e4fc0b118fe7de3023c"$''']
+
+[[allowlists]]
+description = "public-provenance-057"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/render-manifest\.json$''']
+regexes = ['''^auth-register-cover\.html": "3814b5e4ff1f1d0ec119dd556dd5d6fd3988ea67480abb8f4d90aeb5c99cffd7"$''']
+
+[[allowlists]]
+description = "public-provenance-058"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/render-manifest\.json$''']
+regexes = ['''^auth-reset-cover\.html": "f0ae520582b8798e82c167d2cdc64464ad379d9b34bf97a399a0e13bd88c5212"$''']
+
+[[allowlists]]
+description = "public-provenance-059"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/render-manifest\.json$''']
+regexes = ['''^auth-reset-creative\.html": "d7a59f36475a862728b5992e2e8be0269527e4f9d9eeea82a4b4d22e9660e453"$''']
+
+[[allowlists]]
+description = "public-provenance-060"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/render-manifest\.json$''']
+regexes = ['''^auth-reset-minimal\.html": "4544a7a49fc61994ff976a9e908e45c712f7a31adc5f4581661e46eb3169603e"$''']
+
+[[allowlists]]
+description = "public-provenance-061"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/render-manifest\.json$''']
+regexes = ['''^auth-verify-cover\.html": "7581f67929dfb654b41e6a58f33d6c0281cf1ec2c69cb99c5aad8a4b9099f103"$''']
+
+[[allowlists]]
+description = "public-provenance-062"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/render-manifest\.json$''']
+regexes = ['''^auth-verify-minimal\.html": "962ca7537c6067f61313cb043695537681cd03578b38aad15eced8bde6d47877"$''']
+
+[[allowlists]]
+description = "public-provenance-063"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/render-manifest\.json$''']
+regexes = ['''^auth\.css": "9e72a38753dcbe000d9c9a7386caf69c793581ba8b7722c1d2f13e0a50214106"$''']
+
+[[allowlists]]
+description = "public-provenance-064"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/render-manifest\.json$''']
+regexes = ['''^test_knowledge_api\.py": "c11c816746d76925d709c200d0ec8a3aa83b176a3d1dae156c3a1d6b7d0262fa"$''']
+
+[[allowlists]]
+description = "public-provenance-065"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/render-manifest\.json$''']
+regexes = ['''^test_review_stock_api_corrections\.py": "50eef819dae7ec71fcadcc86b75aae280b4d675e6922c2d7a424dd0ef0c17ccb"$''']
+
+[[allowlists]]
+description = "public-provenance-066"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/render-manifest\.json$''']
+regexes = ['''^test_secret_hygiene\.py": "174d11e307cd913761471e8a548a5a4c2548c78fe0ce31e014d45fb3f8ba4f0d"$''']
+
+[[allowlists]]
+description = "public-provenance-067"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/render-manifest\.json$''']
+regexes = ['''^test_single_instance_auth_access\.py": "f6ecb45f579f951ffa06dccc0885c4d153539af09bf28e2a926d78885d18dbe3"$''']
+
+[[allowlists]]
+description = "public-provenance-068"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/visual-qa/render-manifest\.json$''']
+regexes = ['''^test_single_instance_module_access\.py": "a6895fc1a453ec6dc13f067c90d238fed5c4c25151b4aab4aa1e179168f3c4e8"$''']
+
+[[allowlists]]
+description = "public-provenance-069"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot\.json$''']
+regexes = ['''^generate_data_encryption_key\.py": "4fef7e5583e4a1c9db5d1a3334de18a4b645c904f5143353fd3d290906f53461"$''']
+
+[[allowlists]]
+description = "public-provenance-070"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot\.json$''']
+regexes = ['''^api_v1_urls\.py": "8d67ae84b4c43655e8347abbc8a97f1b280e96da4d5e501bcbe87ce5a498c10a"$''']
+
+[[allowlists]]
+description = "public-provenance-071"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot\.json$''']
+regexes = ['''^auth-404-cover\.html": "e8aeb72c097ad8024321e501ffb849f21c82b00b5a2623a269e75f80b976a7cb"$''']
+
+[[allowlists]]
+description = "public-provenance-072"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot\.json$''']
+regexes = ['''^auth-404-creative\.html": "88df642b49be2fc59fce96ebe23c1da560d9a41566063856f2458975d8c2798c"$''']
+
+[[allowlists]]
+description = "public-provenance-073"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot\.json$''']
+regexes = ['''^auth-404-minimal\.html": "ac1f7bff1230614507004bb9271b6bb920552e66f7e8de73d38de15b75a39b81"$''']
+
+[[allowlists]]
+description = "public-provenance-074"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot\.json$''']
+regexes = ['''^auth-login-cover\.html": "ed42f69872747915a19df6f1378117b7c682aec1f3a13f60a17832022efc0be6"$''']
+
+[[allowlists]]
+description = "public-provenance-075"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot\.json$''']
+regexes = ['''^auth-login-creative\.html": "19dcb1ff924bae0bbb5300a75665969d171fc538e612bd1bccc6815fb4494f8f"$''']
+
+[[allowlists]]
+description = "public-provenance-076"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot\.json$''']
+regexes = ['''^auth-login-minimal\.html": "00feac7dfec940a55e8361a0aac707ab31ecdd4854e67e4fc0b118fe7de3023c"$''']
+
+[[allowlists]]
+description = "public-provenance-077"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot\.json$''']
+regexes = ['''^auth-register-cover\.html": "3814b5e4ff1f1d0ec119dd556dd5d6fd3988ea67480abb8f4d90aeb5c99cffd7"$''']
+
+[[allowlists]]
+description = "public-provenance-078"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot\.json$''']
+regexes = ['''^auth-reset-cover\.html": "f0ae520582b8798e82c167d2cdc64464ad379d9b34bf97a399a0e13bd88c5212"$''']
+
+[[allowlists]]
+description = "public-provenance-079"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot\.json$''']
+regexes = ['''^auth-reset-creative\.html": "d7a59f36475a862728b5992e2e8be0269527e4f9d9eeea82a4b4d22e9660e453"$''']
+
+[[allowlists]]
+description = "public-provenance-080"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot\.json$''']
+regexes = ['''^auth-reset-minimal\.html": "4544a7a49fc61994ff976a9e908e45c712f7a31adc5f4581661e46eb3169603e"$''']
+
+[[allowlists]]
+description = "public-provenance-081"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot\.json$''']
+regexes = ['''^auth-verify-cover\.html": "7581f67929dfb654b41e6a58f33d6c0281cf1ec2c69cb99c5aad8a4b9099f103"$''']
+
+[[allowlists]]
+description = "public-provenance-082"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot\.json$''']
+regexes = ['''^auth-verify-minimal\.html": "962ca7537c6067f61313cb043695537681cd03578b38aad15eced8bde6d47877"$''']
+
+[[allowlists]]
+description = "public-provenance-083"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot\.json$''']
+regexes = ['''^auth\.css": "9e72a38753dcbe000d9c9a7386caf69c793581ba8b7722c1d2f13e0a50214106"$''']
+
+[[allowlists]]
+description = "public-provenance-084"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot\.json$''']
+regexes = ['''^test_knowledge_api\.py": "c11c816746d76925d709c200d0ec8a3aa83b176a3d1dae156c3a1d6b7d0262fa"$''']
+
+[[allowlists]]
+description = "public-provenance-085"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot\.json$''']
+regexes = ['''^test_review_stock_api_corrections\.py": "50eef819dae7ec71fcadcc86b75aae280b4d675e6922c2d7a424dd0ef0c17ccb"$''']
+
+[[allowlists]]
+description = "public-provenance-086"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot\.json$''']
+regexes = ['''^test_secret_hygiene\.py": "174d11e307cd913761471e8a548a5a4c2548c78fe0ce31e014d45fb3f8ba4f0d"$''']
+
+[[allowlists]]
+description = "public-provenance-087"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot\.json$''']
+regexes = ['''^test_single_instance_auth_access\.py": "f6ecb45f579f951ffa06dccc0885c4d153539af09bf28e2a926d78885d18dbe3"$''']
+
+[[allowlists]]
+description = "public-provenance-088"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/deploy-readiness-2026-10-20/source-snapshot\.json$''']
+regexes = ['''^test_single_instance_module_access\.py": "a6895fc1a453ec6dc13f067c90d238fed5c4c25151b4aab4aa1e179168f3c4e8"$''']
+
+[[allowlists]]
+description = "public-provenance-089"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/vps-preflight-2026-10-20/probe-recovery\.stdin\.txt$''']
+regexes = ['''^generate_data_encryption_key\.py': '4fef7e5583e4a1c9db5d1a3334de18a4b645c904f5143353fd3d290906f53461'$''']
+
+[[allowlists]]
+description = "public-provenance-090"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/vps-preflight-2026-10-20/probe-recovery\.stdin\.txt$''']
+regexes = ['''^api_v1_urls\.py': '8d67ae84b4c43655e8347abbc8a97f1b280e96da4d5e501bcbe87ce5a498c10a'$''']
+
+[[allowlists]]
+description = "public-provenance-091"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/vps-preflight-2026-10-20/probe-recovery\.stdin\.txt$''']
+regexes = ['''^auth-404-cover\.html': 'e8aeb72c097ad8024321e501ffb849f21c82b00b5a2623a269e75f80b976a7cb'$''']
+
+[[allowlists]]
+description = "public-provenance-092"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/vps-preflight-2026-10-20/probe-recovery\.stdin\.txt$''']
+regexes = ['''^auth-404-creative\.html': '88df642b49be2fc59fce96ebe23c1da560d9a41566063856f2458975d8c2798c'$''']
+
+[[allowlists]]
+description = "public-provenance-093"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/vps-preflight-2026-10-20/probe-recovery\.stdin\.txt$''']
+regexes = ['''^auth-404-minimal\.html': 'ac1f7bff1230614507004bb9271b6bb920552e66f7e8de73d38de15b75a39b81'$''']
+
+[[allowlists]]
+description = "public-provenance-094"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/vps-preflight-2026-10-20/probe-recovery\.stdin\.txt$''']
+regexes = ['''^auth-login-cover\.html': 'ed42f69872747915a19df6f1378117b7c682aec1f3a13f60a17832022efc0be6'$''']
+
+[[allowlists]]
+description = "public-provenance-095"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/vps-preflight-2026-10-20/probe-recovery\.stdin\.txt$''']
+regexes = ['''^auth-login-creative\.html': '19dcb1ff924bae0bbb5300a75665969d171fc538e612bd1bccc6815fb4494f8f'$''']
+
+[[allowlists]]
+description = "public-provenance-096"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/vps-preflight-2026-10-20/probe-recovery\.stdin\.txt$''']
+regexes = ['''^auth-login-minimal\.html': '00feac7dfec940a55e8361a0aac707ab31ecdd4854e67e4fc0b118fe7de3023c'$''']
+
+[[allowlists]]
+description = "public-provenance-097"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/vps-preflight-2026-10-20/probe-recovery\.stdin\.txt$''']
+regexes = ['''^auth-register-cover\.html': '3814b5e4ff1f1d0ec119dd556dd5d6fd3988ea67480abb8f4d90aeb5c99cffd7'$''']
+
+[[allowlists]]
+description = "public-provenance-098"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/vps-preflight-2026-10-20/probe-recovery\.stdin\.txt$''']
+regexes = ['''^auth-reset-cover\.html': 'f0ae520582b8798e82c167d2cdc64464ad379d9b34bf97a399a0e13bd88c5212'$''']
+
+[[allowlists]]
+description = "public-provenance-099"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/vps-preflight-2026-10-20/probe-recovery\.stdin\.txt$''']
+regexes = ['''^auth-reset-creative\.html': 'd7a59f36475a862728b5992e2e8be0269527e4f9d9eeea82a4b4d22e9660e453'$''']
+
+[[allowlists]]
+description = "public-provenance-100"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/vps-preflight-2026-10-20/probe-recovery\.stdin\.txt$''']
+regexes = ['''^auth-reset-minimal\.html': '4544a7a49fc61994ff976a9e908e45c712f7a31adc5f4581661e46eb3169603e'$''']
+
+[[allowlists]]
+description = "public-provenance-101"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/vps-preflight-2026-10-20/probe-recovery\.stdin\.txt$''']
+regexes = ['''^auth-verify-cover\.html': '7581f67929dfb654b41e6a58f33d6c0281cf1ec2c69cb99c5aad8a4b9099f103'$''']
+
+[[allowlists]]
+description = "public-provenance-102"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/vps-preflight-2026-10-20/probe-recovery\.stdin\.txt$''']
+regexes = ['''^auth-verify-minimal\.html': '962ca7537c6067f61313cb043695537681cd03578b38aad15eced8bde6d47877'$''']
+
+[[allowlists]]
+description = "public-provenance-103"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/vps-preflight-2026-10-20/probe-recovery\.stdin\.txt$''']
+regexes = ['''^auth\.css': '9e72a38753dcbe000d9c9a7386caf69c793581ba8b7722c1d2f13e0a50214106'$''']
+
+[[allowlists]]
+description = "public-provenance-104"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/vps-preflight-2026-10-20/probe-recovery\.stdin\.txt$''']
+regexes = ['''^test_knowledge_api\.py': 'c11c816746d76925d709c200d0ec8a3aa83b176a3d1dae156c3a1d6b7d0262fa'$''']
+
+[[allowlists]]
+description = "public-provenance-105"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/vps-preflight-2026-10-20/probe-recovery\.stdin\.txt$''']
+regexes = ['''^test_review_stock_api_corrections\.py': '50eef819dae7ec71fcadcc86b75aae280b4d675e6922c2d7a424dd0ef0c17ccb'$''']
+
+[[allowlists]]
+description = "public-provenance-106"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/vps-preflight-2026-10-20/probe-recovery\.stdin\.txt$''']
+regexes = ['''^test_secret_hygiene\.py': '174d11e307cd913761471e8a548a5a4c2548c78fe0ce31e014d45fb3f8ba4f0d'$''']
+
+[[allowlists]]
+description = "public-provenance-107"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/vps-preflight-2026-10-20/probe-recovery\.stdin\.txt$''']
+regexes = ['''^test_single_instance_auth_access\.py': 'f6ecb45f579f951ffa06dccc0885c4d153539af09bf28e2a926d78885d18dbe3'$''']
+
+[[allowlists]]
+description = "public-provenance-108"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/vps-preflight-2026-10-20/probe-recovery\.stdin\.txt$''']
+regexes = ['''^test_single_instance_module_access\.py': 'a6895fc1a453ec6dc13f067c90d238fed5c4c25151b4aab4aa1e179168f3c4e8'$''']
+
+[[allowlists]]
+description = "public-provenance-109"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/corrections/current-main-v3-source-manifest\.json$''']
+regexes = ['''^generate_data_encryption_key\.py": "4fef7e5583e4a1c9db5d1a3334de18a4b645c904f5143353fd3d290906f53461"$''']
+
+[[allowlists]]
+description = "public-provenance-110"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/corrections/current-main-v3-source-manifest\.json$''']
+regexes = ['''^api_v1_urls\.py": "8d67ae84b4c43655e8347abbc8a97f1b280e96da4d5e501bcbe87ce5a498c10a"$''']
+
+[[allowlists]]
+description = "public-provenance-111"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/corrections/current-main-v3-source-manifest\.json$''']
+regexes = ['''^auth-single-instance\.md": "714e65448b6569244cac324882740ac360ae97a50f91102c0ddc77836a92495a"$''']
+
+[[allowlists]]
+description = "public-provenance-112"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/corrections/current-main-v3-source-manifest\.json$''']
+regexes = ['''^INC-2026-001-secrets-exposure\.md": "9a0480ea122c5521cd999e90b71c6184bfbd99f932459fdd15e587a83edb5b48"$''']
+
+[[allowlists]]
+description = "public-provenance-113"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/corrections/current-main-v3-source-manifest\.json$''']
+regexes = ['''^current-main-v2-openapi\.yml": "5b88ebf03c17e8bf7d5f72b550bec87d76deacb293e78b75834a31c0c63bc13c"$''']
+
+[[allowlists]]
+description = "public-provenance-114"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/corrections/current-main-v3-source-manifest\.json$''']
+regexes = ['''^v2-openapi\.yml": "c75f07ff5ea84836bdc8c5e28f82e9d651d6fa03947438f9f245dc6b1e4bd3ec"$''']
+
+[[allowlists]]
+description = "public-provenance-115"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/corrections/current-main-v3-source-manifest\.json$''']
+regexes = ['''^auth\.css": "9e72a38753dcbe000d9c9a7386caf69c793581ba8b7722c1d2f13e0a50214106"$''']
+
+[[allowlists]]
+description = "public-provenance-116"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/corrections/current-main-v3-source-manifest\.json$''']
+regexes = ['''^test_knowledge_api\.py": "c11c816746d76925d709c200d0ec8a3aa83b176a3d1dae156c3a1d6b7d0262fa"$''']
+
+[[allowlists]]
+description = "public-provenance-117"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/corrections/current-main-v3-source-manifest\.json$''']
+regexes = ['''^test_review_stock_api_corrections\.py": "50eef819dae7ec71fcadcc86b75aae280b4d675e6922c2d7a424dd0ef0c17ccb"$''']
+
+[[allowlists]]
+description = "public-provenance-118"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/corrections/current-main-v3-source-manifest\.json$''']
+regexes = ['''^test_secret_hygiene\.py": "174d11e307cd913761471e8a548a5a4c2548c78fe0ce31e014d45fb3f8ba4f0d"$''']
+
+[[allowlists]]
+description = "public-provenance-119"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/corrections/current-main-v3-source-manifest\.json$''']
+regexes = ['''^test_single_instance_auth_access\.py": "f6ecb45f579f951ffa06dccc0885c4d153539af09bf28e2a926d78885d18dbe3"$''']
+
+[[allowlists]]
+description = "public-provenance-120"
+condition = "AND"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+paths = ['''^docs/validation/evidence/corrections/current-main-v3-source-manifest\.json$''']
+regexes = ['''^test_single_instance_module_access\.py": "a6895fc1a453ec6dc13f067c90d238fed5c4c25151b4aab4aa1e179168f3c4e8"$''']
