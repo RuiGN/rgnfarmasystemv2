@@ -68,7 +68,7 @@ def test_quality_gate_fails_when_node_is_absent_instead_of_skipping(tmp_path):
     assert result.returncode != 0
     assert 'node' in result.stderr
     source = (ROOT / 'scripts/ci/quality-gate.sh').read_text()
-    assert 'node --test tests/js/local-printing.test.cjs' in source
+    assert 'node --test tests/js/*.test.cjs' in source
 
 
 def test_tunnel_runbook_sets_the_authoritative_address_for_its_probe():

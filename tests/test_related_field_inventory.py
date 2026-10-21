@@ -2,7 +2,6 @@
 
 import json
 from collections import Counter
-from pathlib import Path
 
 import pytest
 from django import forms
@@ -15,10 +14,6 @@ from base.ui.forms import build_resource_form
 from base.ui.registry import get_modules
 from base.ui.related_fields import configure_related_fields, related_field_specs
 from base.ui.views import _build_inline_formset
-
-OUTPUT = Path(
-    '/Users/rgnsystems/.hermes/artifacts/rgnfarmasystemv2/product-editor-simplification/related-input-inventory.json'
-)
 
 
 def describe(form, model, context):
@@ -165,7 +160,7 @@ def describe(form, model, context):
 
 
 @pytest.mark.django_db
-def test_inventory_covers_every_registry_resource_inline_and_action():
+def test_inventory_covers_every_registry_resource_inline_and_action(tmp_path):
     request = RequestFactory().get('/')
     request.user = get_user_model()(is_staff=True, is_superuser=True, is_active=True)
     rows, forms_index = [], []
@@ -278,8 +273,13 @@ def test_inventory_covers_every_registry_resource_inline_and_action():
         'forms_index': forms_index,
         'entries': rows,
     }
-    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(json.dumps(output, indent=2, ensure_ascii=False) + '\n')
+    output_path = tmp_path / 'related-input-inventory.json'
+    assert output_path.is_relative_to(tmp_path), (
+        'Inventory output must stay inside pytest tmp_path.'
+    )
+    with output_path.open('x') as stream:
+        stream.write(json.dumps(output, indent=2, ensure_ascii=False) + '\n')
+    assert json.loads(output_path.read_text()) == output
     print(
         json.dumps(
             {key: value for key, value in output.items() if key not in ('entries', 'forms_index')},

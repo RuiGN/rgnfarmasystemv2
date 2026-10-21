@@ -17,8 +17,8 @@ O ZIP original, sua decisão funcional e todas as evidências negativas anterior
 | --- | --- | --- |
 | Popup nativo de data/hora a 320 px | Comprovar interação em320 e controle640, preservando ISO/segundos, POST, servidor e fallback acessível | Fechado no recorte autorizado:15 testes browser e4 Django sem DB reexecutados pelo integrador;58 artefatos/38 capturas e cinco fontes conferidos;16 calendários abertos inspecionados sem corte. Sem reclassificar QA89, hardware móvel ou WCAG formal |
 | Diretório público com 120 achados e todas as refs com quatro | Provar proveniência; aplicar somente exceções autorizadas; scanner real em ambos os escopos e canários alterados devem passar/detectar conforme o caso | Fechado no recorte do scanner:25 contratos GREEN; renovação independente do diretório original, todas as refs e candidato da integração com3.671 arquivos:exit0/0. Relatórios/hashes relidos e índice preservado. Fonte final ainda exige rescan; ver secrets-closure.md |
-| Concorrência entre escritores de fórmulas/componentes | Matriz real de escritores; testes determinísticos com conexões PostgreSQL separadas; corrigir qualquer violação demonstrada e delimitar API/Admin/bulk/SQL | Implementado;109 testes GREEN e JUnit/hash conferidos. Revisão independente do protocolo e gate integrado pendentes. SQL/update/bulk externos continuam fora da garantia |
-| CI remoto da revisão atual | Publicar somente depois dos gates locais e revisão; reler o SHA do PR; todas as verificações obrigatórias do SHA exato concluídas com sucesso | Publicação autorizada, ainda não realizada nesta preparação |
+| Concorrência entre escritores de fórmulas/componentes | Matriz real de escritores; testes determinísticos com conexões PostgreSQL separadas; corrigir qualquer violação demonstrada e delimitar API/Admin/bulk/SQL | Fechado no recorte:109 testes reexecutados após ajuste de tipagem, sem falhas/skips; duas revisões delimitadas ship/média sem achados e bindings conferidos. SQL/update/bulk externos continuam fora da garantia |
+| CI remoto da revisão atual | Publicar somente depois dos gates locais e revisão; reler o SHA do PR; todas as verificações obrigatórias do SHA exato concluídas com sucesso | Primeira publicação0c298a7 conferida no PR draft1; CI39655361955 falhou em dois testes de infraestrutura/contrato, descritos abaixo. Nova CI obrigatória após correção, sem presumir aprovação |
 | Cobertura JavaScript no gate | Executar sintaxe de todos os assets próprios e todos os arquivos de testes JS, sem retirar checks anteriores | Três contratos RED→GREEN; sintaxe dos assets e21 testes Node reais renovados, incluindo os três novos da adaptação temporal |
 | Auditoria atual de dependências | Resolver advisories sem ignorá-los e exercitar os consumidores afetados | pypdf6.19.0 apresentou quatro CVEs; atualizado para6.20.1 em fonte/lock/ambiente. pip_audit --strict:exit0, zero vulnerabilidades conhecidas. Compatibilidade:20 testes PASS/JUnit conferido, incluindo12 casos PDF de relatórios, ingestão e contratos de versão |
 
@@ -86,11 +86,35 @@ Foram corrigidos reutilizando o contrato de serializer existente, chamadas
 `getattr(super(), ...)` conforme o padrão do repositório e uma factory de form
 que conserva o `clean` original. Sem ignores nem redução de verificações.
 A nova execução passou **MyPy em 404 fontes** e **Bandit**, com dotenv bloqueado
-e conexão de banco proibida. O pequeno delta está em revisão própria e em
-reexecução dos 109 casos; seus resultados devem ser conferidos antes de publicar.
+e conexão de banco proibida. A revisão própria do pequeno delta retornou
+`ship`/confiança média, sem achados; seus bindings e os109 casos reexecutados
+sem falhas/skips foram conferidos antes da publicação.
 Os recortes locais não substituem a suíte global/cobertura/build do Quality Gate
 na CI do commit exato. Não há dispensa de nenhum check remoto obrigatório.
 
-- Revisão técnica, implementação e evidências finais ainda em integração nesta preparação.
+- Revisões técnicas e publicação inicial conferidas; resultado global da nova CI ainda pendente.
 - Nenhum resultado futuro de CI é presumido.
 - Merge, deploy e entrada em produção permanecem fora da autorização.
+
+### Falhas reais da primeira CI publicada
+
+O [Quality Gate39655361955](https://github.com/RuiGN/rgnfarmasystemv2/actions/runs/39655361955)
+do head `0c298a73bf11e1953d92c39486d9fa9b63d85d6d` concluiu com falha:
+3183 testes passaram,31 foram pulados e dois falharam. O job `secrets` passou;
+build e SBOM não foram executados. Esse resultado não é uma suíte aprovada.
+
+- O inventário relacionava todos os recursos, mas gravava seu JSON num caminho
+  absoluto do Mac. No Linux ocorreu `PermissionError`. A regressão exige
+  confinamento em `tmp_path`; a gravação passa a ser exclusiva nesse diretório
+  isolado, com leitura de volta e comparação integral, preservando as assertivas
+  de recursos, ações, campos, unicidade e vínculo autoritativo do recebimento.
+- O contrato de ausência do Node ainda procurava o comando literal de um único
+  arquivo, embora o gate tenha sido ampliado para todos os testes JS. O contrato
+  acompanha o glob atual, sem retirar a recusa quando Node falta. A gravação real
+  de argv continua exigindo todos os arquivos e agora exige explicitamente a
+  presença do teste de impressão local, sem substituir o teste físico industrial.
+
+Ambas as falhas foram reproduzidas localmente antes da correção. Não houve
+alteração de código operacional, prazo, cobertura mínima, skips ou política de
+segurança. As evidências RED/GREEN locais e a falha remota são preservadas;
+somente uma nova execução completa da CI do novo head pode fechar esse item.

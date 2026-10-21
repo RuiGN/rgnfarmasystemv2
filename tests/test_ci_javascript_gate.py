@@ -64,6 +64,7 @@ class TestJavaScriptQualityGate(unittest.TestCase):
             if command[:2] == ['node', '--test']
             for argument in command[2:]
         }
+        self.assertIn('tests/js/local-printing.test.cjs', observed)
         self.assertEqual(observed, expected)
 
 
