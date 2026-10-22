@@ -1,6 +1,5 @@
 import time
 
-from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from knowledge.indexing import build_index_generation
@@ -20,10 +19,13 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if not options['no_health_check']:
-            health = knowledge_redis_health()
+            try:
+                health = knowledge_redis_health()
+            except Exception:
+                raise CommandError('Redis de conhecimento indisponível.') from None
             if not health['available']:
                 raise CommandError(
-                    'Redis de conhecimento indisponível: ' + settings.KNOWLEDGE_REDIS_URL
+                    'Redis de conhecimento indisponível; verifique a configuração do serviço.'
                 )
             self.stdout.write(self.style.SUCCESS('Redis de conhecimento acessível.'))
 

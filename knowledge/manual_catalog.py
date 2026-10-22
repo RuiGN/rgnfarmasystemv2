@@ -4,6 +4,10 @@ from django.conf import settings
 
 from base.ui.registry import get_modules
 from knowledge.step_by_step_manual import get_step_by_step
+from knowledge.models import content_hash
+
+
+CORPUS_REVISION = 'manual-v2'
 
 
 DOC_SLUGS = {'masters': 'master-data', 'ai_agents': 'ai-agents'}
@@ -60,6 +64,8 @@ def manual_entries():
         parts = [_manual_content(module)]
         if document_path.is_file():
             parts.append(document_path.read_text(encoding='utf-8'))
+        corpus_content = '\n\n'.join(parts)
+        corpus_hash = content_hash(corpus_content)
         entries.append(
             {
                 'code': f'RGN-ERP-MODULE-{module.slug.upper().replace("-", "_")}',
@@ -67,14 +73,16 @@ def manual_entries():
                 'source_type': 'system_manual',
                 'publisher': 'RGN Farma System',
                 'jurisdiction': 'BR',
-                'version': 'generated',
+                'version': f'{CORPUS_REVISION}-{corpus_hash[:16]}',
                 'url': f'https://rgnfarmasystem.rgnsystems.com.br/app/{module.slug}/',
                 'is_official': True,
                 'chat_eligible': True,
-                'manual_content': '\n\n'.join(parts),
+                'manual_content': corpus_content,
                 'metadata': {
                     'module_slug': module.slug,
                     'corpus': 'erp_manual',
+                    'corpus_revision': CORPUS_REVISION,
+                    'corpus_hash': corpus_hash,
                 },
             }
         )

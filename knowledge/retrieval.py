@@ -28,6 +28,8 @@ class RetrievedChunk:
     score: float
     source_type: str = ''
     source_title: str = ''
+    source_code: str = ''
+    corpus_hash: str = ''
     jurisdiction: str = ''
     version_label: str = ''
     effective_from: date | None = None
@@ -108,6 +110,8 @@ def retrieve_context(question, *, filters=None, limit=8, as_of=None):
                     score=float(hit.get('score', 0.0)),
                     source_type=chunk.source.source_type,
                     source_title=chunk.source.title,
+                    source_code=chunk.source.code,
+                    corpus_hash=chunk.document.content_hash,
                     jurisdiction=chunk.source.jurisdiction,
                     version_label=chunk.document.version_label,
                     effective_from=None,

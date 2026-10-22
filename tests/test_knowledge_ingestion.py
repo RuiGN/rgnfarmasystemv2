@@ -1,4 +1,5 @@
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import Mock, patch
 
 import httpx
@@ -30,16 +31,18 @@ class KnowledgeIngestionTests(SimpleTestCase):
         assert selected_url == 'https://alternate.example/source'
         assert 'Conteúdo oficial' in fetched['text']
 
-    @override_settings(BASE_DIR=Path('/tmp/rgn-knowledge-test'))
     def test_local_help_source_reads_only_the_declared_project_file(self):
         from knowledge.services import fetch_local_source_text
 
-        root = Path('/tmp/rgn-knowledge-test')
-        help_file = root / 'docs' / 'help.md'
-        help_file.parent.mkdir(parents=True, exist_ok=True)
-        help_file.write_text('# Impressão local\nConfigure a Argox no painel.', encoding='utf-8')
-
-        fetched = fetch_local_source_text('docs/help.md')
+        with TemporaryDirectory(prefix='rag-local-source-') as directory:
+            root = Path(directory)
+            help_file = root / 'docs' / 'help.md'
+            help_file.parent.mkdir(parents=True, exist_ok=True)
+            help_file.write_text(
+                '# Impressão local\nConfigure a Argox no painel.', encoding='utf-8'
+            )
+            with override_settings(BASE_DIR=root):
+                fetched = fetch_local_source_text('docs/help.md')
 
         assert fetched['document_type'] == 'text'
         assert 'Configure a Argox' in fetched['text']
