@@ -1,0 +1,8 @@
+<label class="sr-only" for="dashboard-selector">Selecionar dashboard</label>
+<div class="input-group">
+    <select id="dashboard-selector" class="form-select" onchange="if(this.value) window.location=this.value">
+        {% for slug, option in dashboard_options.items %}
+        <option value="{% url 'app:dashboard_hub' slug %}"{% if slug == dashboard_slug %} selected{% endif %}>{{ option.title }}</option>
+        {% endfor %}
+    </select>
+</div>

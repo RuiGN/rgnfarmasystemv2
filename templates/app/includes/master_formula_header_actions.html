@@ -1,0 +1,8 @@
+{% if can_reuse %}
+<a class="btn btn-warning d-inline-flex align-items-center gap-2" href="{% url 'app:master_formula_reuse' formula.pk %}">
+    <i class="feather-copy" aria-hidden="true"></i> Reaproveitar fórmula
+</a>
+{% endif %}
+<a class="btn btn-light" href="{% url 'app:resource_detail' 'formulations' 'formulas' formula.pk %}">
+    <i class="feather-arrow-left me-1" aria-hidden="true"></i> Voltar à fórmula
+</a>

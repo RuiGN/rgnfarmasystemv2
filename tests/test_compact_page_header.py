@@ -1,4 +1,5 @@
 from pathlib import Path
+from html.parser import HTMLParser
 import re
 
 import pytest
@@ -60,3 +61,209 @@ def test_stacked_page_heading_removes_the_duralux_inline_separator():
     assert rule is not None
     assert 'border: 0;' in rule.group(1)
     assert 'padding: 0;' in rule.group(1)
+
+
+class HeaderParser(HTMLParser):
+    def __init__(self, html):
+        super().__init__()
+        self.depth = 0
+        self.text = []
+        self.headings = 0
+        self.current_pages = 0
+        self.links = []
+        self.ids = []
+        self.feed(html)
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == 'div':
+            if self.depth:
+                self.depth += 1
+            elif 'page-header' in attrs.get('class', '').split():
+                self.depth = 1
+        if self.depth:
+            if attrs.get('id'):
+                self.ids.append(attrs['id'])
+            self.headings += tag == 'h1'
+            self.current_pages += attrs.get('aria-current') == 'page'
+            if tag == 'a':
+                self.links.append(attrs.get('href'))
+
+    def handle_endtag(self, tag):
+        if self.depth and tag == 'div':
+            self.depth -= 1
+
+    def handle_data(self, data):
+        if self.depth and data.strip():
+            self.text.append(' '.join(data.split()))
+
+
+def test_shared_compact_header_renders_current_page_once():
+    from django.template.loader import render_to_string
+
+    header = HeaderParser(
+        render_to_string(
+            'includes/page_header.html',
+            {
+                'compact': True,
+                'page_title': 'Fluxo de trabalho',
+                'breadcrumbs': [
+                    {'label': 'Aplicativos', 'url': '/app/'},
+                    {'label': 'Fluxo de trabalho'},
+                ],
+            },
+        )
+    )
+
+    assert header.text == ['Aplicativos', 'Fluxo de trabalho']
+    assert header.headings == 1
+    assert header.current_pages == 1
+    assert header.links == ['/app/']
+
+
+@pytest.fixture
+def render_header(settings):
+    from django.template.loader import render_to_string
+
+    settings.STORAGES = {
+        'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+        'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+    }
+    return lambda template, context: HeaderParser(
+        render_to_string(template, {'csrf_token': 'synthetic-template-token', **context})
+    )
+
+
+def test_workflow_workspace_uses_the_compact_shared_header(render_header):
+    from base.ui.workspaces import get_workspace
+
+    header = render_header('workspaces/workspace.html', {'workspace': get_workspace('workflow')})
+
+    assert header.text == ['Aplicativos', 'Fluxo de trabalho']
+    assert header.headings == 1
+    assert header.current_pages == 1
+    assert header.links == ['/app/']
+
+
+def test_module_header_preserves_its_back_link_without_duplicate_ancestor(render_header):
+    from base.ui.registry import get_module
+
+    header = render_header(
+        'app/module.html',
+        {'module': get_module('workflow'), 'resources': []},
+    )
+
+    assert header.text == ['Aplicativos', 'Fluxo de trabalho', 'Voltar aos Aplicativos']
+    assert header.links == ['/app/', '/app/']
+    assert header.headings == 1
+    assert header.current_pages == 1
+    assert 'section-0' in header.ids
+
+
+@pytest.mark.parametrize('can_add', [True, False])
+def test_resource_list_header_keeps_ancestors_and_authorized_actions(render_header, can_add):
+    from django.test import RequestFactory
+    from django.urls import reverse
+
+    from base.ui.registry import get_module, get_resource
+
+    module = get_module('masters')
+    resource = get_resource('masters', 'products')
+    header = render_header(
+        'app/resource_list.html',
+        {
+            'module': module,
+            'resource': resource,
+            'can_add': can_add,
+            'request': RequestFactory().get('/app/masters/products/'),
+        },
+    )
+
+    assert header.text[:3] == ['Aplicativos', module.label, resource.label]
+    assert header.text.count(resource.label) == 1
+    assert header.headings == 1
+    assert header.current_pages == 1
+    assert header.links[:2] == ['/app/', '/app/masters/']
+    create_url = reverse('app:resource_create', args=['masters', 'products'])
+    assert (create_url in header.links) is can_add
+    assert ('Somente leitura' in header.text) is not can_add
+    assert 'section-0' in header.ids
+
+
+@pytest.mark.parametrize('surface', ['action', 'denied'])
+def test_compact_state_headers_do_not_repeat_the_current_leaf(render_header, surface):
+    from types import SimpleNamespace
+
+    from base.ui.registry import get_module, get_resource
+
+    if surface == 'denied':
+        template, context = 'app/permission_denied.html', {}
+        expected = ['Aplicativos', 'Acesso negado']
+        links = ['/app/']
+    else:
+        module = get_module('workflow')
+        resource = get_resource('workflow', 'tasks')
+        template = 'app/resource_action_form.html'
+        context = {
+            'module': module,
+            'resource': resource,
+            'action': SimpleNamespace(label='Aprovar'),
+        }
+        expected = ['Aplicativos', module.label, resource.label, 'Aprovar']
+        links = ['/app/', '/app/workflow/', '/app/workflow/tasks/']
+
+    header = render_header(template, context)
+
+    assert header.text == expected
+    assert header.links == links
+    assert header.headings == 1
+    assert header.current_pages == 1
+    assert 'section-0' in header.ids
+
+
+def test_dashboard_header_preserves_the_selector_without_a_duplicate_title(render_header):
+    config = {'title': 'Executivo', 'module': 'production'}
+    header = render_header(
+        'dashboards/hub.html',
+        {
+            'dashboard': config,
+            'dashboard_slug': 'executive',
+            'dashboard_options': {'executive': config},
+        },
+    )
+
+    assert header.text == ['Painéis', 'Executivo', 'Selecionar dashboard', 'Executivo']
+    assert header.headings == 1
+    assert header.current_pages == 1
+    assert 'dashboard-selector' in header.ids
+
+
+@pytest.mark.parametrize('can_reuse', [True, False])
+def test_formula_cockpit_keeps_identity_and_permission_gated_actions(render_header, can_reuse):
+    from types import SimpleNamespace
+
+    from base.ui.registry import get_module
+
+    formula = SimpleNamespace(
+        pk=42,
+        code='MF-42',
+        version=2,
+        product=SimpleNamespace(pk=3, description='Creme cosmético'),
+        batch_unit=SimpleNamespace(symbol='kg'),
+    )
+    module = get_module('formulations')
+    header = render_header(
+        'app/master_formula_cockpit.html',
+        {'formula': formula, 'module': module, 'can_reuse': can_reuse},
+    )
+
+    expected = ['Aplicativos', module.label, 'MF-42 v2', 'Ciclo de abastecimento']
+    if can_reuse:
+        expected.append('Reaproveitar fórmula')
+    assert header.text == expected + ['Voltar à fórmula']
+    assert header.text.count('Ciclo de abastecimento') == 1
+    assert header.headings == 1
+    assert header.current_pages == 1
+    assert header.links[:3] == ['/app/', '/app/formulations/', '/app/formulations/formulas/42/']
+    assert header.links[-1] == '/app/formulations/formulas/42/'
+    assert 'section-0' in header.ids

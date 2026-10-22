@@ -1,0 +1,20 @@
+{% if resource.has_gantt_view %}
+<a href="{% url 'app:resource_gantt' module.slug resource.slug %}" class="btn btn-sm btn-light-brand d-inline-flex align-items-center gap-2">
+    <i class="feather-bar-chart-2" aria-hidden="true"></i>
+    <span>Ver Gantt</span>
+</a>
+{% endif %}
+{% if resource.has_kanban_view %}
+<a href="{% url 'app:resource_kanban' module.slug resource.slug %}" class="btn btn-sm btn-light-brand d-inline-flex align-items-center gap-2">
+    <i class="feather-trello" aria-hidden="true"></i>
+    <span>Ver Kanban</span>
+</a>
+{% endif %}
+{% if can_add %}
+<a href="{% url 'app:resource_create' module.slug resource.slug %}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-2">
+    <i class="feather-plus" aria-hidden="true"></i>
+    <span>Novo registro</span>
+</a>
+{% else %}
+<span class="badge bg-soft-secondary text-secondary">Somente leitura</span>
+{% endif %}

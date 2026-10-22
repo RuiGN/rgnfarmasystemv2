@@ -1,30 +1,11 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static ui_navigation %}
 
 {% block title %}Painel {{ dashboard.title }} | RGN Farma System{% endblock %}
 
 {% block page_header %}
-<div class="page-header">
-    <div class="page-header-left d-flex align-items-center">
-        <ul class="breadcrumb mb-0"><li class="breadcrumb-item">Painéis</li><li class="breadcrumb-item">{{ dashboard.title }}</li></ul>
-        <div class="page-header-title"><h5 class="m-b-10">{{ dashboard.title }}</h5></div>
-    </div>
-    <div class="page-header-right ms-auto">
-        <div class="page-header-right-items">
-            <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
-                <label class="sr-only" for="dashboard-selector">Selecionar dashboard</label>
-                <div class="input-group">
-                    
-                    <select id="dashboard-selector" class="form-select" onchange="if(this.value) window.location=this.value">
-                        {% for slug, option in dashboard_options.items %}
-                        <option value="{% url 'app:dashboard_hub' slug %}"{% if slug == dashboard_slug %} selected{% endif %}>{{ option.title }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+{% page_breadcrumbs 'Painéis' '' as breadcrumbs %}
+{% include 'includes/page_header.html' with compact=True page_title=dashboard.title page_actions_template='dashboards/includes/header_actions.html' %}
 {% endblock %}
 
 {% block content %}
