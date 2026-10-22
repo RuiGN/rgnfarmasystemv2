@@ -148,6 +148,7 @@ DATABASES['default']['CONN_MAX_AGE'] = env.int(
 )
 
 AUTH_USER_MODEL = 'accounts.User'
+TRAINING_RESET_ENABLED = env.bool('TRAINING_RESET_ENABLED', default=False)
 LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = '/app/'
 LOGOUT_REDIRECT_URL = LOGIN_URL
