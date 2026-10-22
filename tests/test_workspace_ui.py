@@ -295,6 +295,32 @@ class WorkspaceAccessTests(TestCase):
                 self.assertTemplateUsed(response, 'workspaces/workspace.html')
                 self.assertContains(response, 'data-ui="workspace"')
 
+    def test_authenticated_workflow_header_has_one_current_page_and_preserves_module_link(self):
+        from tests.test_compact_page_header import HeaderParser
+
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse('app:workflow_workspace'))
+        self.assertEqual(response.status_code, 200)
+        header = HeaderParser(response.content.decode())
+
+        self.assertEqual(header.text, ['Aplicativos', 'Fluxo de trabalho'])
+        self.assertEqual(header.headings, 1)
+        self.assertEqual(header.current_pages, 1)
+        self.assertEqual(header.links, ['/app/'])
+        self.assertContains(response, 'href="/app/workflow/"')
+        self.assertTemplateUsed(response, 'includes/page_header.html')
+
+    def test_compact_navigation_does_not_grant_workflow_access(self):
+        from tests.test_compact_page_header import HeaderParser
+
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('app:workflow_workspace'))
+        self.assertEqual(response.status_code, 403)
+        header = HeaderParser(response.content.decode())
+
+        self.assertEqual(header.text, ['Aplicativos', 'Acesso negado'])
+        self.assertEqual(header.current_pages, 1)
+
     def test_workspace_renders_accessible_progress_metric_when_target_exists(self):
         self.client.force_login(self.admin)
 

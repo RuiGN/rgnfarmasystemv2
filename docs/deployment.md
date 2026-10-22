@@ -148,7 +148,11 @@ python3.14 -m venv .venv
 ```
 
 A versão de `pypdf` incorpora as correções de negação de serviço identificadas
-na auditoria de dependências. Um build de teste não reinicia nem promove produção.
+na auditoria de dependências. O pin `6.21.1` também corrige a validação de imagens
+JPEG com Pillow descrita na [CVE-2026-113786 / GHSA-5hx5-vpf9-5wcv](https://github.com/py-pdf/pypdf/security/advisories/GHSA-5hx5-vpf9-5wcv).
+Após uma atualização autorizada, audite novamente o ambiente completo e execute
+os testes de ingestão e relatórios PDF antes de reconstruir a imagem do release.
+Um build de teste não reinicia nem promove produção.
 
 ## Rollback
 

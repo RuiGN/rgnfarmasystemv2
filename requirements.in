@@ -29,7 +29,8 @@ pillow==13.0.0
 protobuf==7.36.0
 psycopg[binary]==3.3.5
 # CVE-2026-113792/113793/113794/113795: bounded stream work and cyclic trees.
-pypdf==6.20.1
+# CVE-2026-113786 / GHSA-5hx5-vpf9-5wcv: validate JPEG image data with Pillow.
+pypdf==6.21.1
 PyYAML==6.0.3
 redis==7.4.1
 reportlab==5.0.1

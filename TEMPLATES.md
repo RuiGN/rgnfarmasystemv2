@@ -83,6 +83,32 @@ Ao adicionar um workspace, registre esses metadados, associe um `module_slug`
 válido e cubra: URL reversa, ordenação, visibilidade por permissão, estado
 `aria-current` e ausência do item para perfis sem acesso.
 
+### Cabeçalhos compactos
+
+`includes/page_header.html` recebe `compact=True`, `page_title` e `breadcrumbs`.
+Nesse modo, ancestrais e página atual formam um único caminho: a folha atual é
+um `h1` com `aria-current="page"` no item, sem repetir o título abaixo. O exemplo
+do workspace é **Aplicativos > Fluxo de trabalho**. O modo anterior continua
+disponível para títulos distintos de detalhe/formulário e identificação do objeto.
+
+A biblioteca `ui_navigation` fornece `page_breadcrumbs`, que recebe pares
+rótulo/URL já resolvida e retorna a sequência ordenada de ancestrais. Um par
+incompleto falha, em vez de descartar silenciosamente um segmento. O renderer
+mantém o escape HTML padrão. `header_id` preserva âncoras existentes, como
+`section-0`; `page_actions_template` aponta somente para parciais escolhidas
+pelo código, nunca por parâmetros livres de requisição.
+
+Módulos, listas, workspaces, ações, acesso negado, painéis e o ciclo de
+abastecimento reutilizam o mesmo cabeçalho. Ações compactas permanecem visíveis
+e podem quebrar linha sem depender de JavaScript para abrir uma gaveta. Os
+checks `can_add`, `can_reuse`, Gantt/Kanban e as opções autorizadas dos painéis
+continuam pertencendo aos contratos existentes; o cabeçalho não concede acesso.
+
+A central `/app/workspaces/workflow/` e o módulo `/app/workflow/` permanecem
+destinos distintos: indicadores e recursos, respectivamente. O título da página
+é Fluxo de trabalho; a legenda Central de workflow continua distinguindo o link
+da central no sidebar. Sino de notificações, atalhos e permissões não são removidos.
+
 ### Minha área
 
 A rota nomeada `app:personal_area` (`/app/minha-area/`) apresenta somente filas

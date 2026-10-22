@@ -1,19 +1,12 @@
 {% extends 'base.html' %}
+{% load ui_navigation %}
 
 {% block title %}{{ workspace.title }} | RGN Farma System{% endblock %}
 
 {% block page_header %}
-<div class="page-header">
-    <div class="page-header-left d-flex align-items-center">
-        <ul class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
-            <li class="breadcrumb-item">{{ workspace.breadcrumb_label }}</li>
-        </ul>
-        <div class="page-header-title">
-            <h5 class="m-b-10">{{ workspace.title }}</h5>
-        </div>
-    </div>
-</div>
+{% url 'app:index' as applications_url %}
+{% page_breadcrumbs 'Aplicativos' applications_url as breadcrumbs %}
+{% include 'includes/page_header.html' with compact=True page_title=workspace.breadcrumb_label %}
 {% endblock %}
 
 {% block content %}

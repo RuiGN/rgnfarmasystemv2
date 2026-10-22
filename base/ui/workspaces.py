@@ -361,7 +361,7 @@ WORKSPACES = {
     ),
     'workflow': WorkspaceConfig(
         slug='workflow',
-        title='Central de workflow',
+        title='Fluxo de trabalho',
         description='Aprovações, notificações e processamento assíncrono.',
         breadcrumb_label='Fluxo de trabalho',
         module_slug='workflow',

@@ -301,7 +301,8 @@ class TestMasterDataApi:
         )
 
         assert response.status_code == 201
-        assert response.json()['code'] == 'PRD-0001'
+        created_product = response.json()
+        assert created_product['code'] == f'PRD-{created_product["id"]}'
 
         valid_global_unit_response = client.post(
             '/api/masters/products/',
@@ -315,7 +316,8 @@ class TestMasterDataApi:
         )
 
         assert valid_global_unit_response.status_code == 201
-        assert valid_global_unit_response.json()['code'] == 'PRD-0002'
+        other_product = valid_global_unit_response.json()
+        assert other_product['code'] == f'PRD-{other_product["id"]}'
 
         wrong_kind = MasterCategory.objects.create(
             code='CAT-001',

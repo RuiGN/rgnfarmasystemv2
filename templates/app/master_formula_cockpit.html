@@ -1,32 +1,16 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static ui_navigation %}
 
 {% block title %}{{ formula.product.description }} | Ciclo de abastecimento | RGN Farma System{% endblock %}
 
 {% block page_header %}
-<div class="page-header" id="section-0">
-    <div class="page-header-left d-flex align-items-center">
-        <ul class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'app:module' 'formulations' %}">{{ module.label }}</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'app:resource_detail' 'formulations' 'formulas' formula.pk %}">{{ formula.code }} v{{ formula.version }}</a></li>
-            <li class="breadcrumb-item active">Ciclo de abastecimento</li>
-        </ul>
-        <div class="page-header-title">
-            <h1 class="h5 m-b-10">Ciclo de abastecimento</h1>
-        </div>
-    </div>
-    <div class="page-header-right ms-auto d-flex align-items-center gap-2">
-        {% if can_reuse %}
-        <a class="btn btn-warning d-inline-flex align-items-center gap-2" href="{% url 'app:master_formula_reuse' formula.pk %}">
-            <i class="feather-copy" aria-hidden="true"></i> Reaproveitar fórmula
-        </a>
-        {% endif %}
-        <a class="btn btn-light" href="{% url 'app:resource_detail' 'formulations' 'formulas' formula.pk %}">
-            <i class="feather-arrow-left me-1" aria-hidden="true"></i> Voltar à fórmula
-        </a>
-    </div>
-</div>
+{% url 'app:index' as applications_url %}
+{% url 'app:module' 'formulations' as module_url %}
+{% url 'app:resource_detail' 'formulations' 'formulas' formula.pk as formula_url %}
+{% with version=formula.version|stringformat:'s' %}
+{% page_breadcrumbs 'Aplicativos' applications_url module.label module_url formula.code|add:' v'|add:version formula_url as breadcrumbs %}
+{% include 'includes/page_header.html' with compact=True page_title='Ciclo de abastecimento' header_id='section-0' page_actions_template='app/includes/master_formula_header_actions.html' %}
+{% endwith %}
 {% endblock %}
 
 {% block content %}

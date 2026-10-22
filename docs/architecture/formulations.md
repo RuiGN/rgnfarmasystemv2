@@ -30,12 +30,23 @@ modais, paginação e estados do design system.
 
 Criação, edição e reaproveitamento usam o formulário compartilhado com abas:
 
-- **Produto:** seleção de um produto já cadastrado. Não edita o cadastro mestre
-  do produto nem concede permissões adicionais sobre ele.
+No editor de fórmula são duas abas (não há aba Produto):
+
 - **Fórmula mestra:** campos da fórmula, incluindo versão, status, tamanho do
   lote, unidade, rendimento e observações, conforme as permissões existentes.
 - **Componentes:** cartões de materiais com quantidade, unidade, função, perdas
   e conversão; inclusão e exclusão continuam sujeitas às regras do domínio.
+
+O produto é selecionado na aba **Fórmula mestra**. No editor integrado de
+Produtos há três abas: **Produto**, **Fórmula mestra** e **Componentes**.
+A seleção de versão é explícita e precisa ser carregada antes de salvar.
+Versões anteriores e aprovadas são preservadas; uma versão existente mantém
+seu número, e uma nova versão usa o fluxo autorizado, sem substituir a anterior.
+
+O cadastro relacionado de material/categoria é salvo separadamente, sem gravar
+o formulário principal pendente. Filtros dependentes e validações no servidor
+continuam ativos. Códigos automáticos seguem CODE_PREFIX-ID com o ID real,
+sem preenchimento com zeros; descritivos e identificadores oficiais são preservados.
 
 Salvar envia pai e componentes juntos. Erros mantêm os valores submetidos e
 abrem a aba correspondente; sem JavaScript, as seções aparecem em sequência.

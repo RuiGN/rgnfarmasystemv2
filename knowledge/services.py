@@ -1,5 +1,9 @@
 import io
+import json
 import logging
+import math
+from collections import Counter
+import re
 from pathlib import Path
 import time
 from decimal import Decimal
@@ -12,16 +16,18 @@ from django.utils import timezone
 from pypdf import PdfReader
 
 from knowledge.models import (
+    KnowledgeChunk,
     KnowledgeDocument,
     KnowledgeIngestionLog,
     KnowledgeSource,
     RAGChatMessage,
     RAGChatSession,
     RAGCitation,
+    _tokens,
     content_hash,
     deterministic_embedding,
 )
-from knowledge.openai_gateway import OpenAIGateway
+from knowledge.openai_gateway import OpenAIGateway, OpenAIResponseError
 from knowledge.redis_client import knowledge_redis_health
 
 
@@ -33,24 +39,51 @@ def normalize_text(value):
 
 
 def chunk_text(text, *, max_words=240, overlap=40):
-    words = normalize_text(text).split()
-    if not words:
-        return []
+    # Chunk within a Markdown section; retain ancestry in every continuation.
+    sections = []
+    headings = []
+    body = []
+    for line in str(text or '').splitlines():
+        heading = re.match(r'^(#{1,6})\s+(.+?)\s*#*$', line)
+        if heading:
+            if body:
+                sections.append((list(headings), '\n'.join(body)))
+                body = []
+            level = len(heading[1])
+            headings = [(depth, title) for depth, title in headings if depth < level]
+            headings.append((level, heading[2]))
+        else:
+            body.append(line)
+    if body:
+        sections.append((headings, '\n'.join(body)))
     chunks = []
-    step = max(max_words - overlap, 1)
-    for start in range(0, len(words), step):
-        part = words[start : start + max_words]
-        if not part:
-            continue
-        chunks.append({'content': ' '.join(part), 'section_reference': f'chunk {len(chunks) + 1}'})
-        if start + max_words >= len(words):
-            break
+    for path, section in sections:
+        words = normalize_text(section).split()
+        for start in range(0, len(words), max(max_words - overlap, 1)):
+            content = ' '.join(words[start : start + max_words])
+            if path:
+                reference = ' > '.join(title for _, title in path)
+                chunks.append(
+                    {
+                        'title': path[-1][1][:255],
+                        'section_reference': reference[:180],
+                        'content': f'{reference}\n{content}',
+                    }
+                )
+            else:
+                chunks.append({'content': content, 'section_reference': f'chunk {len(chunks) + 1}'})
+            if start + max_words >= len(words):
+                break
     return chunks
 
 
+@transaction.atomic
 def source_from_entry(entry):
     metadata = dict(entry.get('metadata') or {})
     metadata.pop('manual_content', None)
+    existing = KnowledgeSource.objects.select_for_update().filter(code=entry['code']).first()
+    if existing and (existing.metadata or {}).get('current_content_hash'):
+        metadata['current_content_hash'] = existing.metadata['current_content_hash']
     values = {
         'title': entry['title'],
         'source_type': entry['source_type'],
@@ -100,38 +133,75 @@ def ingest_source(entry, *, max_chunks=None, timeout=30):
         else:
             urls = [source.url, *((source.metadata or {}).get('alternate_urls') or [])]
             fetched, selected_url = fetch_source_text_candidates(urls, timeout=timeout)
-        text = normalize_text(fetched['text'])
-        if not text:
+        text = str(fetched['text'] or '').replace('\x00', ' ')
+        if not normalize_text(text):
             raise ValueError('A fonte não retornou texto extraível.')
         document_hash = content_hash(text)
-        document, _created = KnowledgeDocument.objects.update_or_create(
-            source=source,
-            content_hash=document_hash,
-            defaults={
-                'title': source.title,
-                'document_type': fetched['document_type'],
-                'source_url': selected_url,
-                'version_label': source.version,
-                'retrieved_at': timezone.now(),
-                'status': KnowledgeDocument.Status.PENDING,
-                'extracted_text': text,
-                'metadata': {'content_type': fetched.get('content_type', '')},
-            },
-        )
-        chunks = chunk_text(text)
-        if max_chunks is not None:
-            chunks = chunks[:max_chunks]
-        created_chunks = document.replace_chunks(chunks)
+        with transaction.atomic():
+            # Serialize publication per source. Do not delete historical chunks:
+            # citations keep pointing to the exact immutable document revision.
+            source = KnowledgeSource.objects.select_for_update().get(pk=source.pk)
+            document, created = KnowledgeDocument.objects.get_or_create(
+                source=source,
+                content_hash=document_hash,
+                defaults={
+                    'title': source.title,
+                    'document_type': fetched['document_type'],
+                    'source_url': selected_url,
+                    'version_label': entry.get('version', ''),
+                    'retrieved_at': timezone.now(),
+                    'extracted_text': text,
+                    'metadata': {
+                        'content_type': fetched.get('content_type', ''),
+                        'corpus_revision': (entry.get('metadata') or {}).get('corpus_revision', ''),
+                        'corpus_hash': document_hash,
+                    },
+                },
+            )
+            chunks = chunk_text(text)
+            if max_chunks is not None:
+                chunks = chunks[:max_chunks]
+            if created or document.status != KnowledgeDocument.Status.INGESTED:
+                created_chunks = document.replace_chunks(chunks)
+                chunks_created = len(created_chunks)
+            else:
+                # An earlier --max-chunks ingestion may be expanded, but never
+                # recreate already published rows referenced by citations/Redis.
+                created_chunks = list(document.chunks.all())
+                existing_indices = {chunk.chunk_index for chunk in created_chunks}
+                additions = []
+                for index, chunk in enumerate(chunks):
+                    if index in existing_indices:
+                        continue
+                    body = normalize_text(chunk['content'])
+                    additions.append(
+                        KnowledgeChunk(
+                            source=source,
+                            document=document,
+                            chunk_index=index,
+                            title=chunk.get('title') or document.title,
+                            section_reference=chunk.get('section_reference', ''),
+                            content=body,
+                            content_hash=content_hash(f'{document.pk}:{index}:{body}'),
+                            token_count=len(_tokens(body)),
+                            embedding_vector=deterministic_embedding(body),
+                            metadata=chunk.get('metadata') or {},
+                        )
+                    )
+                KnowledgeChunk.objects.bulk_create(additions)
+                chunks_created = len(additions)
+            source.metadata = dict(source.metadata or {}, current_content_hash=document_hash)
+            source.save(update_fields=['metadata', 'updated_at'])
         log.finish(
             KnowledgeIngestionLog.Status.SUCCEEDED,
             document=document,
-            chunks_created=len(created_chunks),
+            chunks_created=chunks_created,
             details={'url': selected_url, 'content_type': fetched.get('content_type', '')},
         )
         return {
             'source': source,
             'document': document,
-            'chunks_created': len(created_chunks),
+            'chunks_created': chunks_created,
             'status': log.status,
         }
     except Exception as error:
@@ -237,16 +307,52 @@ def _postgres_retrieve_context(question, *, limit=5):
         .select_related('source')
         .prefetch_related('chunks')
     )
-    for document in queryset:
-        for chunk in document.chunks.all():
-            lexical = chunk.match_score(question)
-            if lexical <= 0:
-                continue
-            vector = _cosine_similarity(query_vector, chunk.embedding_vector or [])
-            score = (lexical * 0.75) + (vector * 0.25)
-            if score <= 0:
-                continue
-            scored.append(_context_payload(chunk, score))
+    from knowledge.eligibility import is_document_eligible
+
+    chunks = [
+        chunk
+        for document in queryset
+        if is_document_eligible(document)
+        for chunk in document.chunks.all()
+    ]
+    # Common question words must not outrank the operation being asked about.
+    stopwords = {
+        'como',
+        'qual',
+        'quais',
+        'para',
+        'que',
+        'uma',
+        'uns',
+        'seu',
+        'sua',
+        'são',
+        'ser',
+        'mais',
+        'não',
+        'agora',
+        'todos',
+        'todas',
+        'foi',
+    }
+    query_terms = set(_tokens(question)) - stopwords
+    term_sets = [
+        set(_tokens(f'{chunk.title} {chunk.section_reference} {chunk.content}')) for chunk in chunks
+    ]
+    frequencies = Counter(term for terms in term_sets for term in terms)
+    weights = {
+        term: math.log(1 + (len(chunks) + 1) / (frequencies[term] + 1)) for term in query_terms
+    }
+    denominator = sum(weights.values()) or 1
+    for chunk, terms in zip(chunks, term_sets, strict=True):
+        lexical = sum(weights[term] for term in query_terms & terms) / denominator
+        if lexical <= 0:
+            continue
+        vector = _cosine_similarity(query_vector, chunk.embedding_vector or [])
+        score = (lexical * 0.75) + (vector * 0.25)
+        if score <= 0:
+            continue
+        scored.append(_context_payload(chunk, score))
     scored.sort(key=lambda item: item['score'], reverse=True)
     return scored[:limit]
 
@@ -290,6 +396,9 @@ def _redis_chunk_payload(chunk):
         'source_id': chunk.source_id,
         'title': chunk.title or '',
         'source_title': chunk.source_title,
+        'source_code': chunk.source_code,
+        'version_label': chunk.version_label,
+        'corpus_hash': chunk.corpus_hash,
         'source_url': chunk.source_url,
         'section_reference': chunk.section_reference,
         'page_number': chunk.page_number,
@@ -303,21 +412,45 @@ def answer_question(user, question, *, session_id=None, limit=5):
     started = time.monotonic()
     session = _get_or_create_session(user, question, session_id=session_id)
     session.add_user_message(question)
-    context = retrieve_context(question, limit=limit)
+    mutation_requested = bool(
+        re.match(
+            r'^\s*(?:por favor[, ]+)?(?:apague|exclua|crie|cadastre|altere|atualize|aprove|'
+            r'cancele|remova|execute)\b',
+            question,
+            re.IGNORECASE,
+        )
+    )
+    context = [] if mutation_requested else retrieve_context(question, limit=limit)
+    used_context = context
 
-    if getattr(settings, 'RAG_CHAT_LOCAL_ONLY', False):
-        answer = local_answer(question, context)
+    if mutation_requested:
+        answer = 'O chat não executa criação, alteração, aprovação ou exclusão de registros; somente orienta.'
+        model_name = 'local'
+    elif not context:
+        answer = UNSUPPORTED_ANSWER
+        model_name = 'local'
+    elif getattr(settings, 'RAG_CHAT_LOCAL_ONLY', False):
+        used_context = context[:3]
+        answer = local_answer(question, used_context)
         model_name = 'local'
     else:
         try:
             answer, provider = invoke_openai(question, context)
             model_name = provider['model']
+            used_context = [context[n - 1] for n in provider['source_numbers']]
+            public_numbers = {
+                number: index for index, number in enumerate(provider['source_numbers'], 1)
+            }
+            answer = re.sub(
+                r'\[(\d+)\]', lambda match: f'[{public_numbers[int(match[1])]}]', answer
+            )
         except Exception as error:
             logger.warning(
                 'Provedor externo indisponível; usando resposta local. %s',
                 type(error).__name__,
             )
-            answer = local_answer(question, context, provider_fallback=True)
+            used_context = context[:3]
+            answer = local_answer(question, used_context, provider_fallback=True)
             model_name = 'local'
     latency_ms = int((time.monotonic() - started) * 1000)
 
@@ -332,7 +465,17 @@ def answer_question(user, question, *, session_id=None, limit=5):
         error_message='',
         created_by=user,
     )
-    citations = create_citations(assistant_message, context)
+    if model_name == 'local':
+        used_context = [
+            dict(
+                item,
+                content=(
+                    item['content'][:357] + '...' if len(item['content']) > 360 else item['content']
+                ),
+            )
+            for item in used_context
+        ]
+    citations = create_citations(assistant_message, used_context)
     return {
         'session_id': session.id,
         'message_id': assistant_message.id,
@@ -341,52 +484,53 @@ def answer_question(user, question, *, session_id=None, limit=5):
     }
 
 
+PROMPT_VERSION = 'manual-grounded-v2'
+UNSUPPORTED_ANSWER = 'Não encontrei uma instrução validada no manual do ERP para essa pergunta.'
+
+
 def invoke_openai(question, context):
     generation = OpenAIGateway().generate_text(
         instructions=build_system_prompt(),
         input=build_prompt(question, context),
     )
-    return generation.text, {
+    try:
+        payload = json.loads(generation.text)
+    except (ValueError, TypeError) as error:
+        raise OpenAIResponseError('Resposta sem fundamentação estruturada.') from error
+    if not isinstance(payload, dict) or set(payload) != {'answer', 'source_numbers'}:
+        raise OpenAIResponseError('Resposta com estrutura inválida.')
+    answer, numbers = payload['answer'], payload['source_numbers']
+    if (
+        not isinstance(answer, str)
+        or not answer.strip()
+        or not isinstance(numbers, list)
+        or any(type(n) is not int or not 1 <= n <= len(context) for n in numbers)
+        or len(set(numbers)) != len(numbers)
+        or (not numbers and answer != UNSUPPORTED_ANSWER)
+        or any(f'[{n}]' not in answer for n in numbers)
+        or any(int(n) not in numbers for n in re.findall(r'\[(\d+)\]', answer))
+    ):
+        raise OpenAIResponseError('Resposta com referências inválidas.')
+    return answer, {
         'provider': 'openai',
         'response_id': generation.response_id,
         'model': generation.model,
+        'source_numbers': numbers,
+        'prompt_version': PROMPT_VERSION,
     }
 
 
 def build_system_prompt():
-    return (
-        'Você é o assistente do manual de utilização do RGN Farma System, um ERP '
-        'para a indústria de cosméticos. Responda sempre em português do Brasil, com tom cordial, claro e '
-        'profissional. Responda exclusivamente sobre funcionalidades, telas, permissões, '
-        'campos, fluxos e estados do sistema. Use somente as fontes do manual fornecidas como '
-        'contexto. Quando a pergunta for sobre como fazer algo no sistema, forneça instruções '
-        'passo a passo numeradas, incluindo caminho do menu, campos e botões. Não execute '
-        'ações, não crie propostas e não consulte legislação ou qualquer fonte '
-        'regulatória externa. Quando o manual não cobrir a pergunta, informe a limitação sem '
-        'inventar procedimentos.'
-    )
+    return (Path(__file__).parent / 'prompts' / f'{PROMPT_VERSION}.txt').read_text(encoding='utf-8')
 
 
 def build_prompt(question, context):
-    sources = []
-    for index, item in enumerate(context, start=1):
-        sources.append(
-            f'[{index}] {item["title"]} | {item["section_reference"]} | '
-            f'{item["source_url"]}\n{item["content"]}'
-        )
-    context_text = '\n\n'.join(sources)
-    if not context_text:
-        return (
-            f'Pergunta do usuário:\n{question}\n\n'
-            'Fontes recuperadas:\nNenhuma fonte recuperada.\n\n'
-            'Informe que não há instrução validada no manual do ERP para responder com '
-            'segurança. Não invente passos, permissões ou comportamentos do sistema.'
-        )
-    return (
-        f'Pergunta do usuário:\n{question}\n\n'
-        f'Contexto do manual:\n{context_text}\n\n'
-        'Responda somente com base no contexto. Forneça passos numerados quando aplicável e '
-        'não proponha nem confirme alteração de dados.'
+    return json.dumps(
+        {
+            'question': question,
+            'sources': [dict(item, number=n) for n, item in enumerate(context, 1)],
+        },
+        ensure_ascii=False,
     )
 
 
@@ -456,8 +600,11 @@ def _context_payload(chunk, score):
         'chunk_id': chunk.id,
         'document_id': document.id,
         'source_id': source.id,
-        'title': document.title,
+        'title': chunk.title or document.title,
         'source_title': source.title,
+        'source_code': source.code,
+        'version_label': document.version_label,
+        'corpus_hash': document.content_hash,
         'source_url': document.source_url or source.url,
         'section_reference': chunk.section_reference,
         'page_number': chunk.page_number,

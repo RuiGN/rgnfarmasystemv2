@@ -1,27 +1,12 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static ui_navigation %}
 
 {% block title %}{{ module.label }} | RGN Farma System{% endblock %}
 
 {% block page_header %}
-<div class="page-header" id="section-0">
-    <div class="page-header-left d-flex align-items-center">
-        <ul class="breadcrumb mb-0 ms-md-4">
-            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Início</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
-            <li class="breadcrumb-item">{{ module.label }}</li>
-        </ul>
-        <div class="page-header-title">
-            <h5 class="m-b-10">{{ module.label }}</h5>
-        </div>
-    </div>
-    <div class="page-header-right ms-auto">
-        <a href="{% url 'app:index' %}" class="btn btn-sm btn-light-brand d-inline-flex align-items-center gap-2">
-            <i class="feather-arrow-left"></i>
-            <span>Voltar aos Aplicativos</span>
-        </a>
-    </div>
-</div>
+{% url 'app:index' as applications_url %}
+{% page_breadcrumbs 'Aplicativos' applications_url as breadcrumbs %}
+{% include 'includes/page_header.html' with compact=True page_title=module.label header_id='section-0' page_actions_template='includes/page_header_back.html' header_back_url=applications_url header_back_label='Voltar aos Aplicativos' %}
 {% endblock %}
 
 {% block content %}
@@ -35,7 +20,7 @@
                 </div>
                 <div>
                     <div class="d-flex align-items-center gap-2 mb-1">
-                        <h1 class="h4 mb-0 text-dark">{{ module.label }}</h1>
+                        <h2 class="h4 mb-0 text-dark">{{ module.label }}</h2>
                         <span class="badge bg-soft-success text-success fs-11">Ativo</span>
                     </div>
                     <p class="text-muted fs-13 mb-0">{{ module.description }}</p>
