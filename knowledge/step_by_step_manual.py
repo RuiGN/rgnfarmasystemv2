@@ -200,6 +200,14 @@ STEP_BY_STEP_GUIDES = {
 6. Clique em **Salvar** para gravar o conjunto autorizado. As abas não concedem
    novas permissões: consulta, criação e alteração continuam controladas pelo Django.
 
+## Códigos automáticos e identificadores existentes
+
+Os códigos gerados automaticamente seguem CODE_PREFIX-ID: o prefixo do modelo
+e o ID real do registro, sem preenchimento com zeros. O código identifica o
+registro; não é uma numeração independente que reinicia ao limpar cadastros.
+Códigos descritivos informados explicitamente e identificadores oficiais
+existentes são preservados, sem renumerar registros. Não invente códigos ou IDs.
+
 ## Navegação e limites do assistente
 
 O cabeçalho canônico é Aplicativos > Fluxo de trabalho. A sidebar **Central de
@@ -211,6 +219,15 @@ O chat não executa exclusão de produtos nem confirma operações concluídas:
 solicitações de exclusão ou alteração exigem as telas e permissões apropriadas,
 nunca uma mutação via chat.
 Sem suporte no manual, deve informar a limitação, sem inventar procedimentos.
+
+## Limites do chat para alteração e exclusão de registros
+
+O chat orienta pelo manual, com sessão autenticada e a permissão
+knowledge.view_ragchatsession. Ele não cria, altera, aprova ou apaga registros,
+inclusive em pedidos de exclusão de produtos, e não confirma operações como
+concluídas. Para alterar ou excluir dados, use as telas e permissões apropriadas;
+o chat não substitui essas telas nem executa a operação. Sem suporte no manual,
+o assistente deve informar a limitação, sem inventar procedimentos.
 
 ## Como cadastrar um parceiro (cliente/fornecedor)
 
