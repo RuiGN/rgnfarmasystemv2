@@ -121,7 +121,7 @@ def test_runtime_dependencies_use_audited_compatible_versions():
         'openai==3.3.1',
         'pillow==13.0.0',
         'protobuf==7.36.0',
-        'pypdf==6.20.1',
+        'pypdf==6.21.1',
         'pytest==9.1.1',
         'websockets==16.1.1',
     }
