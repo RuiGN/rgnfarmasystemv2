@@ -38,7 +38,18 @@ class TestPromptGrounding:
             answer, provider = invoke_openai('Como usar?', context)
         assert answer == 'Use as três abas [1].'
         assert provider['source_numbers'] == [1]
-        assert provider['prompt_version'] == 'manual-grounded-v2'
+        assert provider['prompt_version'] == 'manual-grounded-v3'
+
+    def test_pedagogical_rules_preserve_counts_constraints_and_procedural_grounding(self):
+        system = build_system_prompt()
+        for rule in (
+            'Declare explicitamente as contagens documentadas',
+            'filtros dependentes',
+            'fronteiras de salvamento',
+            'seção procedimental diretamente aplicável',
+            'Não acrescente uma citação apenas para cumprir esta preferência',
+        ):
+            assert rule in system
 
     @pytest.mark.parametrize(
         'text',

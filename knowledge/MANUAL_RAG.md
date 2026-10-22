@@ -30,6 +30,13 @@ instruções funcionais e arquitetura local. Cada entrada tem revisão `manual-v
 SHA-256 do conteúdo e versão derivada desse hash. Cada chunk conserva o título e
 o caminho de seções Markdown; continuações permanecem na mesma seção.
 
+O guia de Cadastros mestres inclui seções autocontidas de códigos automáticos e
+limites do chat. Isso concentra os fatos transversais sem remover os procedimentos
+de Produto e Fórmula mestra nem alterar o algoritmo de recuperação. A mudança do
+conteúdo produz outro hash e exige ingestão da revisão e publicação controlada de
+um novo índice; editar o arquivo não atualiza um índice já ativo. Documentos e
+citações históricos permanecem preservados. Não é necessário repetir o reset.
+
 Ingestão bem-sucedida publica `current_content_hash` na fonte, dentro da mesma
 transação que prepara os chunks. PostgreSQL, construção do índice e leitura de
 hits Redis usam a mesma elegibilidade. Um índice Redis antigo não autoriza
@@ -61,7 +68,12 @@ novamente um índice antigo.
 
 ## Fundamentação e indisponibilidade
 
-Prompt versionado em `knowledge/prompts/manual-grounded-v2.txt`. Pergunta e
+Prompt atual em `knowledge/prompts/manual-grounded-v3.txt`; a versão anterior
+permanece no repositório para rastreabilidade. O prompt pede contagens documentadas
+explícitas, restrições relevantes e passos fundamentados na seção procedimental
+aplicável, sem acrescentar citações apenas para cumprir essa preferência. A presença
+dessas instruções não prova obediência do modelo nem melhora de recuperação.
+Pergunta e
 fontes são dados JSON separados das instruções; conteúdo recuperado não é uma
 instrução executável. A geração retorna JSON validado com texto e números das
 fontes efetivamente declaradas como usadas. Referências inexistentes,
@@ -140,8 +152,17 @@ modelo efetivamente retornado, hash do conjunto e do prompt e latência observad
 Os campos `retrieval_ok` e `generation_ok` separam os vereditos de recuperação e
 geração. Tokens e custo ficam `null`, pois o
 gateway atual não os fornece para geração. Nenhuma estimativa é apresentada como
-medição. Comparar baseline/candidato somente com o mesmo hash de conjunto,
-corpus e prompt; guardar os dois arquivos e revisar os movimentos por caso.
+medição. Comparar baseline/candidato mantendo o hash do conjunto e registrando os
+hashes de corpus e prompt de cada rodada; guardar ambos os relatórios e revisar os
+movimentos por caso. Se corpus ou prompt mudar, explicitar essa diferença, sem
+reescrever resultados anteriores nem enfraquecer critérios para obter aprovação.
+
+Uma falha de recuperação pula a geração naquele caso; não comprova uma resposta
+incorreta do gerador. A sonda de mutação usa a recuperação e geração diretamente,
+enquanto o serviço também possui uma guarda local anterior à recuperação. Os dois
+caminhos precisam ser verificados separadamente: um não transforma a falha do outro
+em aprovação. Testes offline das respostas observadas protegem os critérios, mas
+não medem novo recall vetorial nem comprovam a qualidade de uma geração futura.
 
 Testes com doubles na fronteira OpenAI/Redis comprovam o contrato local, **não**
 a disponibilidade ou qualidade do modelo/RediSearch na implantação. Uma execução
