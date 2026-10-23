@@ -24,15 +24,12 @@ integrações ou processos operacionais forem alterados.
 
 ## Documentos principais
 
-- `MODIFICACAGERAL.prd`
+- `PRD.md`
 - `docs/architecture/single-instance.md`
 - `docs/architecture/auth-single-instance.md`
 - `docs/architecture/admin-single-instance.md`
 - `docs/architecture/domain-actions.md`
 - `docs/architecture/inline-resources.md`
-- `docs/validation/single-instance-data-audit.md`
-- `docs/validation/single-instance-final-verification.md`
-- `docs/validation/single-instance-rollback.md`
 - `docs/validation/known-pending-items.md`
 - `docs/validation/single-domain-actions-acceptance.md`
 - `docs/deployment.md`

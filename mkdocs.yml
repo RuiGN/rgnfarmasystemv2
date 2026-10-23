@@ -51,8 +51,6 @@ nav:
       - Sidebar e Permissões: architecture/sidebar-permissions.md
   - Operação:
       - Deploy: deployment.md
-      - Auditoria de dados single-instance: validation/single-instance-data-audit.md
-      - Verificação final single-instance: validation/single-instance-final-verification.md
-      - Rollback single-instance: validation/single-instance-rollback.md
       - Aceite single-domain e ações: validation/single-domain-actions-acceptance.md
       - Pendências conhecidas: validation/known-pending-items.md
+      - Análise técnica 2026-10-23: validation/analysis-2026-10-23.md

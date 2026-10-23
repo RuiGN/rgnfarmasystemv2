@@ -28,7 +28,10 @@ por `check_password()` após o provisionamento.
 
 ## Pendências técnicas do escopo
 
-Nenhuma pendência de código conhecida permanece no escopo do
-`MODIFICACAGERAL.prd`. A declaração de encerramento regulatório geral continua
+A análise técnica de 2026-10-23 identificou pendências de código em
+integridade de dados e BPF (segregação de funções, assinatura eletrônica,
+guardas de transição, imutabilidade da trilha de auditoria e hash de
+evidências). O acompanhamento está em `docs/validation/analysis-2026-10-23.md`.
+A declaração de encerramento regulatório geral continua
 condicionada aos dois itens operacionais externos acima e aos gates finais
 documentados no catálogo de evidências.

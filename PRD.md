@@ -7,13 +7,12 @@
 
 ## 1. Fontes de verdade
 
-Este documento define o produto vigente. A conversão arquitetural e seus
-critérios técnicos estão detalhados em `MODIFICACAGERAL.prd`. As decisões de
+Este documento define o produto vigente. As decisões de
 implementação estão em `docs/architecture/single-instance.md` e
 `docs/architecture/auth-single-instance.md`.
 
-Em caso de conflito, prevalecem, nesta ordem: `AGENTS.md`, este PRD,
-`MODIFICACAGERAL.prd` e a documentação de arquitetura vigente. Planos e specs
+Em caso de conflito, prevalecem, nesta ordem: `AGENTS.md`, este PRD e a
+documentação de arquitetura vigente. Planos e specs
 em `docs/superpowers/` são registros históricos e não constituem contrato de
 runtime.
 
@@ -126,7 +125,7 @@ cosmetovigilância e requisitos da ANVISA quando aplicáveis.
   para cópia off-site.
 - Restore exige artefato explícito, confirmação, validação gzip e backup
   pré-restauração; `--dry-run` não altera dados.
-- O plano de rollback está em `docs/validation/single-instance-rollback.md`.
+- O plano de rollback está em `docs/deployment.md` (seção Rollback).
 
 ## 10. Critérios de aceite
 

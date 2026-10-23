@@ -220,7 +220,7 @@ O cenário `full_demo` cria uma massa ampla e idempotente com prefixo `DEMO-*`
 para cadastros, produção, MRP, compras, estoque, custos, financeiro, fiscal,
 CRM, qualidade, QA, documentos, desvios, CAPA, riscos, auditorias,
 cosmetovigilância, recalls, treinamentos, workflow, relatórios, integrações e IA.
-Usuários demo usam a senha local `Demo@12345`.
+Usuários demo usam a senha definida em `DEMO_USER_PASSWORD` (sem valor padrão).
 
 Criptografia AES-256-GCM para arquivos protegidos:
 
