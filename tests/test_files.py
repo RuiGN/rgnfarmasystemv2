@@ -124,7 +124,10 @@ class ProtectedFileModelTests(TestCase):
         link = protected_file.generate_secure_link(
             user=viewer, purpose=SecureFileLink.Purpose.DOWNLOAD, expires_in_minutes=10
         )
+        stale_link = SecureFileLink.objects.get(pk=link.pk)
         reference = link.use(user=viewer)
+        with pytest.raises(ValidationError):
+            stale_link.use(user=viewer)
         protected_file.record_access(user=viewer, action=ProtectedFileAuditTrail.Action.VIEW)
         replacement = protected_file.replace(
             new_file_reference='fiscal/notas/nf-arq-001-retificada.xml',

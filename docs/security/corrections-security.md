@@ -314,3 +314,19 @@ naquela execução, não uma garantia permanente sobre a versão.
 Atualizar pins ou aprovar testes locais não comprova que uma imagem foi construída,
 que o CI passou ou que a VPS foi atualizada. Esses resultados devem ser vinculados
 separadamente ao commit, à imagem e à execução observados antes de qualquer promoção.
+
+## Correções de integridade e execução de IA — 2026-10-23
+
+`SecureFileLink.use()` agora recarrega o link com `select_for_update()` dentro de
+`transaction.atomic()`. A validação de validade, incremento de usos, auditoria e
+retorno do arquivo ocorrem sobre a mesma linha bloqueada, impedindo que instâncias
+obsoletas ultrapassem `max_uses` sob concorrência.
+
+Execuções externas de agentes de IA não fazem mais fallback silencioso para a saída
+local quando o provedor falha. O modo local continua disponível quando explicitamente
+configurado ou quando não há chave; falhas do provedor propagam para `AIAgentRun`, que
+registra `FAILED` em vez de apresentar uma execução degradada como `SUCCEEDED`.
+
+Os testes de regressão cobrem ambos os contratos. A validação de concorrência em
+PostgreSQL deve continuar sendo executada no banco sintético do projeto; nenhum
+provedor externo é chamado pelos testes.

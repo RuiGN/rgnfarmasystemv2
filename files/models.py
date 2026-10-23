@@ -811,17 +811,23 @@ class SecureFileLink(SingleInstanceModel):
             token = secrets.token_urlsafe(32)
         return token
 
+    @transaction.atomic
     def use(self, user, ip_address='', user_agent=''):
+        link = (
+            SecureFileLink.objects.select_for_update()
+            .select_related('protected_file')
+            .get(pk=self.pk)
+        )
         permission = (
             ProtectedFileAccessRule.Permission.DOWNLOAD
-            if self.purpose == self.Purpose.DOWNLOAD
+            if link.purpose == link.Purpose.DOWNLOAD
             else ProtectedFileAccessRule.Permission.VIEW
         )
-        if not self.is_valid:
-            self.protected_file.record_audit(
+        if not link.is_valid:
+            link.protected_file.record_audit(
                 ProtectedFileAuditTrail.Action.ACCESS_DENIED,
                 user=user,
-                secure_link=self,
+                secure_link=link,
                 ip_address=ip_address,
                 user_agent=user_agent,
                 details={'reason': 'Link expirado, revogado ou sem usos disponíveis.'},
@@ -829,42 +835,44 @@ class SecureFileLink(SingleInstanceModel):
             invalid_link_message = 'Link expirado, revogado ou sem usos disponíveis.'
             raise ValidationError({'token': invalid_link_message})
         try:
-            self.protected_file._assert_file_available()
+            link.protected_file._assert_file_available()
         except ValidationError as error:
-            self.protected_file.record_audit(
+            link.protected_file.record_audit(
                 ProtectedFileAuditTrail.Action.ACCESS_DENIED,
                 user=user,
-                secure_link=self,
+                secure_link=link,
                 ip_address=ip_address,
                 user_agent=user_agent,
             )
             raise error
-        if not self.protected_file.user_can_access(user, permission=permission):
-            self.protected_file.record_audit(
+        if not link.protected_file.user_can_access(user, permission=permission):
+            link.protected_file.record_audit(
                 ProtectedFileAuditTrail.Action.ACCESS_DENIED,
                 user=user,
-                secure_link=self,
+                secure_link=link,
                 ip_address=ip_address,
                 user_agent=user_agent,
             )
             raise ValidationError({'permission': 'Usuário sem permissão para usar este link.'})
-        self.use_count += 1
-        self.used_at = timezone.now()
-        self.save(update_fields=['use_count', 'used_at', 'updated_at'])
+        link.use_count += 1
+        link.used_at = timezone.now()
+        link.save(update_fields=['use_count', 'used_at', 'updated_at'])
         action = (
             ProtectedFileAuditTrail.Action.DOWNLOAD
-            if self.purpose == self.Purpose.DOWNLOAD
+            if link.purpose == link.Purpose.DOWNLOAD
             else ProtectedFileAuditTrail.Action.VIEW
         )
-        self.protected_file.record_access(
+        link.protected_file.record_access(
             user=user,
             action=action,
-            secure_link=self,
+            secure_link=link,
             ip_address=ip_address,
             user_agent=user_agent,
-            details={'token': self.token[-8:]},
+            details={'token': link.token[-8:]},
         )
-        return self.protected_file.file_reference
+        self.use_count = link.use_count
+        self.used_at = link.used_at
+        return link.protected_file.file_reference
 
     def revoke(self, reason, user=None):
         if not reason:

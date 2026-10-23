@@ -1,8 +1,8 @@
 # Plano — abas Duralux em fórmulas e formulários com registros filhos
 
-**Estado:** proposta para aprovação; implementação não iniciada.  
-**Workspace:** `/Users/rgnsystems/Documents/rgnfarmasystemv2`.  
-**Referência visual:** `design_system/customers-create.html:2303–2385`, sobretudo o card, o cabeçalho de abas e as linhas label/controle.  
+**Estado:** proposta para aprovação; implementação não iniciada.
+**Workspace:** `/Users/rgnsystems/Documents/rgnfarmasystemv2`.
+**Referência visual:** `design_system/customers-create.html:2303–2385`, sobretudo o card, o cabeçalho de abas e as linhas label/controle.
 **Regra deste turno:** somente este Markdown foi criado; os comandos abaixo são para execução futura.
 
 ## Goal
