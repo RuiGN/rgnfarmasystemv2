@@ -26,7 +26,7 @@ django-celery-beat==2.9.0
 django-environ==0.14.0
 django-filter==26.1
 django-timezone-field==7.2.2
-djangorestframework==3.18.0
+djangorestframework==3.18.3
 drf-spectacular==0.30.0
 et_xmlfile==2.0.0
 gunicorn==26.2.0

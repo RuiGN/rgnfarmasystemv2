@@ -74,25 +74,21 @@ def _prepare_prompt(state: AgentGraphState) -> AgentGraphState:
 def _invoke_model(state: AgentGraphState) -> AgentGraphState:
     if _should_use_local(state):
         return {'raw_output': json.dumps(_local_structured_output(state), ensure_ascii=False)}
+    return _invoke_external_model(state)
 
-    try:
-        from langchain_core.messages import HumanMessage, SystemMessage
 
-        from langchain_openai import ChatOpenAI
+def _invoke_external_model(state: AgentGraphState) -> AgentGraphState:
+    from langchain_core.messages import HumanMessage, SystemMessage
+    from langchain_openai import ChatOpenAI
 
-        model = ChatOpenAI(model=state['model_name'], temperature=0)
-
-        response = model.invoke(
-            [
-                SystemMessage(content=state['system_prompt']),
-                HumanMessage(content=_json_contract_prompt(state)),
-            ]
-        )
-        return {'raw_output': getattr(response, 'content', str(response))}
-    except Exception as error:
-        fallback = _local_structured_output(state)
-        fallback['warnings'] = [f'Execução local usada após falha do provedor: {error}']
-        return {'raw_output': json.dumps(fallback, ensure_ascii=False)}
+    model = ChatOpenAI(model=state['model_name'], temperature=0)
+    response = model.invoke(
+        [
+            SystemMessage(content=state['system_prompt']),
+            HumanMessage(content=_json_contract_prompt(state)),
+        ]
+    )
+    return {'raw_output': getattr(response, 'content', str(response))}
 
 
 def _parse_output(state: AgentGraphState) -> AgentGraphState:

@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import get_user_model
@@ -94,6 +95,25 @@ def test_default_agent_model_falls_back_when_openai_model_is_blank():
     from ai_agents.models import AIAgentProfile
 
     assert AIAgentProfile._meta.get_field('model_name').default() == 'gpt-5.5-mini'
+
+
+@override_settings(OPENAI_API_KEY='synthetic-key')
+def test_external_provider_failure_is_not_converted_to_local_success():
+    from ai_agents.services import _invoke_model
+
+    state = {
+        'provider': 'openai',
+        'configuration': {},
+        'model_name': 'synthetic-model',
+        'system_prompt': 'synthetic system prompt',
+        'prompt_text': 'synthetic prompt',
+    }
+    with pytest.raises(RuntimeError, match='provider unavailable'):
+        with patch(
+            'ai_agents.services._invoke_external_model',
+            side_effect=RuntimeError('provider unavailable'),
+        ):
+            _invoke_model(state)
 
 
 class AIAgentModelTests(TestCase):

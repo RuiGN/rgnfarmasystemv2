@@ -283,3 +283,50 @@ ou comunicação com provedor. As verificações utilizaram somente PostgreSQL e
 imagem Docker de testes isolados. A revisão fresh completa de segurança pelo
 agente pai continua necessária: este fechamento não é aprovação global nem
 homologação fiscal.
+
+## Dependências — Django REST Framework 3.18.3
+
+Os pins direto e resolvido passam de `djangorestframework==3.18.0` para
+`3.18.3`. A atualização é limitada ao pacote DRF; as demais versões permanecem
+fixadas. Não modifica models, migrations, menus, permissões ou os critérios RAG.
+
+O `pip-audit --strict` identificou três vulnerabilidades altas na versão anterior:
+
+| Aviso | Fronteira afetada | Correção upstream |
+| --- | --- | --- |
+| [CVE-2026-114138 / GHSA-33wh-fxxf-88vv](https://github.com/advisories/GHSA-33wh-fxxf-88vv) | Negociação de conteúdo com cabeçalhos `Accept` grandes | 3.18.2 |
+| [CVE-2026-114136 / GHSA-3547-9m27-7rxg](https://github.com/advisories/GHSA-3547-9m27-7rxg) | Seleção de codecs pelo parser JSON | 3.18.2 |
+| [CVE-2026-114137 / GHSA-xw6w-gcfp-cf8m](https://github.com/advisories/GHSA-xw6w-gcfp-cf8m) | Exclusão de tokens por `TokenProxy.delete()` | 3.18.2 |
+
+A 3.18.3 inclui essas correções e reverte uma alteração incompatível acidental
+de `order_by_precedence` na 3.18.2, conforme as
+[notas oficiais](https://www.django-rest-framework.org/community/release-notes/).
+Isso não demonstra que todas as superfícies dos avisos estejam expostas nesta
+instância, nem é evidência de exploração ou de incidente.
+
+A validação deve conferir a origem e o hash do wheel oficial, a ausência de
+mudanças em outras distribuições, a compatibilidade declarada com Python/Django,
+nova auditoria estrita e o gate completo do código exato. A auditoria anterior
+negativa é preservada; não se adicionam exclusões de CVEs nem se desabilitam
+scanners. Auditorias históricas aprovadas refletem o catálogo de avisos disponível
+naquela execução, não uma garantia permanente sobre a versão.
+
+Atualizar pins ou aprovar testes locais não comprova que uma imagem foi construída,
+que o CI passou ou que a VPS foi atualizada. Esses resultados devem ser vinculados
+separadamente ao commit, à imagem e à execução observados antes de qualquer promoção.
+
+## Correções de integridade e execução de IA — 2026-10-23
+
+`SecureFileLink.use()` agora recarrega o link com `select_for_update()` dentro de
+`transaction.atomic()`. A validação de validade, incremento de usos, auditoria e
+retorno do arquivo ocorrem sobre a mesma linha bloqueada, impedindo que instâncias
+obsoletas ultrapassem `max_uses` sob concorrência.
+
+Execuções externas de agentes de IA não fazem mais fallback silencioso para a saída
+local quando o provedor falha. O modo local continua disponível quando explicitamente
+configurado ou quando não há chave; falhas do provedor propagam para `AIAgentRun`, que
+registra `FAILED` em vez de apresentar uma execução degradada como `SUCCEEDED`.
+
+Os testes de regressão cobrem ambos os contratos. A validação de concorrência em
+PostgreSQL deve continuar sendo executada no banco sintético do projeto; nenhum
+provedor externo é chamado pelos testes.

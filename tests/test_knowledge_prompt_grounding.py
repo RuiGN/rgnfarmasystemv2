@@ -38,7 +38,20 @@ class TestPromptGrounding:
             answer, provider = invoke_openai('Como usar?', context)
         assert answer == 'Use as três abas [1].'
         assert provider['source_numbers'] == [1]
-        assert provider['prompt_version'] == 'manual-grounded-v3'
+        assert provider['prompt_version'] == 'manual-grounded-v4'
+
+    def test_composition_keeps_documented_technical_expressions_intact(self):
+        system = build_system_prompt()
+        assert 'Preserve as expressões técnicas completas' in system
+        assert 'Não interrompa uma expressão com pontuação, coordenação ou Markdown' in system
+
+    def test_composition_selects_evidence_before_writing_and_checks_each_citation(self):
+        system = build_system_prompt()
+        select = system.index('Antes de redigir, selecione a evidência principal')
+        compose = system.index('Redija a partir da evidência principal')
+        verify = system.index('Confira cada orientação e sua citação')
+        assert select < compose < verify
+        assert 'Não substitua a evidência realmente usada' in system
 
     def test_pedagogical_rules_preserve_counts_constraints_and_procedural_grounding(self):
         system = build_system_prompt()

@@ -12,7 +12,8 @@ Django==6.0.8
 django-celery-beat==2.9.0
 django-environ==0.14.0
 django-filter==26.1
-djangorestframework==3.18.0
+# CVE-2026-114136/114137/114138; 3.18.3 also restores order_by_precedence compatibility.
+djangorestframework==3.18.3
 drf-spectacular==0.30.0
 gunicorn==26.2.0
 httpx==0.28.1

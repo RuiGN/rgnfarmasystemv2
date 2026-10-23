@@ -68,7 +68,7 @@ evidence:
     reviewed_by: automated-quality-gate
     captured_at: '2026-10-03T01:50:40Z'
     status: approved
-    sha256: '43851cb9c3c36f0d9dc08621377dec364e2b1720423f4599d57321ec29d10e3e'
+    sha256: '7c3998b0f68725c218073e66a4f83a0d89afc17e1fdf103d81488f866dc71a14'
     artifact: tests/test_ai_agents.py
   - id: EV-SI-008
     requirement: SI-008
@@ -77,7 +77,7 @@ evidence:
     reviewed_by: automated-quality-gate
     captured_at: '2026-07-28T00:00:00Z'
     status: approved
-    sha256: '359e583b9a1ac436eec1a03ad5dab0f691033ea00db953e0065d0164cf149be7'
+    sha256: 'e226a54b99cb79cb962823eab78d1400f9787be4066ce14e55b6c05197ca514e'
     artifact: tests/test_files.py
   - id: EV-SI-009
     requirement: SI-009
