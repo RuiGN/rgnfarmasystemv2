@@ -68,13 +68,27 @@ novamente um índice antigo.
 
 ## Fundamentação e indisponibilidade
 
-Prompt atual em `knowledge/prompts/manual-grounded-v3.txt`; a versão anterior
-permanece no repositório para rastreabilidade. O prompt pede contagens documentadas
+Prompt desta revisão em `knowledge/prompts/manual-grounded-v4.txt`; v2 e v3
+permanecem no repositório para rastreabilidade. O prompt pede contagens documentadas
 explícitas, restrições relevantes e passos fundamentados na seção procedimental
 aplicável, sem acrescentar citações apenas para cumprir essa preferência. A presença
 dessas instruções não prova obediência do modelo nem melhora de recuperação.
-Pergunta e
-fontes são dados JSON separados das instruções; conteúdo recuperado não é uma
+
+A v4 acrescenta um contrato geral de composição: selecionar a evidência principal
+pelo conteúdo e escopo da pergunta, redigir a partir dela e conferir cada orientação
+e sua citação. Expressões técnicas documentadas permanecem completas; pontuação,
+coordenação e Markdown não devem fragmentá-las. Não há seleção de fontes por
+pergunta conhecida, posição no ranking ou identificador de caso, nem remapeamento
+posterior de citações para satisfazer uma avaliação.
+
+Esta alteração está preparada para validação offline. Testes do texto das instruções
+e da estrutura de resposta não executam o modelo nem demonstram que os casos reais
+passaram. A mudança isolada de prompt não altera o corpus, a elegibilidade ou o
+índice; não justifica reingerir documentos, reconstruir embeddings ou repetir o reset.
+Uma nova avaliação externa exige autorização e orçamento próprios, além dos gates
+de fonte e implantação. Relatórios anteriores e critérios congelados não são alterados.
+
+Pergunta e fontes são dados JSON separados das instruções; conteúdo recuperado não é uma
 instrução executável. A geração retorna JSON validado com texto e números das
 fontes efetivamente declaradas como usadas. Referências inexistentes,
 duplicadas, sem marcador no texto ou respostas fora da estrutura são rejeitadas.

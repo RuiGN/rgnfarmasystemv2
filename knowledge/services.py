@@ -484,7 +484,7 @@ def answer_question(user, question, *, session_id=None, limit=5):
     }
 
 
-PROMPT_VERSION = 'manual-grounded-v3'
+PROMPT_VERSION = 'manual-grounded-v4'
 UNSUPPORTED_ANSWER = 'Não encontrei uma instrução validada no manual do ERP para essa pergunta.'
 
 
