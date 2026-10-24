@@ -204,6 +204,7 @@ class StandardCost(SingleInstanceModel):
         if user is None or not getattr(user, 'pk', None):
             raise ValidationError({'approved_by': 'Aprovação exige usuário identificado.'})
         self._require_transition_origin(self.Status.DRAFT, 'aprovar')
+        # Totais calculados somente após a trava da linha.
         self.recalculate(save=False)
         self.status = self.Status.APPROVED
         self.approved_by = user
