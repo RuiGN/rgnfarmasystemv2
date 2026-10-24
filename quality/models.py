@@ -132,7 +132,15 @@ class AnalyticalSpecification(SingleInstanceModel):
         verbose_name = 'especificação analítica'
         verbose_name_plural = 'especificações analíticas'
 
+    def _require_status(self, allowed_statuses):
+        if self.status not in allowed_statuses:
+            allowed_labels = ', '.join(allowed_statuses)
+            raise ValidationError(
+                {'status': f'Transição inválida. Status esperado: {allowed_labels}.'}
+            )
+
     def approve(self, user=None):
+        self._require_status({self.Status.DRAFT, self.Status.APPROVED})
         self.status = self.Status.APPROVED
         self.approved_by = user
         self.approved_at = timezone.now()
@@ -140,6 +148,7 @@ class AnalyticalSpecification(SingleInstanceModel):
         self.save(update_fields=['status', 'approved_by', 'approved_at', 'updated_at'])
 
     def obsolete(self):
+        self._require_status({self.Status.APPROVED})
         self.status = self.Status.OBSOLETE
         self.save(update_fields=['status', 'updated_at'])
 
@@ -416,6 +425,15 @@ class QualitySample(SingleInstanceModel):
     def cancel(self, reason):
         if not reason:
             raise ValidationError({'rejection_reason': 'Informe a justificativa do cancelamento.'})
+        self._require_status(
+            {
+                self.Status.REQUESTED,
+                self.Status.COLLECTED,
+                self.Status.RECEIVED,
+                self.Status.IN_ANALYSIS,
+                self.Status.REVIEWED,
+            }
+        )
         self.status = self.Status.CANCELLED
         self.rejection_reason = reason
         self.save(update_fields=['status', 'rejection_reason', 'updated_at'])
@@ -565,8 +583,17 @@ class QualityAnalysis(SingleInstanceModel):
         self.full_clean()
         self.save(update_fields=['status', 'completed_at', 'updated_at'])
 
+    def _require_not_analyst(self, user, field):
+        if user is not None and self.analyst_id and self.analyst_id == user.pk:
+            raise ValidationError(
+                {
+                    field: 'Segregação de funções: o analista não pode revisar ou aprovar a própria análise.'
+                }
+            )
+
     def review(self, user=None):
         self._require_status({self.Status.COMPLETED})
+        self._require_not_analyst(user, 'reviewer')
         self.status = self.Status.REVIEWED
         self.reviewer = user
         self.reviewed_at = timezone.now()
@@ -575,6 +602,7 @@ class QualityAnalysis(SingleInstanceModel):
 
     def approve(self, user=None):
         self._require_status({self.Status.REVIEWED})
+        self._require_not_analyst(user, 'approver')
         self.status = self.Status.APPROVED
         self.approver = user
         self.approved_at = timezone.now()
@@ -584,6 +612,8 @@ class QualityAnalysis(SingleInstanceModel):
     def reject(self, reason, user=None):
         if not reason:
             raise ValidationError({'rejected_reason': 'Informe o motivo da rejeição.'})
+        if self.status == self.Status.APPROVED:
+            raise ValidationError({'status': 'Análises aprovadas não podem ser rejeitadas.'})
         self.status = self.Status.REJECTED
         self.approver = user
         self.rejected_reason = reason
@@ -893,6 +923,10 @@ class LaboratoryInvestigation(SingleInstanceModel):
             raise ValidationError({'root_cause': 'Informe a causa raiz.'})
         if not conclusion:
             raise ValidationError({'conclusion': 'Informe a conclusão.'})
+        if self.status not in {self.Status.OPEN, self.Status.IN_PROGRESS}:
+            raise ValidationError(
+                {'status': 'Somente investigações abertas ou em andamento podem ser concluídas.'}
+            )
         self.status = self.Status.CONCLUDED
         self.root_cause = root_cause
         self.conclusion = conclusion

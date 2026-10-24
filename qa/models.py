@@ -142,6 +142,10 @@ class QAReview(SingleInstanceModel):
             raise ValidationError(
                 {'status': 'Somente revisões em rascunho ou em revisão podem ser aprovadas.'}
             )
+        if user is not None and self.submitted_by_id and self.submitted_by_id == user.pk:
+            raise ValidationError(
+                {'approved_by': 'Segregação de funções: o autor da submissão não pode aprovar.'}
+            )
         if self.checklist_items.exclude(status=BatchRecordChecklistItem.Status.COMPLETED).exists():
             raise ValidationError({'checklist': 'A aprovação exige checklist sem pendências.'})
         self.status = self.Status.APPROVED
@@ -609,11 +613,28 @@ class LotRelease(SingleInstanceModel):
                 {'stock_balances': 'Os saldos divergem da disposição atual do lote.'}
             )
         if require_approved_evidence:
-            if qa_review and qa_review.status != QAReview.Status.APPROVED:
+            from quality.models import LaboratoryInvestigation, QualityDocument
+
+            if qa_review is None or qa_review.status != QAReview.Status.APPROVED:
                 raise ValidationError({'qa_review': 'A liberação exige revisão QA aprovada.'})
-            if quality_document and quality_document.status != 'issued':
+            if quality_document is None or quality_document.status != QualityDocument.Status.ISSUED:
                 raise ValidationError(
                     {'quality_document': 'A liberação exige documento de qualidade emitido.'}
+                )
+            open_investigations = LaboratoryInvestigation.objects.filter(
+                sample__stock_lot_id=stock_lot.pk,
+                status__in=(
+                    LaboratoryInvestigation.Status.OPEN,
+                    LaboratoryInvestigation.Status.IN_PROGRESS,
+                ),
+            )
+            if open_investigations.exists():
+                raise ValidationError(
+                    {
+                        'release_status': (
+                            'A liberação exige investigações laboratoriais do lote concluídas.'
+                        )
+                    }
                 )
 
         disposition_at = timezone.now()
@@ -892,9 +913,19 @@ class QualityBlock(SingleInstanceModel):
             self.supplier.is_blocked = True
             self.supplier.save(update_fields=['is_blocked', 'updated_at'])
 
+    @transaction.atomic
     def unblock(self, reason, user=None):
+        from governance.models import GovernanceAuditLog
+
         if not reason:
             raise ValidationError({'unblock_reason': 'Informe o motivo do desbloqueio.'})
+        locked = type(self).objects.select_for_update().get(pk=self.pk)
+        if locked.status != self.Status.ACTIVE:
+            raise ValidationError({'status': 'Somente bloqueios ativos podem ser desbloqueados.'})
+        if user is not None and locked.blocked_by_id and locked.blocked_by_id == user.pk:
+            raise ValidationError(
+                {'unblocked_by': 'Segregação de funções: quem bloqueou não pode desbloquear.'}
+            )
         self.status = self.Status.UNBLOCKED
         self.unblock_reason = reason
         self.unblocked_by = user
@@ -903,15 +934,36 @@ class QualityBlock(SingleInstanceModel):
         self.save(
             update_fields=['status', 'unblock_reason', 'unblocked_by', 'unblocked_at', 'updated_at']
         )
+        others = type(self).objects.filter(status=self.Status.ACTIVE).exclude(pk=self.pk)
+        restored = []
         if self.stock_lot_id:
-            self.stock_lot.quality_status = StockQualityStatus.QUARANTINE
-            self.stock_lot.save(update_fields=['quality_status', 'updated_at'])
-        if self.product_id:
+            lot = StockLot.objects.select_for_update().get(pk=self.stock_lot_id)
+            if (
+                lot.quality_status != StockQualityStatus.REJECTED
+                and not others.filter(stock_lot_id=lot.pk).exists()
+            ):
+                lot.quality_status = StockQualityStatus.QUARANTINE
+                lot.save(update_fields=['quality_status', 'updated_at'])
+                restored.append('stock_lot')
+        if self.product_id and not others.filter(product_id=self.product_id).exists():
             self.product.status = Product.Status.APPROVED
             self.product.save(update_fields=['status', 'updated_at'])
-        if self.supplier_id:
+            restored.append('product')
+        if self.supplier_id and not others.filter(supplier_id=self.supplier_id).exists():
             self.supplier.is_blocked = False
             self.supplier.save(update_fields=['is_blocked', 'updated_at'])
+            restored.append('supplier')
+        GovernanceAuditLog.record(
+            log_type=GovernanceAuditLog.LogType.FUNCTIONAL,
+            severity=GovernanceAuditLog.Severity.INFO,
+            module=OperationalModule.QA,
+            action='qa.quality_block.unblocked',
+            message='Bloqueio de qualidade desbloqueado pela Garantia da Qualidade.',
+            target_model='QualityBlock',
+            target_record_id=str(self.pk),
+            user=user,
+            safe_context={'restored_targets': restored},
+        )
 
     def clean(self):
         super().clean()
