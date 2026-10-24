@@ -3,6 +3,8 @@
 from typing import Any
 from copy import copy
 
+from rest_framework import serializers
+
 
 def instance_for_clean(model, original, attrs):
     if original is None:
@@ -16,7 +18,11 @@ def instance_for_clean(model, original, attrs):
 
 
 def incoming_value_changes_field(instance, field_name, incoming):
-    """Indica se o valor recebido difere do persistido (FK compara pela chave)."""
+    """Indica se o valor recebido difere do persistido (FK compara pela chave).
+
+    Valor malformado gera erro de validação do campo (fail-closed). A comparação é
+    exata, inclusive para datas/horas (sem tolerância de precisão).
+    """
     field = instance._meta.get_field(field_name)
     current = getattr(instance, field.attname)
     if incoming in (None, ''):
@@ -27,8 +33,8 @@ def incoming_value_changes_field(instance, field_name, incoming):
         return str(incoming) != str(current)
     try:
         return field.to_python(incoming) != current
-    except Exception:
-        return True
+    except Exception as error:
+        raise serializers.ValidationError({field_name: 'Valor inválido.'}) from error
 
 
 class ModelSerializerContractMixin:

@@ -712,6 +712,12 @@ class ProductReturn(SingleInstanceModel):
                 raise ValidationError(
                     {'status': 'Devolução encerrada ou cancelada não pode ser cancelada.'}
                 )
+            if locked.status == self.Status.INSPECTED:
+                raise ValidationError(
+                    {
+                        'status': 'Devolução inspecionada (disposição registrada) não pode ser cancelada.'
+                    }
+                )
             previous_status = locked.status
             self.status = self.Status.CANCELLED
             self.cancel_reason = reason
@@ -896,22 +902,30 @@ class RecallCampaign(SingleInstanceModel):
             self.campaign_number = _sequence_code(RecallCampaign, 'campaign_number', 'RECALL')
         super().save(*args, **kwargs)
 
+    def _lock_status(self, allowed, message, field='status'):
+        """Relê a campanha sob lock e valida o status na cópia travada."""
+        locked = type(self).objects.select_for_update().get(pk=self.pk)
+        if locked.status not in allowed:
+            raise ValidationError({field: message})
+        return locked
+
     def approve(self, user=None):
-        if self.status != self.Status.DRAFT:
-            raise ValidationError({'status': 'Somente campanhas em rascunho podem ser aprovadas.'})
         if user is None:
             raise ValidationError({'approved_by': 'Aprovação exige usuário identificado.'})
-        if self.responsible_id and self.responsible_id == user.pk:
-            raise ValidationError(
-                {
-                    'approved_by': 'O responsável pela campanha não pode aprová-la (segregação de funções).'
-                }
-            )
-        self.status = self.Status.APPROVED
-        self.approved_by = user
-        self.approved_at = timezone.now()
-        self.full_clean()
         with transaction.atomic():
+            self._lock_status(
+                {self.Status.DRAFT}, 'Somente campanhas em rascunho podem ser aprovadas.'
+            )
+            if self.responsible_id and self.responsible_id == user.pk:
+                raise ValidationError(
+                    {
+                        'approved_by': 'O responsável pela campanha não pode aprová-la (segregação de funções).'
+                    }
+                )
+            self.status = self.Status.APPROVED
+            self.approved_by = user
+            self.approved_at = timezone.now()
+            self.full_clean()
             self.save(update_fields=['status', 'approved_by', 'approved_at', 'updated_at'])
             _record_recall_audit(
                 'recalls.campaign.approved',
@@ -922,52 +936,54 @@ class RecallCampaign(SingleInstanceModel):
             )
 
     def start(self, user=None):
-        if self.status != self.Status.APPROVED:
-            raise ValidationError({'status': 'Execução exige campanha aprovada.'})
-        if not self.impacted_customers.exists():
-            raise ValidationError(
-                {'impacted_customers': 'Execução exige ao menos um cliente impactado.'}
-            )
-        self.status = self.Status.IN_EXECUTION
-        self.started_by = user
-        self.started_at = timezone.now()
-        self.full_clean()
-        self.save(update_fields=['status', 'started_by', 'started_at', 'updated_at'])
+        with transaction.atomic():
+            self._lock_status({self.Status.APPROVED}, 'Execução exige campanha aprovada.')
+            if not self.impacted_customers.exists():
+                raise ValidationError(
+                    {'impacted_customers': 'Execução exige ao menos um cliente impactado.'}
+                )
+            self.status = self.Status.IN_EXECUTION
+            self.started_by = user
+            self.started_at = timezone.now()
+            self.full_clean()
+            self.save(update_fields=['status', 'started_by', 'started_at', 'updated_at'])
 
     def close(self, summary, user=None):
         if not summary:
             raise ValidationError({'closure_summary': 'Informe o resumo de encerramento.'})
-        if self.status not in {self.Status.IN_EXECUTION, self.Status.MONITORING}:
-            raise ValidationError(
-                {'status': 'Encerramento exige campanha em execução ou monitoramento.'}
-            )
-        if not self.communications.filter(status=RecallCommunication.Status.SENT).exists():
-            raise ValidationError({'communications': 'Encerramento exige comunicação enviada.'})
-        open_customers = self.impacted_customers.exclude(
-            response_status__in=[
-                RecallImpactedCustomer.ResponseStatus.RETURNED,
-                RecallImpactedCustomer.ResponseStatus.NOT_APPLICABLE,
-                RecallImpactedCustomer.ResponseStatus.CLOSED,
-                RecallImpactedCustomer.ResponseStatus.LOST,
-            ]
-        )
-        if open_customers.exists():
-            raise ValidationError(
-                {
-                    'impacted_customers': 'Encerramento exige respostas e retorno dos clientes impactados.'
-                }
-            )
-        if not self.reports.filter(status=RecallEffectivenessReport.Status.GENERATED).exists():
-            raise ValidationError(
-                {'reports': 'Encerramento exige relatório de efetividade/rastreabilidade gerado.'}
-            )
-        previous_status = self.status
-        self.status = self.Status.CLOSED
-        self.closure_summary = summary
-        self.closed_by = user
-        self.closed_at = timezone.now()
-        self.full_clean()
         with transaction.atomic():
+            locked = self._lock_status(
+                {self.Status.IN_EXECUTION, self.Status.MONITORING},
+                'Encerramento exige campanha em execução ou monitoramento.',
+            )
+            if not self.communications.filter(status=RecallCommunication.Status.SENT).exists():
+                raise ValidationError({'communications': 'Encerramento exige comunicação enviada.'})
+            open_customers = self.impacted_customers.exclude(
+                response_status__in=[
+                    RecallImpactedCustomer.ResponseStatus.RETURNED,
+                    RecallImpactedCustomer.ResponseStatus.NOT_APPLICABLE,
+                    RecallImpactedCustomer.ResponseStatus.CLOSED,
+                    RecallImpactedCustomer.ResponseStatus.LOST,
+                ]
+            )
+            if open_customers.exists():
+                raise ValidationError(
+                    {
+                        'impacted_customers': 'Encerramento exige respostas e retorno dos clientes impactados.'
+                    }
+                )
+            if not self.reports.filter(status=RecallEffectivenessReport.Status.GENERATED).exists():
+                raise ValidationError(
+                    {
+                        'reports': 'Encerramento exige relatório de efetividade/rastreabilidade gerado.'
+                    }
+                )
+            previous_status = locked.status
+            self.status = self.Status.CLOSED
+            self.closure_summary = summary
+            self.closed_by = user
+            self.closed_at = timezone.now()
+            self.full_clean()
             self.save(
                 update_fields=['status', 'closure_summary', 'closed_by', 'closed_at', 'updated_at']
             )
@@ -982,21 +998,22 @@ class RecallCampaign(SingleInstanceModel):
     def cancel(self, reason, user=None):
         if not reason:
             raise ValidationError({'cancel_reason': 'Informe o motivo do cancelamento.'})
-        if self.status in {
-            self.Status.IN_EXECUTION,
-            self.Status.MONITORING,
-            self.Status.CLOSED,
-            self.Status.CANCELLED,
-        }:
-            raise ValidationError(
-                {
-                    'status': 'Campanha em execução, monitoramento ou finalizada não pode ser cancelada.'
-                }
-            )
-        previous_status = self.status
-        self.status = self.Status.CANCELLED
-        self.cancel_reason = reason
         with transaction.atomic():
+            locked = type(self).objects.select_for_update().get(pk=self.pk)
+            if locked.status in {
+                self.Status.IN_EXECUTION,
+                self.Status.MONITORING,
+                self.Status.CLOSED,
+                self.Status.CANCELLED,
+            }:
+                raise ValidationError(
+                    {
+                        'status': 'Campanha em execução, monitoramento ou finalizada não pode ser cancelada.'
+                    }
+                )
+            previous_status = locked.status
+            self.status = self.Status.CANCELLED
+            self.cancel_reason = reason
             self.save(update_fields=['status', 'cancel_reason', 'updated_at'])
             _record_recall_audit(
                 'recalls.campaign.cancelled',

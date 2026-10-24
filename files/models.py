@@ -617,6 +617,8 @@ class ProtectedFile(SingleInstanceModel):
             raise ValidationError({'file_size': 'Informe um tamanho de arquivo válido.'})
         try:
             size = int(file_size)
+            if isinstance(file_size, float) and size != file_size:
+                raise ValueError('tamanho não inteiro')
         except (TypeError, ValueError, OverflowError) as error:
             raise ValidationError({'file_size': 'Informe um tamanho de arquivo válido.'}) from error
         if size < 0:

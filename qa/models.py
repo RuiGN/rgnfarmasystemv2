@@ -947,14 +947,19 @@ class QualityBlock(SingleInstanceModel):
                 lot.quality_status = StockQualityStatus.QUARANTINE
                 lot.save(update_fields=['quality_status', 'updated_at'])
                 restored.append('stock_lot')
-        if self.product_id and not others.filter(product_id=self.product_id).exists():
-            self.product.status = Product.Status.APPROVED
-            self.product.save(update_fields=['status', 'updated_at'])
-            restored.append('product')
-        if self.supplier_id and not others.filter(supplier_id=self.supplier_id).exists():
-            self.supplier.is_blocked = False
-            self.supplier.save(update_fields=['is_blocked', 'updated_at'])
-            restored.append('supplier')
+        if self.product_id:
+            # Trava o produto antes de avaliar os demais bloqueios ativos (ordem: lote, produto, fornecedor).
+            product = Product.objects.select_for_update().get(pk=self.product_id)
+            if not others.filter(product_id=product.pk).exists():
+                product.status = Product.Status.APPROVED
+                product.save(update_fields=['status', 'updated_at'])
+                restored.append('product')
+        if self.supplier_id:
+            supplier = type(self.supplier).objects.select_for_update().get(pk=self.supplier_id)
+            if not others.filter(supplier_id=supplier.pk).exists():
+                supplier.is_blocked = False
+                supplier.save(update_fields=['is_blocked', 'updated_at'])
+                restored.append('supplier')
         GovernanceAuditLog.record(
             log_type=GovernanceAuditLog.LogType.FUNCTIONAL,
             severity=GovernanceAuditLog.Severity.INFO,

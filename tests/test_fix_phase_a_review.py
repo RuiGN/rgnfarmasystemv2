@@ -1,4 +1,5 @@
 import hashlib
+from datetime import timedelta
 import tempfile
 from decimal import Decimal
 
@@ -408,3 +409,126 @@ def test_serializers_still_validate_after_dead_loop_removal():
         RecallCommunicationSerializer,
     ):
         assert serializer_class(data={}).is_valid() is False
+
+
+# --- Revisão final da fase A ---------------------------------------------------
+
+
+class FinalReviewRecallTests(RecallFixtures, TestCase):
+    _return = RecallCancelTests._return
+
+    def test_inspected_return_cannot_be_cancelled_received_can(self):
+        from recalls.models import ProductReturn
+
+        owner = make_user('pf.ret.owner')
+        inspected = self._return(owner)
+        ProductReturn.objects.filter(pk=inspected.pk).update(status=ProductReturn.Status.INSPECTED)
+        inspected.refresh_from_db()
+        with pytest.raises(ValidationError) as error:
+            inspected.cancel(reason='Tentativa.', user=owner)
+        assert 'status' in error.value.message_dict
+        inspected.refresh_from_db()
+        assert inspected.status == ProductReturn.Status.INSPECTED
+
+    def test_received_return_can_be_cancelled(self):
+        from recalls.models import ProductReturn
+
+        owner = make_user('pf.ret2.owner')
+        received = self._return(owner)
+        ProductReturn.objects.filter(pk=received.pk).update(status=ProductReturn.Status.RECEIVED)
+        received.refresh_from_db()
+        received.cancel(reason='Recebida por engano.', user=owner)
+        received.refresh_from_db()
+        assert received.status == ProductReturn.Status.CANCELLED
+
+    def test_campaign_approve_after_cancel_via_stale_instance_is_rejected(self):
+        from recalls.models import RecallCampaign
+
+        owner = make_user('pf.camp.owner')
+        campaign, *_ = self._campaign(owner)
+        stale = RecallCampaign.objects.get(pk=campaign.pk)
+        campaign.cancel(reason='Cancelada antes.', user=owner)
+        with pytest.raises(ValidationError) as error:
+            stale.approve(user=make_user('pf.camp.approver'))
+        assert 'status' in error.value.message_dict
+        assert RecallCampaign.objects.get(pk=campaign.pk).status == RecallCampaign.Status.CANCELLED
+
+    def test_campaign_start_and_close_use_locked_status(self):
+        from recalls.models import RecallCampaign
+
+        owner = make_user('pf.camp2.owner')
+        campaign, *_ = self._campaign(owner)
+        stale = RecallCampaign.objects.get(pk=campaign.pk)
+        stale.status = RecallCampaign.Status.APPROVED  # cópia obsoleta em memória
+        with pytest.raises(ValidationError) as start_error:
+            stale.start(user=owner)
+        assert 'status' in start_error.value.message_dict
+        stale.status = RecallCampaign.Status.IN_EXECUTION
+        with pytest.raises(ValidationError) as close_error:
+            stale.close('Resumo.', user=owner)
+        assert 'status' in close_error.value.message_dict
+        assert RecallCampaign.objects.get(pk=campaign.pk).status == RecallCampaign.Status.DRAFT
+
+
+class IncomingValueChangesFieldTests(TestCase):
+    def test_fk_same_and_different_pk(self):
+        from rest_framework import serializers  # noqa: F401
+        from costing.models import StandardCost
+        from base.serializer_mixins import incoming_value_changes_field
+        from tests.test_costing import create_released_manufacturing_set
+
+        unit, product, *_ = create_released_manufacturing_set(suffix='PF1')
+        standard = StandardCost.objects.create(
+            product=product,
+            version='PF1',
+            effective_from=timezone.localdate(),
+            standard_quantity=Decimal('100.0000'),
+            unit=unit,
+            material_cost=Decimal('10.0000'),
+        )
+        assert not incoming_value_changes_field(standard, 'product', product.pk)
+        assert not incoming_value_changes_field(standard, 'product', str(product.pk))
+        assert incoming_value_changes_field(standard, 'product', product.pk + 999)
+        assert not incoming_value_changes_field(standard, 'approved_by', None)
+        user = make_user('pf.fk')
+        assert incoming_value_changes_field(standard, 'approved_by', user.pk)
+        # Decimal
+        assert not incoming_value_changes_field(standard, 'material_cost', '10.0')
+        assert not incoming_value_changes_field(standard, 'material_cost', Decimal('10.00'))
+        assert incoming_value_changes_field(standard, 'material_cost', '10.5')
+        # Data
+        assert not incoming_value_changes_field(
+            standard, 'effective_from', standard.effective_from.isoformat()
+        )
+        assert incoming_value_changes_field(standard, 'effective_from', '1999-01-01')
+        # Malformado: erro de campo, fail-closed
+        from rest_framework import serializers as drf
+
+        with pytest.raises(drf.ValidationError) as error:
+            incoming_value_changes_field(standard, 'material_cost', 'abc')
+        assert 'material_cost' in error.value.detail
+        with pytest.raises(drf.ValidationError):
+            incoming_value_changes_field(standard, 'effective_from', 'não-é-data')
+
+    def test_datetime_equal_and_different(self):
+        from base.serializer_mixins import incoming_value_changes_field
+        from costing.models import StandardCost
+
+        moment = timezone.now()
+        standard = StandardCost(approved_at=moment)
+        assert not incoming_value_changes_field(standard, 'approved_at', moment.isoformat())
+        assert incoming_value_changes_field(
+            standard, 'approved_at', (moment + timedelta(seconds=1)).isoformat()
+        )
+
+
+class ValidatedFileSizeTests(TestCase):
+    def test_float_truncation_rejected_and_integral_accepted(self):
+        for bad in (1.9, 0.5):
+            with pytest.raises(ValidationError) as error:
+                ProtectedFile._validated_file_size(bad)
+            assert 'file_size' in error.value.message_dict
+        assert ProtectedFile._validated_file_size('12') == 12
+        assert ProtectedFile._validated_file_size(12) == 12
+        assert ProtectedFile._validated_file_size(12.0) == 12
+        assert ProtectedFile._validated_file_size(None) is None
