@@ -2,12 +2,29 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 
 from base.models import SingleInstanceModel
+from base.modules import OperationalModule
 from base.sequences import IdentifierSpec, sequence_code
 from masters.models import BusinessPartner
+
+
+def _record_change_audit(action, message, instance, user=None, **context):
+    from governance.models import GovernanceAuditLog
+
+    return GovernanceAuditLog.record(
+        log_type=GovernanceAuditLog.LogType.FUNCTIONAL,
+        severity=GovernanceAuditLog.Severity.INFO,
+        module=OperationalModule.CHANGES,
+        action=action,
+        message=message,
+        target_model=type(instance).__name__,
+        target_record_id=str(instance.pk),
+        user=user,
+        safe_context=context,
+    )
 
 
 ZERO_QUANTITY = Decimal('0.0000')
@@ -160,11 +177,23 @@ class ChangeControl(SingleInstanceModel):
             raise ValidationError(
                 {'approvals': 'Aprovação exige aprovações obrigatórias aprovadas.'}
             )
+        if user is not None and self.submitted_by_id and user.pk == self.submitted_by_id:
+            raise ValidationError(
+                {'approved_by': 'Segregação de funções: quem submeteu não pode aprovar a mudança.'}
+            )
         self.status = self.Status.APPROVED
         self.approved_by = user
         self.approved_at = timezone.now()
         self.full_clean()
-        self.save(update_fields=['status', 'approved_by', 'approved_at', 'updated_at'])
+        with transaction.atomic():
+            self.save(update_fields=['status', 'approved_by', 'approved_at', 'updated_at'])
+            _record_change_audit(
+                'changes.change.approved_for_implementation',
+                'Mudança aprovada para implementação.',
+                self,
+                user,
+                to_status=self.status,
+            )
 
     def start_implementation(self, user=None):
         if self.status != self.Status.APPROVED:
@@ -638,23 +667,61 @@ class ChangeApproval(SingleInstanceModel):
         verbose_name = 'aprovação de mudança'
         verbose_name_plural = 'aprovações de mudança'
 
-    def approve(self, user=None, comments=''):
-        self.decision = self.Decision.APPROVED
-        self.comments = comments or self.comments
-        self.decided_by = user or self.approver
+    def _validate_decision(self, user):
+        if self.decision != self.Decision.PENDING:
+            raise ValidationError({'decision': 'Somente aprovações pendentes podem ser decididas.'})
+        if self.change.status in {
+            ChangeControl.Status.APPROVED,
+            ChangeControl.Status.CLOSED,
+            ChangeControl.Status.CANCELLED,
+        }:
+            raise ValidationError(
+                {'change': 'A mudança não aceita mais decisões de aprovação neste status.'}
+            )
+        actor = user or self.approver
+        if self.approver_id and actor.pk != self.approver_id:
+            raise ValidationError({'decided_by': 'Somente o aprovador designado pode decidir.'})
+        if actor.pk in {self.change.submitted_by_id, self.change.requested_by_id}:
+            raise ValidationError(
+                {'decided_by': 'Segregação de funções: autor da mudança não pode aprová-la.'}
+            )
+        return actor
+
+    def _decide(self, decision, actor, comments, action, message):
+        self.decision = decision
+        self.comments = comments
+        self.decided_by = actor
         self.decided_at = timezone.now()
         self.full_clean()
-        self.save(update_fields=['decision', 'comments', 'decided_by', 'decided_at', 'updated_at'])
+        with transaction.atomic():
+            self.save(
+                update_fields=['decision', 'comments', 'decided_by', 'decided_at', 'updated_at']
+            )
+            _record_change_audit(
+                action, message, self, actor, change_id=self.change_id, decision=decision
+            )
+
+    def approve(self, user=None, comments=''):
+        actor = self._validate_decision(user)
+        self._decide(
+            self.Decision.APPROVED,
+            actor,
+            comments or self.comments,
+            'changes.approval.approved',
+            'Aprovação de mudança registrada.',
+        )
 
     def reject(self, user=None, comments=''):
         if not comments:
             raise ValidationError({'comments': 'Informe o motivo da rejeição.'})
-        self.decision = self.Decision.REJECTED
-        self.comments = comments
-        self.decided_by = user or self.approver
-        self.decided_at = timezone.now()
-        self.full_clean()
-        self.save(update_fields=['decision', 'comments', 'decided_by', 'decided_at', 'updated_at'])
+        actor = self._validate_decision(user)
+        self._decide(
+            self.Decision.REJECTED,
+            actor,
+            comments,
+            'changes.approval.rejected',
+            'Rejeição de mudança registrada.',
+        )
 
     def clean(self):
         super().clean()

@@ -2,13 +2,30 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 
 from base.models import SingleInstanceModel
+from base.modules import OperationalModule
 from base.normalized_locations import validate_normalized_location
 from base.sequences import IdentifierSpec, sequence_code
 from masters.models import BusinessPartner
+
+
+def _record_recall_audit(action, message, instance, user=None, **context):
+    from governance.models import GovernanceAuditLog
+
+    return GovernanceAuditLog.record(
+        log_type=GovernanceAuditLog.LogType.FUNCTIONAL,
+        severity=GovernanceAuditLog.Severity.INFO,
+        module=OperationalModule.RECALLS,
+        action=action,
+        message=message,
+        target_model=type(instance).__name__,
+        target_record_id=str(instance.pk),
+        user=user,
+        safe_context=context,
+    )
 
 
 QUANTITY_SCALE = Decimal('0.0001')
@@ -359,21 +376,28 @@ class MarketComplaint(SingleInstanceModel):
                 {'investigation_summary': 'Encerramento exige investigação documentada.'}
             )
         if self.regulatory_communication_required and not self.regulatory_communication_reference:
-            self.status = self.Status.PENDING_REGULATORY_COMMUNICATION
-            self.save(update_fields=['status', 'updated_at'])
             raise ValidationError(
                 {
                     'regulatory_communication_reference': 'Encerramento exige comunicação regulatória registrada.'
                 }
             )
+        previous_status = self.status
         self.status = self.Status.CLOSED
         self.closure_summary = summary
         self.closed_by = user
         self.closed_at = timezone.now()
         self.full_clean()
-        self.save(
-            update_fields=['status', 'closure_summary', 'closed_by', 'closed_at', 'updated_at']
-        )
+        with transaction.atomic():
+            self.save(
+                update_fields=['status', 'closure_summary', 'closed_by', 'closed_at', 'updated_at']
+            )
+            _record_recall_audit(
+                'recalls.complaint.closed',
+                'Reclamação pós-mercado encerrada.',
+                self,
+                user,
+                from_status=previous_status,
+            )
 
     def cancel(self, reason):
         if not reason:
@@ -651,14 +675,23 @@ class ProductReturn(SingleInstanceModel):
             raise ValidationError({'closure_summary': 'Informe o resumo de encerramento.'})
         if self.status != self.Status.INSPECTED:
             raise ValidationError({'status': 'Encerramento exige devolução inspecionada.'})
+        previous_status = self.status
         self.status = self.Status.CLOSED
         self.closure_summary = summary
         self.closed_by = user
         self.closed_at = timezone.now()
         self.full_clean()
-        self.save(
-            update_fields=['status', 'closure_summary', 'closed_by', 'closed_at', 'updated_at']
-        )
+        with transaction.atomic():
+            self.save(
+                update_fields=['status', 'closure_summary', 'closed_by', 'closed_at', 'updated_at']
+            )
+            _record_recall_audit(
+                'recalls.return.closed',
+                'Devolução encerrada.',
+                self,
+                user,
+                from_status=previous_status,
+            )
 
     def cancel(self, reason):
         if not reason:
@@ -856,11 +889,21 @@ class RecallCampaign(SingleInstanceModel):
     def approve(self, user=None):
         if self.status != self.Status.DRAFT:
             raise ValidationError({'status': 'Somente campanhas em rascunho podem ser aprovadas.'})
+        if user is None:
+            raise ValidationError({'approved_by': 'Aprovação exige usuário identificado.'})
         self.status = self.Status.APPROVED
         self.approved_by = user
         self.approved_at = timezone.now()
         self.full_clean()
-        self.save(update_fields=['status', 'approved_by', 'approved_at', 'updated_at'])
+        with transaction.atomic():
+            self.save(update_fields=['status', 'approved_by', 'approved_at', 'updated_at'])
+            _record_recall_audit(
+                'recalls.campaign.approved',
+                'Campanha de recall aprovada.',
+                self,
+                user,
+                to_status=self.status,
+            )
 
     def start(self, user=None):
         if self.status != self.Status.APPROVED:
@@ -902,23 +945,50 @@ class RecallCampaign(SingleInstanceModel):
             raise ValidationError(
                 {'reports': 'Encerramento exige relatório de efetividade/rastreabilidade gerado.'}
             )
+        previous_status = self.status
         self.status = self.Status.CLOSED
         self.closure_summary = summary
         self.closed_by = user
         self.closed_at = timezone.now()
         self.full_clean()
-        self.save(
-            update_fields=['status', 'closure_summary', 'closed_by', 'closed_at', 'updated_at']
-        )
+        with transaction.atomic():
+            self.save(
+                update_fields=['status', 'closure_summary', 'closed_by', 'closed_at', 'updated_at']
+            )
+            _record_recall_audit(
+                'recalls.campaign.closed',
+                'Campanha de recall encerrada.',
+                self,
+                user,
+                from_status=previous_status,
+            )
 
     def cancel(self, reason):
         if not reason:
             raise ValidationError({'cancel_reason': 'Informe o motivo do cancelamento.'})
-        if self.status == self.Status.CLOSED:
-            raise ValidationError({'status': 'Campanha encerrada não pode ser cancelada.'})
+        if self.status in {
+            self.Status.IN_EXECUTION,
+            self.Status.MONITORING,
+            self.Status.CLOSED,
+            self.Status.CANCELLED,
+        }:
+            raise ValidationError(
+                {
+                    'status': 'Campanha em execução, monitoramento ou finalizada não pode ser cancelada.'
+                }
+            )
+        previous_status = self.status
         self.status = self.Status.CANCELLED
         self.cancel_reason = reason
-        self.save(update_fields=['status', 'cancel_reason', 'updated_at'])
+        with transaction.atomic():
+            self.save(update_fields=['status', 'cancel_reason', 'updated_at'])
+            _record_recall_audit(
+                'recalls.campaign.cancelled',
+                'Campanha de recall cancelada.',
+                self,
+                None,
+                from_status=previous_status,
+            )
 
     def clean(self):
         super().clean()
@@ -1167,14 +1237,20 @@ class RecallCommunication(SingleInstanceModel):
         self.status = self.Status.SENT
         self.sent_by = user
         self.sent_at = timezone.now()
-        if self.impacted_customer:
-            self.impacted_customer.response_status = RecallImpactedCustomer.ResponseStatus.CONTACTED
-            self.impacted_customer.response_received_at = (
-                self.impacted_customer.response_received_at
-            )
-            self.impacted_customer.save(update_fields=['response_status', 'updated_at'])
         self.full_clean()
-        self.save(update_fields=['status', 'sent_by', 'sent_at', 'updated_at'])
+        customer = self.impacted_customer
+        with transaction.atomic():
+            if customer:
+                customer.response_status = RecallImpactedCustomer.ResponseStatus.CONTACTED
+                customer.save(update_fields=['response_status', 'updated_at'])
+            self.save(update_fields=['status', 'sent_by', 'sent_at', 'updated_at'])
+            _record_recall_audit(
+                'recalls.communication.sent',
+                'Comunicação de recall enviada.',
+                self,
+                user,
+                campaign_id=self.campaign_id,
+            )
 
     def acknowledge(self):
         if self.status != self.Status.SENT:

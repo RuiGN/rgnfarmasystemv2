@@ -172,7 +172,7 @@ class AuditFindingViewSet(SingleInstanceAuditViewSet):
 
     @action(detail=True, methods=['post'])
     def close(self, request, pk=None):
-        return self._domain_action_response(lambda finding: finding.close())
+        return self._domain_action_response(lambda finding: finding.close(user=request.user))
 
 
 class AuditEvidenceViewSet(SingleInstanceAuditViewSet):
