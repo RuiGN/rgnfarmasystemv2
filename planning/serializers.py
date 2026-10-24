@@ -29,6 +29,8 @@ class SingleInstancePlanningSerializerMixin(ModelSerializerContractMixin):
 
         instance = model(**values)
         instance.pk = self.instance.pk
+        instance._state.adding = False
+        instance._state.db = self.instance._state.db
         return instance
 
     def _run_model_clean(self, instance):
