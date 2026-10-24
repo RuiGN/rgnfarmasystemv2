@@ -52,7 +52,7 @@ evidence:
     reviewed_by: automated-quality-gate + independent code review (user-authorized engineering revalidation)
     captured_at: '2026-10-20T04:36:54.689517Z'
     status: approved
-    sha256: '5098d55a0b4ba83235dbe452e6e84068b623114399c3f89cf636d7a83313d62a'
+    sha256: '4ed3f87e9c911104d6655a356f11e1378f60d195d8436894b0f78608471ed409'
     artifact: tests/test_formula_inline_components_ui.py
     supersedes_sha256: '115d2df5681f860cdd308aea8e93d54b9874e36e7bc35555d6572763545c9544'
     review_scope: Engineering test-source revalidation; not regulatory qualification or release approval.

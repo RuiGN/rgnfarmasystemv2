@@ -266,6 +266,8 @@ class InlineResourceConfig:
     extra: int = 1
     actor_field: str | None = None
     inline_style: str = 'stacked'  # 'stacked' or 'tabular'
+    # Índice da aba no formulário; None mantém o inline após as abas do próprio modelo.
+    position: int | None = None
     read_only_fields: tuple[str, ...] = ()
     is_instance_mutable: Callable[[Model], bool] | None = None
 
@@ -360,6 +362,8 @@ class ResourceConfig:
     advanced_filter_fields: tuple[str, ...] = field(default_factory=tuple)
     queryset_scope: ResourceQuerysetScope = _unscoped_resource_queryset
     allow_delete: bool = True
+    # Recursos cujo registro nasce de um pai (o pai define a FK obrigatória).
+    allow_create: bool = True
 
     @property
     def app_label(self):
@@ -376,7 +380,7 @@ class ResourceConfig:
         return _user_has_model_permission(user, self.model, self.view_permission_action)
 
     def can_add(self, user):
-        return self._can_write(user, 'add')
+        return self.allow_create and self._can_write(user, 'add')
 
     def can_change(self, user):
         return self._can_write(user, 'change')
@@ -393,7 +397,9 @@ class ResourceConfig:
         return bool(
             self.reuse_route_name
             and self.can_view(user)
-            and self.can_add(user)
+            # Reuso copia um registro existente, que já traz o pai preenchido:
+            # depende da permissão de inclusão, não do formulário em branco.
+            and self._can_write(user, 'add')
             and user.has_perms(self.reuse_permissions)
         )
 
@@ -567,6 +573,29 @@ MODULES = (
                 Product,
                 ('code', 'description', 'item_type', 'status', 'unit'),
                 ('code', 'description', 'fiscal_ncm'),
+                inlines=(
+                    InlineResourceConfig(
+                        'formulas',
+                        'Fórmula mestra',
+                        MasterFormula,
+                        'product',
+                        (
+                            'version',
+                            'status',
+                            'batch_size',
+                            'batch_unit',
+                            'expected_yield_percent',
+                            'effective_from',
+                            'effective_to',
+                            'notes',
+                        ),
+                        'A fórmula mestra pertence a este produto; os componentes são '
+                        'mantidos no próprio registro da fórmula.',
+                        'Adicionar fórmula mestra',
+                        inline_style='stacked',
+                        position=1,
+                    ),
+                ),
             ),
             ResourceConfig(
                 'partners',
@@ -684,14 +713,13 @@ MODULES = (
                 (
                     'code',
                     'version',
-                    'product',
                     'status',
                     'effective_from',
                     'effective_to',
                 ),
-                ('code', 'product__code', 'product__description'),
+                ('code',),
+                allow_create=False,
                 update_form_fields=(
-                    'product',
                     'code',
                     'version',
                     'status',

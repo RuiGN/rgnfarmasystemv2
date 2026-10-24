@@ -1,24 +1,15 @@
 {% extends 'base.html' %}
+{% load ui_navigation %}
 
 {% block title %}Executar - {{ resource.label }} | RGN Farma System{% endblock %}
 
-{% block page_header %}
-<div class="page-header" id="section-0">
-    <div class="page-header-left d-flex align-items-center">
-        <ul class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'app:module' module.slug %}">{{ module.label }}</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'app:resource_list' module.slug resource.slug %}">{{ resource.label }}</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'app:resource_detail' module.slug resource.slug object.pk %}">{{ object }}</a></li>
-        </ul>
-        <div class="page-header-title">
-            <h5 class="m-b-10"><i class="feather-play-circle me-2"></i>Batch Record</h5>
-        </div>
-    </div>
-    <div class="page-header-right ms-auto d-none d-md-flex">
-        <a href="{% url 'app:resource_detail' module.slug resource.slug object.pk %}" class="btn btn-light-brand d-inline-flex align-items-center gap-2"><i class="feather-arrow-left" aria-hidden="true"></i>Voltar ao detalhe</a>
-    </div>
-</div>
+{% block page_header %}{% url 'app:index' as applications_url %}
+{% url 'app:module' module.slug as module_url %}
+{% url 'app:resource_list' module.slug resource.slug as resource_url %}
+{% page_breadcrumbs 'Aplicativos' applications_url module.label module_url resource.label resource_url as breadcrumbs %}
+{% url 'app:resource_detail' module.slug resource.slug object.pk as detail_url %}
+{% page_breadcrumbs 'Aplicativos' applications_url module.label module_url resource.label resource_url object detail_url as breadcrumbs %}
+{% include 'includes/page_header.html' with compact=True page_title='Batch Record' header_id='section-0' page_actions_template='includes/page_header_back.html' header_back_url=detail_url header_back_label='Voltar ao detalhe' %}
 {% endblock %}
 
 {% block content %}

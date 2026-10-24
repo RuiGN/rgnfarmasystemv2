@@ -53,16 +53,19 @@ def build_resource_form_layout(resource, form, inline_formsets):
         main_key = 'general'
 
     for item in inline_formsets:
-        tabs.append(
-            {
-                'key': f'inline-{item["key"]}',
-                'label': 'Componentes'
-                if is_formula and item['key'] == 'components'
-                else item['title'],
-                'fields': [],
-                'inline': item,
-            }
-        )
+        tab = {
+            'key': f'inline-{item["key"]}',
+            'label': 'Componentes'
+            if is_formula and item['key'] == 'components'
+            else item['title'],
+            'fields': [],
+            'inline': item,
+        }
+        position = getattr(item.get('config'), 'position', None)
+        if position is None:
+            tabs.append(tab)
+        else:
+            tabs.insert(min(position, len(tabs)), tab)
 
     for tab in tabs:
         tab['has_errors'] = any(bool(field.errors) for field in tab['fields'])

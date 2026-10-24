@@ -5,11 +5,13 @@
 {% block page_header %}
 <div class="page-header" id="section-0">
     <div class="page-header-left d-flex align-items-center">
-        <ul class="breadcrumb mb-0">
+        <nav aria-label="Navegação estrutural">
+            <ol class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
             <li class="breadcrumb-item"><a href="{% url 'app:module' 'reports' %}">Relatórios e BI</a></li>
-        </ul>
-        <div class="page-header-title"><h5 class="m-b-10">Catálogo de relatórios</h5></div>
+                <li class="breadcrumb-item active" aria-current="page"><h1 class="fs-14 fw-semibold mb-0 d-inline">Catálogo de relatórios</h1></li>
+            </ol>
+        </nav>
     </div>
 </div>
 {% endblock %}

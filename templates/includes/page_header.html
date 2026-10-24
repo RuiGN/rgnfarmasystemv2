@@ -1,4 +1,4 @@
-<div class="page-header"{% if header_id %} id="{{ header_id }}"{% endif %}>
+<div class="page-header{% if header_class %} {{ header_class }}{% endif %}"{% if header_id %} id="{{ header_id }}"{% endif %}>
     <div class="page-header-left d-flex align-items-center">
         {% if compact %}
         <nav aria-label="Navegação estrutural">

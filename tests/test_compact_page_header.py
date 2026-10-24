@@ -319,3 +319,25 @@ def test_application_root_crumb_has_a_single_name(template):
         assert label == 'Aplicativos', (
             f'{template}: /app/ aparece como "{label}"; use sempre "Aplicativos".'
         )
+
+def test_no_template_renders_the_legacy_non_compact_page_heading():
+    """O cabeçalho antigo (ul.breadcrumb + h5.m-b-10) perde a seta e amplia o título."""
+    offenders = sorted(
+        path.relative_to(ROOT).as_posix()
+        for path in (ROOT / 'templates').rglob('*.html')
+        if path.name != 'page_header.html'
+        and ('class="page-header-title"' in (text := path.read_text()) or 'h5 class="m-b-10"' in text)
+    )
+    assert offenders == []
+
+
+def test_every_page_heading_uses_the_compact_breadcrumb_structure():
+    """A seta vem do separador de ol.breadcrumb; o título é o último item, em h1.fs-14."""
+    for path in (ROOT / 'templates').rglob('*.html'):
+        text = path.read_text()
+        # base.html apenas declara o bloco; os includes compartilhados são a fonte.
+        if 'class="page-header"' not in text or path.name == 'page_header.html':
+            continue
+        assert '<ol class="breadcrumb' in text, path
+        assert 'breadcrumb-item active" aria-current="page"' in text, path
+        assert 'h1 class="fs-14 fw-semibold mb-0 d-inline"' in text, path

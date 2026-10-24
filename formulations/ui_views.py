@@ -33,6 +33,13 @@ class MasterFormulaReuseView(ResourceCreateView):
         self.get_source()
         return super().dispatch(request, *args, **kwargs)
 
+    def ensure_can_add(self):
+        # dispatch() já validou can_reuse; o formulário em branco é que está desligado
+        # no recurso, porque a fórmula nasce de um produto ou de uma cópia.
+        resource = self.get_resource()
+        if not resource._can_write(self.request.user, 'add'):
+            raise PermissionDenied('Usuário sem permissão para incluir fórmulas mestras.')
+
     def get_source(self):
         if self.source is None:
             try:

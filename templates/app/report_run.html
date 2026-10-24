@@ -5,12 +5,14 @@
 {% block page_header %}
 <div class="page-header" id="section-0">
     <div class="page-header-left d-flex align-items-center">
-        <ul class="breadcrumb mb-0">
+        <nav aria-label="Navegação estrutural">
+            <ol class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
             <li class="breadcrumb-item"><a href="{% url 'app:report_catalog' %}">Catálogo de relatórios</a></li>
             <li class="breadcrumb-item">{{ definition.title }}</li>
-        </ul>
-        <div class="page-header-title"><h5 class="m-b-10">Gerar relatório</h5></div>
+                <li class="breadcrumb-item active" aria-current="page"><h1 class="fs-14 fw-semibold mb-0 d-inline">Gerar relatório</h1></li>
+            </ol>
+        </nav>
     </div>
     <div class="page-header-right ms-auto d-flex align-items-center gap-2">
         <a href="{% url 'app:report_catalog' %}" class="btn btn-light-brand d-inline-flex align-items-center gap-2">

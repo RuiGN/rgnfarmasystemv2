@@ -487,7 +487,8 @@ def test_resource_detail_header_wraps_actions_below_title_at_tablet_width():
     css = (ROOT / 'static' / 'css' / 'app.css').read_text()
     template = (ROOT / 'templates' / 'app' / 'resource_detail.html').read_text()
 
-    assert 'class="page-header resource-detail-page-header"' in template
+    # A classe chega pelo include compartilhado, via header_class.
+    assert "header_class='resource-detail-page-header'" in template
 
     tablet_block = re.search(
         r'@media \(min-width: 768px\) and \(max-width: 991\.98px\)\s*\{'

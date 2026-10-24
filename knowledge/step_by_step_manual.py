@@ -8,10 +8,14 @@ STEP_BY_STEP_GUIDES = {
     'formulations': """
 ## Como criar uma fórmula mestra
 
-1. Acesse **Fórmulas e roteiros > Fórmulas mestras > Novo registro**.
-2. O formulário usa duas abas: **Fórmula mestra** e **Componentes**.
-   Na primeira, selecione o produto já cadastrado, informe versão, status, tamanho
-   do lote, unidade, rendimento e vigência conforme os campos disponíveis.
+1. A fórmula mestra pertence a um produto, então ela nasce dele: acesse
+   **Cadastros mestres > Produtos**, abra o produto e use a segunda aba,
+   **Fórmula mestra**. Não há formulário solto de nova fórmula; para derivar de uma
+   existente, use o reaproveitamento a partir da fórmula de origem.
+2. Depois de criada, abra a fórmula em **Fórmulas e roteiros > Fórmulas mestras** e
+   edite-a. O formulário usa duas abas: **Fórmula mestra** e **Componentes**. A
+   primeira não traz nenhum dado de produto, apenas versão, status, tamanho do lote,
+   unidade, rendimento e vigência conforme os campos disponíveis.
    O código automático usa CODE_PREFIX-ID, com o ID real, sem preenchimento com zeros.
 3. Na aba **Componentes**, adicione material, quantidade, unidade, função, perda
    prevista e conversão. Os filtros dependentes limitam as opções conforme o

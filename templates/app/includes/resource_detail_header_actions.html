@@ -1,0 +1,10 @@
+<a href="{% url 'app:resource_list' module.slug resource.slug %}" class="btn btn-sm btn-light-brand d-inline-flex align-items-center gap-2">
+    <i class="feather-arrow-left" aria-hidden="true"></i>
+    <span>Listagem</span>
+</a>
+{% if can_change %}
+<a href="{% url 'app:resource_edit' module.slug resource.slug object.pk %}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-2">
+    <i class="feather-edit-2" aria-hidden="true"></i>
+    <span>Editar</span>
+</a>
+{% endif %}

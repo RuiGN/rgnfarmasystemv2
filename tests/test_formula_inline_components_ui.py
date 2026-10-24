@@ -320,12 +320,9 @@ class FormulaInlineComponentsUiTests(TestCase):
         assert MasterFormula.objects.count() == 1
 
     def test_formula_form_renders_inline_component_section(self):
-        response = self.client.get(
-            reverse(
-                'app:resource_create',
-                kwargs={'module_slug': 'formulations', 'resource_slug': 'formulas'},
-            )
-        )
+        # A fórmula nasce do produto ou de uma cópia: o formulário em branco não existe.
+        formula, _ = self._formula_with_component('FRM-RENDER', quantity='1.0000')
+        response = self.client.get(self._formula_edit_url(formula))
 
         assert response.status_code == 200
         content = response.content.decode()
@@ -335,12 +332,8 @@ class FormulaInlineComponentsUiTests(TestCase):
         assert 'components-TOTAL_FORMS' in content
 
     def test_stacked_formula_delete_control_is_icon_action(self):
-        response = self.client.get(
-            reverse(
-                'app:resource_create',
-                kwargs={'module_slug': 'formulations', 'resource_slug': 'formulas'},
-            )
-        )
+        formula, _ = self._formula_with_component('FRM-ICON', quantity='1.0000')
+        response = self.client.get(self._formula_edit_url(formula))
 
         assert response.status_code == 200
         section = response.content.decode().split('data-inline-formset="components"', 1)[1]
@@ -374,6 +367,10 @@ class FormulaInlineComponentsUiTests(TestCase):
         for module_slug, resource_slug, inline_key, title in expectations:
             resource = get_resource(module_slug, resource_slug)
             assert inline_key in {inline.key for inline in resource.inlines}
+            if not resource.allow_create:
+                # Coberto pelo formulário de edição em
+                # test_formula_form_renders_inline_component_section.
+                continue
 
             response = self.client.get(
                 reverse(
@@ -696,14 +693,15 @@ class FormulaInlineComponentsUiTests(TestCase):
         assert ControlledDocument.objects.filter(pk=controlled_document.pk).exists()
 
     def test_formula_form_creates_multiple_components_in_same_post(self):
+        formula = MasterFormula.objects.create(
+            product=self.product,
+            version=1,
+            batch_size=Decimal('100.0000'),
+            batch_unit=self.unit,
+        )
         response = self.client.post(
-            reverse(
-                'app:resource_create',
-                kwargs={'module_slug': 'formulations', 'resource_slug': 'formulas'},
-            ),
+            self._formula_edit_url(formula),
             {
-                'product': str(self.product.pk),
-                'code': 'FRM-PAR500',
                 'version': '1',
                 'status': MasterFormula.Status.DRAFT,
                 'batch_size': '100.0000',
@@ -731,9 +729,9 @@ class FormulaInlineComponentsUiTests(TestCase):
         )
 
         assert response.status_code == 302, self._response_form_errors(response)
-        formula = MasterFormula.objects.get(notes='Fórmula criada com componentes inline.')
-        assert formula.code.startswith('MF-')
-        assert formula.code != 'FRM-PAR500'
+        formula.refresh_from_db()
+        assert formula.notes == 'Fórmula criada com componentes inline.'
+        assert formula.code == f'MF-{formula.pk}'
         assert formula.components.count() == 4
         assert list(
             formula.components.order_by('line_number').values_list('line_number', flat=True)
@@ -746,7 +744,7 @@ class FormulaInlineComponentsUiTests(TestCase):
         from governance.models import GovernanceAuditLog
 
         audit = GovernanceAuditLog.objects.get(
-            action='ui.resource.created',
+            action='ui.resource.updated',
             target_model='MasterFormula',
             target_record_id=str(formula.pk),
         )
@@ -854,6 +852,13 @@ class FormulaInlineComponentsUiTests(TestCase):
         assert component.quantity == Decimal('2.0000')
 
     def test_child_save_failure_rolls_back_parent_and_children(self):
+        formula = MasterFormula.objects.create(
+            product=self.product,
+            version=1,
+            batch_size=Decimal('100.0000'),
+            batch_unit=self.unit,
+            notes='Notas preservadas pelo rollback.',
+        )
         payload = {
             **self._formula_payload('FRM-ROLLBACK'),
             'components-TOTAL_FORMS': '1',
@@ -865,15 +870,10 @@ class FormulaInlineComponentsUiTests(TestCase):
 
         with patch.object(FormulaComponent, 'save', side_effect=RuntimeError('storage failure')):
             with self.assertRaisesMessage(RuntimeError, 'storage failure'):
-                self.client.post(
-                    reverse(
-                        'app:resource_create',
-                        kwargs={'module_slug': 'formulations', 'resource_slug': 'formulas'},
-                    ),
-                    payload,
-                )
+                self.client.post(self._formula_edit_url(formula), payload)
 
-        assert not MasterFormula.objects.filter(code='FRM-ROLLBACK').exists()
+        formula.refresh_from_db()
+        assert formula.notes == 'Notas preservadas pelo rollback.'
         assert FormulaComponent.objects.count() == 0
 
     def test_child_add_permission_is_enforced_before_atomic_save(self):
@@ -982,6 +982,16 @@ class FormulaInlineComponentsUiTests(TestCase):
             f'components-{index}-conversion_factor': str(component.conversion_factor),
             f'components-{index}-is_active': 'on',
         }
+
+    def _formula_edit_url(self, formula):
+        return reverse(
+            'app:resource_edit',
+            kwargs={
+                'module_slug': 'formulations',
+                'resource_slug': 'formulas',
+                'pk': formula.pk,
+            },
+        )
 
     def _formula_edit_url(self, formula):
         return reverse(

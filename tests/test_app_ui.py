@@ -2308,7 +2308,27 @@ class AppUiFormEnhancementTests(TestCase):
         assert 'type="date"' in content
 
     def test_formula_date_inputs_have_a_single_native_date_type(self):
-        response = self.client.get('/app/formulations/formulas/new/')
+        from decimal import Decimal
+
+        from formulations.models import MasterFormula
+        from masters.models import Product, UnitOfMeasure
+
+        # A fórmula nasce do produto: o formulário em branco não existe.
+        unit = UnitOfMeasure.objects.create(code='UI-KG', name='Quilograma', symbol='kg')
+        product = Product.objects.create(
+            code='UI-CREME',
+            description='Creme UI',
+            unit=unit,
+            item_type=Product.ItemType.FINISHED_PRODUCT,
+            status=Product.Status.APPROVED,
+        )
+        formula = MasterFormula.objects.create(
+            product=product,
+            version=1,
+            batch_size=Decimal('100'),
+            batch_unit=unit,
+        )
+        response = self.client.get(f'/app/formulations/formulas/{formula.pk}/edit/')
 
         assert response.status_code == 200
         content = response.content.decode()

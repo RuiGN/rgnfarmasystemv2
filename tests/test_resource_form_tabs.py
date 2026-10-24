@@ -159,8 +159,16 @@ def create_url(module, slug):
     return reverse('app:resource_create', kwargs={'module_slug': module, 'resource_slug': slug})
 
 
-def test_formula_page_renders_two_unique_panels(tab_admin):
-    response = tab_admin.get(create_url('formulations', 'formulas'))
+def edit_url(module, slug, pk):
+    return reverse(
+        'app:resource_edit',
+        kwargs={'module_slug': module, 'resource_slug': slug, 'pk': pk},
+    )
+
+
+def test_formula_page_renders_two_unique_panels(tab_admin, formula_case):
+    source, _, _ = formula_case
+    response = tab_admin.get(edit_url('formulations', 'formulas', source.pk))
     assert response.status_code == 200
     tabs = response.context['form_tabs']
     assert [tab['key'] for tab in tabs] == ['formula', 'inline-components']
@@ -176,6 +184,11 @@ def test_formula_page_renders_two_unique_panels(tab_admin):
 
 @pytest.mark.parametrize(('module', 'slug'), INLINE_RESOURCES)
 def test_every_inline_resource_uses_the_shared_tabs(tab_admin, module, slug):
+    from base.ui.registry import get_resource
+
+    if not get_resource(module, slug).allow_create:
+        # Coberto por test_formula_page_renders_two_unique_panels, no formulário de edição.
+        pytest.skip('Recurso sem formulário em branco: o registro nasce do pai.')
     response = tab_admin.get(create_url(module, slug))
     assert response.status_code == 200
     tabs = response.context['form_tabs']
@@ -349,7 +362,6 @@ def formula_case(tab_admin):
 @pytest.mark.parametrize(
     ('field', 'value', 'active'),
     [
-        ('product', '', 'formula'),
         ('batch_size', '0', 'formula'),
         ('components-0-quantity', '0', 'inline-components'),
     ],
@@ -361,7 +373,7 @@ def test_invalid_post_opens_corresponding_tab_without_saving(
 
     source, _, payload = formula_case
     payload[field] = value
-    response = tab_admin.post(create_url('formulations', 'formulas'), payload)
+    response = tab_admin.post(edit_url('formulations', 'formulas', source.pk), payload)
     assert response.status_code == 200
     assert response.context['active_form_tab'] == active
     tab = next(item for item in response.context['form_tabs'] if item['key'] == active)
@@ -371,16 +383,16 @@ def test_invalid_post_opens_corresponding_tab_without_saving(
 
 
 def test_missing_management_form_opens_components(tab_admin, formula_case):
-    _, _, payload = formula_case
+    source, _, payload = formula_case
     del payload['components-TOTAL_FORMS']
-    response = tab_admin.post(create_url('formulations', 'formulas'), payload)
+    response = tab_admin.post(edit_url('formulations', 'formulas', source.pk), payload)
     assert response.status_code == 200
     assert response.context['active_form_tab'] == 'inline-components'
     assert response.context['inline_formsets'][0]['formset'].non_form_errors()
 
 
 def test_duplicate_component_lines_open_components(tab_admin, formula_case):
-    _, _, payload = formula_case
+    source, _, payload = formula_case
     payload.update(
         {
             key.replace('components-0-', 'components-1-'): value
@@ -389,7 +401,7 @@ def test_duplicate_component_lines_open_components(tab_admin, formula_case):
         }
     )
     payload['components-TOTAL_FORMS'] = '2'
-    response = tab_admin.post(create_url('formulations', 'formulas'), payload)
+    response = tab_admin.post(edit_url('formulations', 'formulas', source.pk), payload)
     assert response.status_code == 200
     assert response.context['active_form_tab'] == 'inline-components'
     assert response.context['form_tabs'][-1]['has_errors'] is True
@@ -425,7 +437,7 @@ def test_unavailable_components_stay_private_and_forged_post_is_denied(client, f
     from django.contrib.auth.models import Permission
     from formulations.models import MasterFormula
 
-    _, _, payload = formula_case
+    source, _, payload = formula_case
     user = get_user_model().objects.create_user(
         username='tabs-limited', email='tabs-limited@example.com'
     )
@@ -436,14 +448,14 @@ def test_unavailable_components_stay_private_and_forged_post_is_denied(client, f
         )
     )
     client.force_login(user)
-    response = client.get(create_url('formulations', 'formulas'))
+    response = client.get(edit_url('formulations', 'formulas', source.pk))
     assert response.status_code == 200
     assert response.context['form_tabs'][-1]['inline']['available'] is False
     html = response.content.decode()
     assert 'Você não possui permissão para visualizar estes registros.' in html
     assert 'name="components-TOTAL_FORMS"' not in html
     assert 'name="components-0-material"' not in html
-    response = client.post(create_url('formulations', 'formulas'), payload)
+    response = client.post(edit_url('formulations', 'formulas', source.pk), payload)
     assert response.status_code == 403
     assert MasterFormula.objects.count() == 1
 
