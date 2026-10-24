@@ -364,6 +364,8 @@ class ResourceConfig:
     allow_delete: bool = True
     # Recursos cujo registro nasce de um pai (o pai define a FK obrigatória).
     allow_create: bool = True
+    # Explica de onde vem o registro quando não há formulário em branco.
+    create_hint: str = ''
 
     @property
     def app_label(self):
@@ -719,6 +721,8 @@ MODULES = (
                 ),
                 ('code',),
                 allow_create=False,
+                create_hint='Cadastre a fórmula no produto, na aba Fórmula mestra, '
+                'ou reaproveite uma fórmula existente.',
                 update_form_fields=(
                     'code',
                     'version',

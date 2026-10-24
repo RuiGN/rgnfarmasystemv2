@@ -16,7 +16,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.forms import UserAvatarForm
 from accounts.serializers import CurrentUserSerializer
 
 
@@ -116,28 +115,6 @@ class UsernameLoginView(LoginView):
 
 class EmailLogoutView(LogoutView):
     pass
-
-
-class UserAvatarUpdateView(LoginRequiredMixin, FormView):
-    template_name = 'accounts/avatar.html'
-    form_class = UserAvatarForm
-    success_url = reverse_lazy('accounts:avatar')
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['instance'] = self.request.user
-        return kwargs
-
-    def form_valid(self, form):
-        form.save()
-        messages.success(self.request, 'Avatar atualizado com sucesso.')
-        return super().form_valid(form)
-
-    def form_invalid(self, form):
-        avatar_field = form.fields['avatar']
-        avatar_field.widget.attrs['aria-invalid'] = 'true'
-        avatar_field.widget.attrs['aria-describedby'] = 'id_avatar_errors id_avatar_help'
-        return super().form_invalid(form)
 
 
 class CurrentUserAPIView(APIView):
