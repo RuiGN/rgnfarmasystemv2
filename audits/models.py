@@ -1,12 +1,29 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 
 from base.models import SingleInstanceModel
+from base.modules import OperationalModule
 from base.normalized_locations import validate_normalized_location
 from base.sequences import IdentifierSpec, sequence_code
 from masters.models import BusinessPartner
+
+
+def _record_audit_audit(action, message, instance, user=None, **context):
+    from governance.models import GovernanceAuditLog
+
+    return GovernanceAuditLog.record(
+        log_type=GovernanceAuditLog.LogType.FUNCTIONAL,
+        severity=GovernanceAuditLog.Severity.INFO,
+        module=OperationalModule.AUDITS,
+        action=action,
+        message=message,
+        target_model=type(instance).__name__,
+        target_record_id=str(instance.pk),
+        user=user,
+        safe_context=context,
+    )
 
 
 def _sequence_code(model, *args):
@@ -505,7 +522,11 @@ class AuditFinding(SingleInstanceModel):
         verbose_name = 'achado de auditoria'
         verbose_name_plural = 'achados de auditoria'
 
-    def close(self):
+    def close(self, user=None):
+        if self.status not in {self.Status.OPEN, self.Status.IN_ACTION}:
+            raise ValidationError(
+                {'status': 'Somente achados abertos ou em ação podem ser encerrados.'}
+            )
         if (
             self.actions.filter(mandatory=True)
             .exclude(status=AuditFollowUpAction.Status.COMPLETED)
@@ -514,8 +535,18 @@ class AuditFinding(SingleInstanceModel):
             raise ValidationError(
                 {'actions': 'Encerramento do achado exige ações obrigatórias concluídas.'}
             )
-        self.status = self.Status.CLOSED
-        self.save(update_fields=['status', 'updated_at'])
+        previous_status = self.status
+        with transaction.atomic():
+            self.status = self.Status.CLOSED
+            self.save(update_fields=['status', 'updated_at'])
+            _record_audit_audit(
+                'audits.finding.closed',
+                'Achado de auditoria encerrado.',
+                self,
+                user,
+                from_status=previous_status,
+                to_status=self.status,
+            )
 
     def clean(self):
         super().clean()
@@ -831,11 +862,25 @@ class AuditReport(SingleInstanceModel):
         verbose_name_plural = 'relatórios de auditoria'
 
     def issue(self, user=None):
+        if self.status != self.Status.DRAFT:
+            raise ValidationError({'status': 'Somente relatórios em rascunho podem ser emitidos.'})
         self.calculate_indicators()
         self.status = self.Status.ISSUED
         self.issued_by = user or self.issued_by
         self.issued_at = timezone.now()
         self.full_clean()
+        with transaction.atomic():
+            self._save_issued()
+            _record_audit_audit(
+                'audits.report.issued',
+                'Relatório de auditoria emitido.',
+                self,
+                user,
+                audit_id=self.audit_id,
+                compliance_rate=self.compliance_rate,
+            )
+
+    def _save_issued(self):
         self.save(
             update_fields=[
                 'status',
