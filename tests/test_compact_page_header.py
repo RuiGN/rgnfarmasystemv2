@@ -267,3 +267,55 @@ def test_formula_cockpit_keeps_identity_and_permission_gated_actions(render_head
     assert header.links[:3] == ['/app/', '/app/formulations/', '/app/formulations/formulas/42/']
     assert header.links[-1] == '/app/formulations/formulas/42/'
     assert 'section-0' in header.ids
+
+
+# The shared include renders a loop, so it has no fixed trail to inspect; the
+# render-based tests above cover it.
+STATIC_HEADER_TEMPLATES = [
+    template for template in PAGE_HEADER_TEMPLATES if template != 'includes/page_header.html'
+]
+
+
+def _header_block(template):
+    source = (ROOT / 'templates' / template).read_text()
+    start = source.index('class="breadcrumb')
+    end = source.index('</div>', source.index('class="page-header-title"'))
+    return source[start:end]
+
+
+def _crumb_labels(block):
+    return [
+        re.sub(r'<[^>]+>', '', item).strip()
+        for item in re.findall(r'<li class="breadcrumb-item[^"]*">(.*?)</li>', block, re.S)
+    ]
+
+
+@pytest.mark.parametrize('template', STATIC_HEADER_TEMPLATES)
+def test_breadcrumb_trail_never_repeats_a_name(template):
+    labels = _crumb_labels(_header_block(template))
+    assert len(labels) == len(set(labels)), f'Migalhas repetidas em {template}: {labels}'
+
+
+@pytest.mark.parametrize('template', STATIC_HEADER_TEMPLATES)
+def test_last_breadcrumb_is_an_ancestor_not_the_current_heading(template):
+    """The trail carries ancestors; the heading names the current page once."""
+
+    block = _header_block(template)
+    labels = _crumb_labels(block)
+    if not labels:
+        return
+    heading = re.search(r'<(h1|h5)\b[^>]*>(.*?)</\1>', block, re.S)
+    assert heading is not None, template
+    title = re.sub(r'<[^>]+>', '', heading.group(2)).strip()
+    assert labels[-1] != title, (
+        f'{template}: a última migalha "{labels[-1]}" repete o título da página.'
+    )
+
+
+@pytest.mark.parametrize('template', STATIC_HEADER_TEMPLATES)
+def test_application_root_crumb_has_a_single_name(template):
+    block = _header_block(template)
+    for label in re.findall(r"""<a href="\{% url 'app:index' %\}">([^<]+)</a>""", block):
+        assert label == 'Aplicativos', (
+            f'{template}: /app/ aparece como "{label}"; use sempre "Aplicativos".'
+        )

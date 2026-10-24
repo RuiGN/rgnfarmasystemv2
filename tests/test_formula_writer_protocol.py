@@ -16,11 +16,11 @@ from rest_framework.test import APIClient
 
 from formulations.models import FormulaComponent, MasterFormula
 from formulations.serializers import MasterFormulaSerializer
-from formulations.writers import write_gate
+from base.aggregate_writes import write_gate
 from masters.models import Product
 from tests.test_formula_final_component_validation import approval_case
-from tests.test_product_formula_workflow import case as case
-from tests.test_product_formula_workflow import existing_case, url
+from tests.formula_editor_cases import case as case
+from tests.formula_editor_cases import existing_case, url
 from tests.test_product_formula_writer_concurrency import backend_pid, interleave
 
 pytestmark = [pytest.mark.django_db, pytest.mark.permission_strict]
@@ -65,7 +65,6 @@ def test_component_commits_before_api_approval_is_rechecked(case, monkeypatch):
     material = case[3]
     material.status = 'blocked'
     material.save(update_fields=['status'])
-    payload.update(formula_selection=str(formula.pk), loaded_formula_selection=str(formula.pk))
 
     def writer():
         return api_for(case).patch(
@@ -78,7 +77,7 @@ def test_component_commits_before_api_approval_is_rechecked(case, monkeypatch):
         )
 
     def integrated():
-        assert client.post(url(product.pk), payload).status_code == 302
+        assert client.post(url(formula.pk), payload).status_code == 302
         assert formula.components.get().material_id == material.pk
 
     response = interleave(monkeypatch, MasterFormulaSerializer, 'update', writer, integrated)
@@ -139,9 +138,7 @@ def test_real_api_writer_waits_for_shared_transaction_gate(case):
 def test_admin_checks_final_set_after_inline_repair_and_preserves_audit(case, repair):
     client, product, _, formula, material, row, payload = approval_case(case)
     data = {
-        key.removeprefix('formula-'): value
-        for key, value in payload.items()
-        if key.startswith('formula-')
+        key: value for key, value in payload.items() if not key.startswith('components-')
     }
     data.update(product=str(product.pk), version=str(formula.version), _save='Salvar')
     data.update({'components-TOTAL_FORMS': '0', 'components-INITIAL_FORMS': '0'})
@@ -297,14 +294,9 @@ def test_component_html_create_rechecks_concurrent_approval(case, monkeypatch, s
     material.status = 'blocked'
     material.save(update_fields=['status'])
     payload.update(
-        formula_selection=str(formula.pk),
-        loaded_formula_selection=str(formula.pk),
-        status='approved',
-    )
-    payload.update(
         {
-            'formula-status': 'approved',
-            'formula-effective_from': '2026-01-01',
+            'status': 'approved',
+            'effective_from': '2026-01-01',
             'components-TOTAL_FORMS': '0',
             'components-INITIAL_FORMS': '0',
         }
@@ -335,7 +327,7 @@ def test_component_html_create_rechecks_concurrent_approval(case, monkeypatch, s
         return other.post(address, {**data, '_save': 'Salvar'})
 
     def integrated():
-        assert client.post(url(product.pk), payload).status_code == 302
+        assert client.post(url(formula.pk), payload).status_code == 302
 
     owner, method = (
         (FormulaComponentAdmin, 'save_model')

@@ -74,16 +74,17 @@ class ManualRefreshTests(SimpleTestCase):
         masters = entries['masters']['manual_content']
         formulas = entries['formulations']['manual_content']
         for fact in (
-            'três abas',
-            '**Produto**',
-            '**Componentes**',
-            'Fórmula mestra',
-            'versão explícita',
-            'salvo separadamente',
+            'quatro abas',
+            '**Geral**',
+            '**Fiscal**',
+            'cadastro independente',
             'sem preenchimento com zeros',
             'CODE_PREFIX-ID',
         ):
             assert fact in masters
+        # O produto não edita fórmulas: o manual não deve ensinar o contrário.
+        for obsolete in ('três abas', 'Carregar seleção', 'fórmula carregada'):
+            assert obsolete not in masters
         for fact in (
             'duas abas',
             'Fórmula mestra',

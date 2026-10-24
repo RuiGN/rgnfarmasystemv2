@@ -7,7 +7,10 @@ from base.sequences import AutoCodeMixin
 from base.normalized_locations import validate_normalized_location
 
 
-class UnitOfMeasure(SingleInstanceModel):
+class UnitOfMeasure(AutoCodeMixin, SingleInstanceModel):
+    # Código oficial: unidade de medida padronizada (KG, L). Informado pelo usuário, nunca gerado.
+    CODE_PREFIX = None
+
     code = models.CharField('código', max_length=20)
     name = models.CharField('nome', max_length=120)
     symbol = models.CharField('símbolo', max_length=20)

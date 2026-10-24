@@ -70,8 +70,9 @@ def test_automatic_code_rejects_invalid_format_atomically(monkeypatch, prefix, m
 
     monkeypatch.setattr(Product, 'CODE_PREFIX', prefix)
     monkeypatch.setattr(Product._meta.get_field('code'), 'max_length', max_length)
+    # Explicit pk: a sequence still below 10 would make 'PRD-<pk>' fit in max_length.
     with pytest.raises(ImproperlyConfigured, match=message):
-        _product()
+        _product(pk=412)
     assert not Product.objects.exists()
 
 
@@ -332,3 +333,50 @@ def test_concurrent_creations_use_distinct_real_primary_keys():
     assert len({pk for pk, _ in pairs}) == 2
     assert all(code == f'PRD-{pk}' for pk, code in pairs)
     assert list(Product.objects.order_by('pk').values_list('pk', 'code')) == sorted(pairs)
+
+
+OFFICIAL_CODE_MODELS = {
+    'fiscal.FiscalUnit',
+    'fiscal.FiscalNCM',
+    'fiscal.FiscalOperationCode',
+    'fiscal.TaxSituation',
+    'masters.UnitOfMeasure',
+    'auxiliary.Currency',
+}
+
+
+def _models_with_a_code_field():
+    return [
+        model
+        for model in apps.get_models()
+        if any(field.name == 'code' for field in model._meta.concrete_fields)
+    ]
+
+
+@pytest.mark.parametrize(
+    'model', _models_with_a_code_field(), ids=lambda model: model._meta.label
+)
+def test_every_code_field_declares_how_it_is_filled(model):
+    """`code` is either generated as PREFIX-<id> or an official code the user types."""
+
+    assert issubclass(model, AutoCodeMixin), (
+        f'{model._meta.label} tem campo code sem AutoCodeMixin; '
+        'declare CODE_PREFIX ou CODE_PREFIX = None para código oficial.'
+    )
+    if model._meta.label in OFFICIAL_CODE_MODELS:
+        assert model.CODE_PREFIX is None
+    else:
+        assert model.CODE_PREFIX, f'{model._meta.label} precisa de CODE_PREFIX.'
+        assert model._meta.get_field('code').blank, (
+            f'{model._meta.label}.code é gerado: deve aceitar branco no formulário.'
+        )
+
+
+def test_generated_prefixes_are_unique_across_the_installation():
+    prefixes = {}
+    for model in _models_with_a_code_field():
+        if not model.CODE_PREFIX:
+            continue
+        prefixes.setdefault(model.CODE_PREFIX, []).append(model._meta.label)
+    repeated = {prefix: labels for prefix, labels in prefixes.items() if len(labels) > 1}
+    assert not repeated, f'Prefixos repetidos: {repeated}'

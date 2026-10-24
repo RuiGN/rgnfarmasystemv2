@@ -5,6 +5,7 @@ from django.db import models
 from django.utils import timezone
 
 from base.models import SingleInstanceModel
+from base.sequences import AutoCodeMixin
 
 
 SENSITIVE_CONTEXT_KEYS = {
@@ -98,7 +99,9 @@ class LabelPrinterSettings(SingleInstanceModel):
         return self.name
 
 
-class IntegrationConnector(SingleInstanceModel):
+class IntegrationConnector(AutoCodeMixin, SingleInstanceModel):
+    CODE_PREFIX = 'ICN'
+
     class ProviderType(models.TextChoices):
         ERP = 'erp', 'ERP externo'
         FISCAL_SYSTEM = 'fiscal_system', 'Sistema fiscal'
@@ -121,7 +124,7 @@ class IntegrationConnector(SingleInstanceModel):
         ERROR = 'error', 'Erro'
         ARCHIVED = 'archived', 'Arquivado'
 
-    code = models.CharField('codigo', max_length=80)
+    code = models.CharField('codigo', max_length=80, blank=True)
     name = models.CharField('nome', max_length=180)
     provider_type = models.CharField(
         'tipo de provedor', max_length=32, choices=ProviderType.choices
@@ -261,13 +264,15 @@ class IntegrationConnector(SingleInstanceModel):
         return f'{self.code} - {self.name}'
 
 
-class ApiClientApplication(SingleInstanceModel):
+class ApiClientApplication(AutoCodeMixin, SingleInstanceModel):
+    CODE_PREFIX = 'APC'
+
     class Status(models.TextChoices):
         ACTIVE = 'active', 'Ativo'
         SUSPENDED = 'suspended', 'Suspenso'
         REVOKED = 'revoked', 'Revogado'
 
-    code = models.CharField('codigo', max_length=80)
+    code = models.CharField('codigo', max_length=80, blank=True)
     name = models.CharField('nome', max_length=180)
     client_id = models.CharField('client id', max_length=120)
     secret_hash = models.CharField('hash do segredo', max_length=255, blank=True)

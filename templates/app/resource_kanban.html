@@ -10,10 +10,9 @@
             <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
             <li class="breadcrumb-item"><a href="{% url 'app:module' module.slug %}">{{ module.label }}</a></li>
             <li class="breadcrumb-item"><a href="{% url 'app:resource_list' module.slug resource.slug %}">{{ resource.label }}</a></li>
-            <li class="breadcrumb-item">Kanban</li>
         </ul>
         <div class="page-header-title">
-            <h5 class="m-b-10">Kanban - {{ resource.label }}</h5>
+            <h5 class="m-b-10">Kanban</h5>
         </div>
     </div>
     <div class="page-header-right ms-auto">

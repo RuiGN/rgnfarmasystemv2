@@ -1,5 +1,5 @@
 from django.contrib import admin
-from base.admin_mixins import ImmutableAuditAdminMixin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin, ImmutableAuditAdminMixin
 from integrations.models import (
     ApiCallLog,
     ApiClientApplication,
@@ -18,7 +18,7 @@ class LabelPrinterSettingsAdmin(admin.ModelAdmin):
 
 
 @admin.register(IntegrationConnector)
-class IntegrationConnectorAdmin(admin.ModelAdmin):
+class IntegrationConnectorAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'code',
         'name',
@@ -35,7 +35,7 @@ class IntegrationConnectorAdmin(admin.ModelAdmin):
 
 
 @admin.register(ApiClientApplication)
-class ApiClientApplicationAdmin(admin.ModelAdmin):
+class ApiClientApplicationAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'code',
         'name',

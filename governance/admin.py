@@ -1,5 +1,5 @@
 from django.contrib import admin
-from base.admin_mixins import ImmutableAuditAdminMixin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin, ImmutableAuditAdminMixin
 from governance.models import (
     DemoScenarioLoad,
     GovernanceAuditLog,
@@ -73,7 +73,7 @@ class GovernanceParameterAdmin(admin.ModelAdmin):
 
 
 @admin.register(GovernanceCatalogItem)
-class GovernanceCatalogItemAdmin(admin.ModelAdmin):
+class GovernanceCatalogItemAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('code', 'label', 'catalog_type', 'module', 'order', 'is_active')
     list_filter = ('catalog_type', 'module', 'is_active')
     search_fields = ('code', 'label', 'value', 'metadata')

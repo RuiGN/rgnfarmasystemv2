@@ -6,6 +6,7 @@ from django.db import models
 from django.utils import timezone
 
 from base.models import SingleInstanceModel
+from base.sequences import AutoCodeMixin
 from base.normalized_locations import validate_normalized_location
 from masters.models import BusinessPartner, Product
 from procurement.models import PurchaseOrder, PurchaseReceipt
@@ -154,7 +155,10 @@ class FiscalMunicipality(SingleInstanceModel):
         return f'{self.name}/{state}'.rstrip('/')
 
 
-class FiscalUnit(SingleInstanceModel):
+class FiscalUnit(AutoCodeMixin, SingleInstanceModel):
+    # Código oficial: unidade fiscal legal (UN, KG, CX). Informado pelo usuário, nunca gerado.
+    CODE_PREFIX = None
+
     code = models.CharField('código', max_length=20)
     description = models.CharField('descrição', max_length=120)
     is_active = models.BooleanField('ativo', default=True)
@@ -175,7 +179,10 @@ class FiscalUnit(SingleInstanceModel):
         return f'{self.code} - {self.description}'
 
 
-class FiscalNCM(SingleInstanceModel):
+class FiscalNCM(AutoCodeMixin, SingleInstanceModel):
+    # Código oficial: NCM da NCM/SH (3304.99.90). Informado pelo usuário, nunca gerado.
+    CODE_PREFIX = None
+
     code = models.CharField('NCM', max_length=12)
     description = models.CharField('descrição', max_length=255)
     cest = models.CharField('CEST', max_length=16, blank=True)
@@ -198,7 +205,10 @@ class FiscalNCM(SingleInstanceModel):
         return f'{self.code} - {self.description}'
 
 
-class FiscalOperationCode(SingleInstanceModel):
+class FiscalOperationCode(AutoCodeMixin, SingleInstanceModel):
+    # Código oficial: CFOP oficial (5101). Informado pelo usuário, nunca gerado.
+    CODE_PREFIX = None
+
     class Direction(models.TextChoices):
         INBOUND = 'inbound', 'Entrada'
         OUTBOUND = 'outbound', 'Saída'
@@ -225,7 +235,10 @@ class FiscalOperationCode(SingleInstanceModel):
         return f'{self.code} - {self.description}'
 
 
-class TaxSituation(SingleInstanceModel):
+class TaxSituation(AutoCodeMixin, SingleInstanceModel):
+    # Código oficial: CST/CSOSN oficial (060). Informado pelo usuário, nunca gerado.
+    CODE_PREFIX = None
+
     TaxKind = TaxKindChoices
 
     class RegimeKind(models.TextChoices):

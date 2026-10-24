@@ -89,7 +89,7 @@ class AdditionalResourceViewsTests(TestCase):
             )
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'PCP Gantt:')
+        self.assertContains(response, 'PCP Gantt')
         self.assertContains(response, 'OP-TEST-GANTT')
 
     def test_gantt_view_raises_404_when_disabled(self):
@@ -123,7 +123,7 @@ class AdditionalResourceViewsTests(TestCase):
             )
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Leitura EDMS -')
+        self.assertContains(response, 'Leitura EDMS')
         self.assertContains(response, 'POP-TEST-VIEWER')
 
     def test_document_viewer_raises_404_when_disabled(self):
@@ -173,7 +173,7 @@ class AdditionalResourceViewsTests(TestCase):
             )
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Árvore Estrutural:')
+        self.assertContains(response, 'Árvore estrutural')
         self.assertContains(response, 'F-TEST-TREE')
 
     def test_tree_view_raises_404_when_disabled(self):
@@ -218,7 +218,7 @@ class AdditionalResourceViewsTests(TestCase):
             )
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Agente IA:')
+        self.assertContains(response, 'Agente IA')
         self.assertContains(response, 'Agente Teste')
         self.assertContains(response, 'data-rag-chat-endpoint="/api/knowledge/chat/"')
         self.assertContains(response, 'rag-chat.js')
@@ -265,7 +265,7 @@ class AdditionalResourceViewsTests(TestCase):
             )
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Batch Record:')
+        self.assertContains(response, 'Batch Record')
         self.assertContains(response, 'OP-TEST-EXEC')
 
     def test_execution_view_raises_404_when_disabled(self):

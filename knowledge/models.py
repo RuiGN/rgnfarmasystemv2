@@ -8,6 +8,7 @@ from django.db import models, transaction
 from django.utils import timezone
 
 from base.models import SingleInstanceModel
+from base.sequences import AutoCodeMixin
 
 
 TOKEN_PATTERN = re.compile(r'[\wÀ-ÿ]+', re.IGNORECASE)
@@ -32,7 +33,9 @@ def deterministic_embedding(value, dimensions=64):
     return [round(item / norm, 6) for item in vector]
 
 
-class KnowledgeSource(SingleInstanceModel):
+class KnowledgeSource(AutoCodeMixin, SingleInstanceModel):
+    CODE_PREFIX = 'KSR'
+
     class SourceType(models.TextChoices):
         REGULATION = 'regulation', 'Legislação'
         TECHNICAL_REFERENCE = 'technical_reference', 'Referência técnica'
@@ -43,7 +46,7 @@ class KnowledgeSource(SingleInstanceModel):
         SYSTEM_MANUAL = 'system_manual', 'Manual do sistema'
         OTHER = 'other', 'Outra'
 
-    code = models.CharField('código', max_length=100)
+    code = models.CharField('código', max_length=100, blank=True)
     title = models.CharField('título', max_length=255)
     source_type = models.CharField('tipo', max_length=32, choices=SourceType.choices)
     publisher = models.CharField('publicador', max_length=160)

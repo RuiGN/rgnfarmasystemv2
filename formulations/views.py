@@ -9,7 +9,7 @@ from formulations.serializers import (
     RouteStepSerializer,
 )
 from base.permissions import SingleInstanceDjangoModelPermissions
-from formulations.writers import WriterViewSetMixin
+from base.aggregate_writes import WriterViewSetMixin
 
 
 class SingleInstanceFormulationViewSet(viewsets.ModelViewSet):

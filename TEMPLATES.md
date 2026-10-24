@@ -91,6 +91,14 @@ um `h1` com `aria-current="page"` no item, sem repetir o título abaixo. O exemp
 do workspace é **Aplicativos > Fluxo de trabalho**. O modo anterior continua
 disponível para títulos distintos de detalhe/formulário e identificação do objeto.
 
+O caminho de navegação carrega somente os **ancestrais**; a página atual é
+nomeada uma única vez, no título (ou na folha `aria-current` do modo compacto).
+Uma migalha nunca repete o título nem outra migalha do mesmo caminho, e `/app/`
+aparece sempre como **Aplicativos**. Em páginas filhas de um registro, a migalha
+do registro mostra o próprio registro (código, número ou `{{ object }}`), não a
+palavra "Detalhe". Os testes em `tests/test_compact_page_header.py` verificam
+essas três regras em todos os templates com `.page-header`.
+
 A biblioteca `ui_navigation` fornece `page_breadcrumbs`, que recebe pares
 rótulo/URL já resolvida e retorna a sequência ordenada de ancestrais. Um par
 incompleto falha, em vez de descartar silenciosamente um segmento. O renderer

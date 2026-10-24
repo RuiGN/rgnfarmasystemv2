@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
 from base.serializer_mixins import ModelSerializerContractMixin, instance_for_clean
-from formulations.writers import WriterSerializerMixin
+from base.aggregate_writes import WriterSerializerMixin
 
 from formulations.models import FormulaComponent, ManufacturingRoute, MasterFormula, RouteStep
 

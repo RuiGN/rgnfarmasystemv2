@@ -1,5 +1,5 @@
 from django.contrib import admin
-from base.admin_mixins import ImmutableAuditAdminMixin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin, ImmutableAuditAdminMixin
 from compliance.models import (
     ComplianceChecklistItem,
     CriticalActionExecution,
@@ -9,7 +9,7 @@ from compliance.models import (
 
 
 @admin.register(TransversalRequirementPolicy)
-class TransversalRequirementPolicyAdmin(admin.ModelAdmin):
+class TransversalRequirementPolicyAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('code', 'title', 'source_module', 'enforcement_level', 'is_active', 'owner')
     list_filter = ('source_module', 'enforcement_level', 'is_active')
     search_fields = ('code', 'title', 'description', 'owner__email')

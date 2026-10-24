@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from base.modules import OperationalModule
 from base.models import SingleInstanceModel
+from base.sequences import AutoCodeMixin
 from governance.models import GovernanceAuditLog
 from integrations.models import sanitize_safe_context
 
@@ -21,13 +22,15 @@ def validation_error_to_text(error):
     return str(error)
 
 
-class TransversalRequirementPolicy(SingleInstanceModel):
+class TransversalRequirementPolicy(AutoCodeMixin, SingleInstanceModel):
+    CODE_PREFIX = 'TRP'
+
     class EnforcementLevel(models.TextChoices):
         MONITORING = 'monitoring', 'Monitoramento'
         WARNING = 'warning', 'Alerta'
         BLOCKING = 'blocking', 'Bloqueante'
 
-    code = models.CharField('codigo', max_length=80)
+    code = models.CharField('codigo', max_length=80, blank=True)
     title = models.CharField('titulo', max_length=180)
     description = models.TextField('descricao', blank=True)
     source_module = models.CharField('modulo', max_length=40, choices=OperationalModule.choices)

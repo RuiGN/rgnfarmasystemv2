@@ -132,16 +132,7 @@ def test_selected_domain_create_http_preserves_field_and_management_identity(
     tabs = response.context['form_tabs']
     parent_tabs = [tab for tab in tabs if tab['inline'] is None]
     # The authorized view can remove service/decision fields; keys must follow that subset.
-    if (module, slug) == ('masters', 'products'):
-        # Product HTTP editing now composes its principal form with an explicitly
-        # selected formula. The pure generic grouping contract above is unchanged.
-        assert tuple(tab['key'] for tab in tabs) == ('product', 'formula', 'inline-components')
-        assert Counter(field.name for field in tabs[0]['fields']) == Counter(
-            field.name for field in response.context['form'].visible_fields()
-        )
-        assert response.context['formula_form'] is None
-    else:
-        assert tuple(tab['key'] for tab in parent_tabs) == keys
+    assert tuple(tab['key'] for tab in parent_tabs) == keys
     html = response.content.decode()
     form = response.context['form']
     for field in [*form.visible_fields(), *form.hidden_fields()]:

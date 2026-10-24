@@ -19,7 +19,7 @@ class DemoSeeder:
         self.refs = {}
 
     def run_full_demo(self):
-        from formulations.writers import write_gate
+        from base.aggregate_writes import write_gate
 
         with write_gate():
             self._seed_users()
@@ -39,7 +39,7 @@ class DemoSeeder:
 
     def _upsert(self, model, count_key, lookup, defaults=None):
         defaults = defaults or {}
-        from formulations.writers import LABELS, save_changes, write_gate
+        from base.aggregate_writes import LABELS, save_changes, write_gate
 
         if model._meta.label_lower in LABELS:
             with write_gate():

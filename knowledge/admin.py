@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from base.admin_mixins import ImmutableAuditAdminMixin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin, ImmutableAuditAdminMixin
 from knowledge.models import (
     KnowledgeChunk,
     KnowledgeDocument,
@@ -14,7 +14,7 @@ from knowledge.models import (
 
 
 @admin.register(KnowledgeSource)
-class KnowledgeSourceAdmin(admin.ModelAdmin):
+class KnowledgeSourceAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'code',
         'title',

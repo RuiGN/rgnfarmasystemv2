@@ -1782,7 +1782,7 @@ class ResourceCreateView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
     def save_object_and_inline_formsets(self, form, inline_formsets, *, action):
         from governance.models import GovernanceAuditLog
         from contextlib import nullcontext
-        from formulations.writers import (
+        from base.aggregate_writes import (
             supports,
             write_gate,
             locked_instance,
@@ -2262,7 +2262,7 @@ class ResourceDeleteView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
                 target_model = obj.__class__.__name__
                 target_record_id = obj.pk
                 module = obj._meta.app_label
-                from formulations.writers import supports, delete_instance
+                from base.aggregate_writes import supports, delete_instance
 
                 if supports(obj):
                     delete_instance(obj)

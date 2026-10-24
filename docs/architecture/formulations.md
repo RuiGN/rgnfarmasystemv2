@@ -37,9 +37,10 @@ No editor de fórmula são duas abas (não há aba Produto):
 - **Componentes:** cartões de materiais com quantidade, unidade, função, perdas
   e conversão; inclusão e exclusão continuam sujeitas às regras do domínio.
 
-O produto é selecionado na aba **Fórmula mestra**. No editor integrado de
-Produtos há três abas: **Produto**, **Fórmula mestra** e **Componentes**.
-A seleção de versão é explícita e precisa ser carregada antes de salvar.
+O produto é selecionado na aba **Fórmula mestra**, como chave estrangeira. O
+cadastro de produto pertence a **Cadastros mestres** e não edita fórmulas: suas
+abas são Geral, Classificação, Qualidade e conservação e Fiscal.
+A seleção de versão é explícita.
 Versões anteriores e aprovadas são preservadas; uma versão existente mantém
 seu número, e uma nova versão usa o fluxo autorizado, sem substituir a anterior.
 
@@ -47,6 +48,10 @@ O cadastro relacionado de material/categoria é salvo separadamente, sem gravar
 o formulário principal pendente. Filtros dependentes e validações no servidor
 continuam ativos. Códigos automáticos seguem CODE_PREFIX-ID com o ID real,
 sem preenchimento com zeros; descritivos e identificadores oficiais são preservados.
+
+O protocolo de escrita do agregado Produto/Fórmula/Componente vive em
+`base/aggregate_writes.py`, fora das duas apps, para que `masters` não dependa de
+`formulations`.
 
 Salvar envia pai e componentes juntos. Erros mantêm os valores submetidos e
 abrem a aba correspondente; sem JavaScript, as seções aparecem em sequência.

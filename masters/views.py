@@ -2,7 +2,7 @@ from rest_framework import filters, viewsets
 from django_filters.rest_framework import DjangoFilterBackend
 
 from base.permissions import SingleInstanceDjangoModelPermissions
-from formulations.writers import WriterViewSetMixin
+from base.aggregate_writes import WriterViewSetMixin
 from masters.models import (
     BusinessPartner,
     MasterCategory,

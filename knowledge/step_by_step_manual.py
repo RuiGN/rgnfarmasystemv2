@@ -181,24 +181,19 @@ STEP_BY_STEP_GUIDES = {
 ## Como cadastrar um produto
 
 1. Acesse **Cadastros mestres > Produtos > Novo registro**.
-2. O editor tem três abas: **Produto**, **Fórmula mestra** e **Componentes**.
-   Em **Produto**, preencha descrição, tipo, unidade e demais campos aplicáveis.
+2. O editor tem quatro abas: **Geral**, **Classificação**, **Qualidade e
+   conservação** e **Fiscal**. Em **Geral**, preencha descrição, tipo e unidade.
    Os códigos automáticos seguem CODE_PREFIX-ID: prefixo do modelo e ID real,
    sem preenchimento com zeros. Códigos descritivos e identificadores oficiais
    existentes são preservados; não invente códigos nem IDs.
-3. Em **Fórmula mestra**, faça uma seleção de versão explícita: sem fórmula,
-   nova versão ou uma versão existente deste produto. Use **Carregar seleção**
-   antes de editar/salvar. A versão carregada deve corresponder à seleção.
-   Não é escolhida automaticamente a versão mais recente. Versões anteriores
-   e aprovadas são preservadas; uma versão existente mantém seu número.
-4. Em **Componentes**, edite os materiais da fórmula carregada. Os filtros
-   dependentes respeitam produto, material, unidade e categoria conforme o
-   contexto; o servidor valida relacionamentos e permissões.
-5. Um material ou categoria criado no cadastro relacionado é salvo separadamente,
-   sem salvar produto, fórmula ou componentes pendentes. Depois selecione o
-   cadastro criado no componente e salve o formulário principal.
-6. Clique em **Salvar** para gravar o conjunto autorizado. As abas não concedem
-   novas permissões: consulta, criação e alteração continuam controladas pelo Django.
+3. Clique em **Salvar**. O produto é um cadastro independente: ele não cria nem
+   altera fórmulas.
+4. A fórmula mestra do produto é cadastrada em **Fórmulas e roteiros > Fórmulas
+   mestras**, selecionando este produto no campo **Produto**. Consulte o manual
+   do módulo Fórmulas e roteiros.
+
+As abas não concedem novas permissões: consulta, criação e alteração continuam
+controladas pelo Django.
 
 ## Códigos automáticos e identificadores existentes
 

@@ -7,14 +7,13 @@
 <div class="page-header" id="section-0">
     <div class="page-header-left d-flex align-items-center">
         <ul class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Início</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
             <li class="breadcrumb-item"><a href="{% url 'app:module' module.slug %}">{{ module.label }}</a></li>
             <li class="breadcrumb-item"><a href="{% url 'app:resource_list' module.slug resource.slug %}">{{ resource.label }}</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'app:resource_detail' module.slug resource.slug audit.pk %}">Detalhe</a></li>
-            <li class="breadcrumb-item">Cockpit da Auditoria 360°</li>
+            <li class="breadcrumb-item"><a href="{% url 'app:resource_detail' module.slug resource.slug audit.pk %}">{{ audit.audit_number }}</a></li>
         </ul>
         <div class="page-header-title">
-            <h5 class="m-b-10">{{ audit.audit_number }} - {{ audit.title }}</h5>
+            <h5 class="m-b-10">Cockpit da auditoria 360°</h5>
         </div>
     </div>
     <div class="page-header-right ms-auto">

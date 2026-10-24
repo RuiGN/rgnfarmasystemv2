@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from base.modules import OperationalModule
 from base.models import SingleInstanceModel
+from base.sequences import AutoCodeMixin
 from base.normalized_locations import validate_normalized_location
 from integrations.models import sanitize_safe_context
 
@@ -224,7 +225,9 @@ class GovernanceParameter(SingleInstanceModel):
         return f'{self.module}.{self.key}'
 
 
-class GovernanceCatalogItem(SingleInstanceModel):
+class GovernanceCatalogItem(AutoCodeMixin, SingleInstanceModel):
+    CODE_PREFIX = 'GOV'
+
     class CatalogType(models.TextChoices):
         DOCUMENT_TYPE = 'document_type', 'Tipo de documento'
         DEVIATION_TYPE = 'deviation_type', 'Tipo de desvio'
@@ -246,7 +249,7 @@ class GovernanceCatalogItem(SingleInstanceModel):
         blank=True,
         verbose_name='modulo normalizado',
     )
-    code = models.CharField('codigo', max_length=80)
+    code = models.CharField('codigo', max_length=80, blank=True)
     label = models.CharField('rotulo', max_length=180)
     value = models.CharField('valor', max_length=120)
     color = models.CharField('cor', max_length=40, blank=True)

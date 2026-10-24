@@ -1,4 +1,7 @@
-"""Application write protocol for Product / MasterFormula / FormulaComponent.
+"""Write protocol shared by the Product / MasterFormula / FormulaComponent rows.
+
+It lives in ``base`` because the aggregate spans two apps: Product belongs to
+``masters`` and the formula rows to ``formulations``. Neither app owns the other.
 
 The transaction gate deliberately serializes this small maintenance surface. It
 also makes parent discovery stable during moves/creates: after the gate, rows

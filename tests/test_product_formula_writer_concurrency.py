@@ -20,8 +20,8 @@ from formulations.models import FormulaComponent, MasterFormula
 from formulations.serializers import FormulaComponentSerializer
 from masters.models import Product
 from masters.serializers import ProductSerializer
-from tests.test_product_formula_workflow import case as case
-from tests.test_product_formula_workflow import existing_case, url
+from tests.formula_editor_cases import case as case
+from tests.formula_editor_cases import existing_case, product_url, url
 
 pytestmark = [pytest.mark.django_db(transaction=True), pytest.mark.permission_strict]
 
@@ -84,35 +84,28 @@ def interleave(monkeypatch, owner, method, writer, integrated):
         return future.result(timeout=40)
 
 
-def formula_payload(case):
+def stale_form_payload(case):
+    """A formula form rendered before a concurrent writer changed ``notes``."""
+
     client, product, _, formula, payload = existing_case(case)
-    payload.update(formula_selection=str(formula.pk), loaded_formula_selection=str(formula.pk))
-    payload['formula-notes'] = 'Nota concorrente integrada'
-    payload.update({'components-TOTAL_FORMS': '0', 'components-INITIAL_FORMS': '0'})
-    standalone = {
-        key.removeprefix('formula-'): value
-        for key, value in case[-1].items()
-        if key.startswith('formula-')
-    }
-    standalone.update(
-        product=str(product.pk),
-        version=str(formula.version),
+    payload = {key: value for key, value in payload.items() if not key.startswith('components-')}
+    payload.update(
         batch_size='333',
         notes='Nota anterior',
         **{'components-TOTAL_FORMS': '0', 'components-INITIAL_FORMS': '0'},
     )
-    return client, product, formula, payload, standalone
+    return client, product, formula, payload
 
 
-def test_product_api_patch_preserves_fields_committed_by_integrated_editor(case, monkeypatch):
-    client, product, _, _, payload = existing_case(case)
-    payload.update(formula_selection='none', loaded_formula_selection='none')
+def test_product_api_patch_preserves_fields_committed_by_the_product_editor(case, monkeypatch):
+    client, product, _, _, _ = existing_case(case)
     payload = {
-        key: value
-        for key, value in payload.items()
-        if not key.startswith(('formula-', 'components-'))
+        'description': 'Descrição concorrente integrada',
+        'item_type': 'finished_product',
+        'unit': str(case[2].pk),
+        'status': 'approved',
+        'requires_quality_release': 'on',
     }
-    payload['description'] = 'Descrição concorrente integrada'
 
     def writer():
         api = APIClient()
@@ -122,7 +115,7 @@ def test_product_api_patch_preserves_fields_committed_by_integrated_editor(case,
         )
 
     def integrated():
-        assert client.post(url(product.pk), payload).status_code == 302
+        assert client.post(product_url(product.pk), payload).status_code == 302
         assert Product.objects.get(pk=product.pk).description == payload['description']
 
     response = interleave(monkeypatch, ProductSerializer, 'update', writer, integrated)
@@ -135,20 +128,17 @@ def test_product_api_patch_preserves_fields_committed_by_integrated_editor(case,
     assert response.data['description'] == payload['description']
 
 
-def test_component_api_create_rechecks_approval_committed_by_integrated_editor(case, monkeypatch):
+def test_component_api_create_rechecks_approval_committed_by_the_formula_editor(
+    case, monkeypatch
+):
     client, product, _, formula, payload = existing_case(case)
     material = case[3]
     material.status = 'blocked'
     material.save(update_fields=['status'])
     payload.update(
-        formula_selection=str(formula.pk),
-        loaded_formula_selection=str(formula.pk),
-        status='approved',
-    )
-    payload.update(
         {
-            'formula-status': 'approved',
-            'formula-effective_from': '2026-01-01',
+            'status': 'approved',
+            'effective_from': '2026-01-01',
             'components-TOTAL_FORMS': '0',
             'components-INITIAL_FORMS': '0',
         }
@@ -170,7 +160,7 @@ def test_component_api_create_rechecks_approval_committed_by_integrated_editor(c
         )
 
     def integrated():
-        assert client.post(url(product.pk), payload).status_code == 302
+        assert client.post(url(formula.pk), payload).status_code == 302
         assert MasterFormula.objects.get(pk=formula.pk).status == 'approved'
 
     response = interleave(monkeypatch, FormulaComponentSerializer, 'create', writer, integrated)
@@ -183,12 +173,15 @@ def test_component_api_create_rechecks_approval_committed_by_integrated_editor(c
 
 
 @pytest.mark.parametrize('surface', ['standalone', 'admin'])
-def test_formula_form_preserves_unmodified_fields_committed_by_integrated_editor(
+def test_formula_form_preserves_unmodified_fields_committed_concurrently(
     case, monkeypatch, surface
 ):
-    client, product, formula, payload, standalone = formula_payload(case)
-    formula.notes = standalone['notes']
+    """A form rendered before a concurrent commit must not erase what it never showed."""
+
+    client, product, formula, stale = stale_form_payload(case)
+    formula.notes = stale['notes']
     formula.save(update_fields=['notes'])
+    committed = 'Nota concorrente confirmada'
 
     def writer():
         other = Client()
@@ -197,23 +190,18 @@ def test_formula_form_preserves_unmodified_fields_committed_by_integrated_editor
             assert admin.site.is_registered(MasterFormula)
             return other.post(
                 reverse('admin:formulations_masterformula_change', args=[formula.pk]),
-                {**standalone, '_save': 'Salvar'},
+                {**stale, '_save': 'Salvar'},
             )
-        return other.post(
-            reverse(
-                'app:resource_edit',
-                kwargs={
-                    'module_slug': 'formulations',
-                    'resource_slug': 'formulas',
-                    'pk': formula.pk,
-                },
-            ),
-            standalone,
-        )
+        return other.post(url(formula.pk), stale)
 
     def integrated():
-        assert client.post(url(product.pk), payload).status_code == 302
-        assert MasterFormula.objects.get(pk=formula.pk).notes == payload['formula-notes']
+        api = APIClient()
+        api.force_authenticate(case[1])
+        response = api.patch(
+            f'/api/formulations/formulas/{formula.pk}/', {'notes': committed}, format='json'
+        )
+        assert response.status_code == 200, response.data
+        assert MasterFormula.objects.get(pk=formula.pk).notes == committed
 
     owner, method = (
         (MasterFormulaAdmin, 'save_model')
@@ -224,7 +212,7 @@ def test_formula_form_preserves_unmodified_fields_committed_by_integrated_editor
     assert response.status_code == 302
     formula.refresh_from_db()
     assert formula.batch_size == 333
-    assert formula.notes == payload['formula-notes'], 'Formulário antigo apagou campo não alterado.'
+    assert formula.notes == committed, 'Formulário antigo apagou campo não alterado.'
 
 
 def test_formula_api_patch_accepts_existing_identity(case):
