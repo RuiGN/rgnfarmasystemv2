@@ -128,6 +128,22 @@ def create_quality_document(product, lot, unit, suffix='001'):
     )
 
 
+def create_approved_release_evidence(product, lot, unit, suffix, approver):
+    from qa.models import QAReview
+
+    document = create_quality_document(product, lot, unit, suffix=suffix)
+    review = QAReview.objects.create(
+        review_type=QAReview.ReviewType.LOT_RELEASE,
+        title=f'Revisão QA {suffix}',
+        stock_lot=lot,
+        quality_document=document,
+        status=QAReview.Status.APPROVED,
+        approved_by=approver,
+        approved_at=timezone.now(),
+    )
+    return review, document
+
+
 def create_qa_balance(product, lot, unit, suffix, status=StockQualityStatus.QUARANTINE):
     site = Site.objects.create(
         code=f'PL-QA-{suffix}',
@@ -227,23 +243,28 @@ class QAModelTests(TestCase):
             comments='Aguardando evidência da linha.',
         )
         review.submit(user=user)
+        approver = User.objects.create_user(
+            username='aprovador-qa@example.com',
+            email='aprovador-qa@example.com',
+            password='S3curePass!123',
+        )
 
         with pytest.raises(ValidationError) as error:
-            review.approve(user=user)
+            review.approve(user=approver)
 
         item.complete(
             user=user,
             evidence_reference='evidencias/reconciliacao.pdf',
             comments='Reconciliação conforme.',
         )
-        review.approve(user=user)
+        review.approve(user=approver)
 
         item.refresh_from_db()
         assert 'checklist' in error.value.message_dict
         assert item.status == BatchRecordChecklistItem.Status.COMPLETED
         assert item.completed_by == user
         assert review.status == QAReview.Status.APPROVED
-        assert review.approved_by == user
+        assert review.approved_by == approver
 
     def test_lot_release_controls_stock_lot_disposition(self):
         from qa.models import LotRelease, QAReview
@@ -387,7 +408,10 @@ class QAModelTests(TestCase):
             password='S3curePass!123',
         )
         unit, product, lot = create_qa_item(suffix='ROLL')
-        release = LotRelease.objects.create(product=product, stock_lot=lot)
+        review, document = create_approved_release_evidence(product, lot, unit, 'ROLL', user)
+        release = LotRelease.objects.create(
+            product=product, stock_lot=lot, qa_review=review, quality_document=document
+        )
         balances = [
             create_qa_balance(product, lot, unit, suffix=f'ROLL-{index}') for index in range(2)
         ]
@@ -931,7 +955,13 @@ class QAModelTests(TestCase):
         balances = {}
         for suffix in ('APPROVE', 'BLOCK', 'REJECT'):
             unit, product, lot = create_qa_item(suffix=f'HTML-{suffix}')
-            releases[suffix] = LotRelease.objects.create(product=product, stock_lot=lot)
+            evidence = {}
+            if suffix == 'APPROVE':
+                review, document = create_approved_release_evidence(
+                    product, lot, unit, f'HTML-{suffix}', actor
+                )
+                evidence = {'qa_review': review, 'quality_document': document}
+            releases[suffix] = LotRelease.objects.create(product=product, stock_lot=lot, **evidence)
             balances[suffix] = create_qa_balance(
                 product,
                 lot,
@@ -1273,7 +1303,12 @@ class QAProcessModelTests(TestCase):
         assert product.status == Product.Status.BLOCKED
         assert supplier.is_blocked is True
 
-        block.unblock(reason='Avaliação QA concluída.', user=user)
+        unblocker = User.objects.create_user(
+            username='desbloqueio@example.com',
+            email='desbloqueio@example.com',
+            password='S3curePass!123',
+        )
+        block.unblock(reason='Avaliação QA concluída.', user=unblocker)
         lot.refresh_from_db()
         product.refresh_from_db()
         supplier.refresh_from_db()
@@ -1282,7 +1317,7 @@ class QAProcessModelTests(TestCase):
         assert lot.quality_status == StockQualityStatus.QUARANTINE
         assert product.status == Product.Status.APPROVED
         assert supplier.is_blocked is False
-        assert block.unblocked_by == user
+        assert block.unblocked_by == unblocker
 
     def test_training_requirement_and_critical_activity_rule_block_untrained_user(self):
         from qa.models import CriticalActivityRule, TrainingRecord, TrainingRequirement

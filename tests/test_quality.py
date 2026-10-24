@@ -299,8 +299,13 @@ class QualityModelTests(TestCase):
         result.evaluate(save=True)
         analysis.start(user=user)
         analysis.complete()
-        analysis.review(user=user)
-        analysis.approve(user=user)
+        reviewer = User.objects.create_user(
+            username='revisor-analise@example.com',
+            email='revisor-analise@example.com',
+            password='S3curePass!123',
+        )
+        analysis.review(user=reviewer)
+        analysis.approve(user=reviewer)
         sample.collect(user=user)
         sample.receive(user=user)
         sample.start_analysis(user=user)
