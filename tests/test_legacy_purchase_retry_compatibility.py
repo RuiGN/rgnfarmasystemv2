@@ -348,7 +348,7 @@ def nfe_entry(settings, tmp_path):
     item.accepted_quantity = item.received_quantity
     item.save()
     receipt.mark_received(user=client.handler._force_user)
-    receipt.release_quality('approved')
+    receipt.release_quality('approved', user=client.handler._force_user)
     return item, warehouse, location, client
 
 

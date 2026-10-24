@@ -1,6 +1,7 @@
 from typing import Any
 
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
@@ -65,7 +66,9 @@ class PlanningPolicyViewSet(SingleInstancePlanningViewSet):
 
 
 class MasterProductionScheduleViewSet(SingleInstancePlanningViewSet):
-    queryset = MasterProductionSchedule.objects.all()
+    queryset = MasterProductionSchedule.objects.annotate(
+        annotated_lines_count=Count('lines', distinct=True)
+    )
     serializer_class = MasterProductionScheduleSerializer
     filterset_fields = ('status', 'period_start', 'period_end')
     search_fields = ('code', 'name')
@@ -94,7 +97,11 @@ class InventoryPositionViewSet(SingleInstancePlanningViewSet):
 
 
 class MRPRunViewSet(SingleInstancePlanningViewSet):
-    queryset = MRPRun.objects.select_related('schedule').prefetch_related('suggestions')
+    queryset = (
+        MRPRun.objects.select_related('schedule')
+        .prefetch_related('suggestions')
+        .annotate(annotated_suggestions_count=Count('suggestions', distinct=True))
+    )
     serializer_class = MRPRunSerializer
     filterset_fields = ('schedule', 'status')
     search_fields = ('schedule__code', 'scenario_name', 'notes')
@@ -106,6 +113,8 @@ class MRPRunViewSet(SingleInstancePlanningViewSet):
             run.calculate()
         except DjangoValidationError as error:
             return Response(_validation_response_payload(error), status=status.HTTP_400_BAD_REQUEST)
+        # A anotação carregada antes do cálculo ficou desatualizada.
+        run.annotated_suggestions_count = None
         serializer = self.get_serializer(run)
         return Response(serializer.data)
 

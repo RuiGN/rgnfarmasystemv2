@@ -80,7 +80,8 @@ class PurchaseRequisitionSerializer(
         )
 
     def get_items_count(self, obj) -> int:
-        return obj.items.count()
+        annotated = getattr(obj, 'annotated_items_count', None)
+        return annotated if annotated is not None else obj.items.count()
 
 
 class PurchaseRequisitionItemSerializer(
@@ -277,7 +278,8 @@ class PurchaseOrderSerializer(
         )
 
     def get_items_count(self, obj) -> int:
-        return obj.items.count()
+        annotated = getattr(obj, 'annotated_items_count', None)
+        return annotated if annotated is not None else obj.items.count()
 
     def validate(self, attrs):
         for field_name in ('supplier', 'requisition', 'source_quotation'):
@@ -413,7 +415,8 @@ class PurchaseReceiptSerializer(
         )
 
     def get_items_count(self, obj) -> int:
-        return obj.items.count()
+        annotated = getattr(obj, 'annotated_items_count', None)
+        return annotated if annotated is not None else obj.items.count()
 
     def validate(self, attrs):
         self._run_model_clean(self._instance_for_clean(attrs))

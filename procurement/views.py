@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
@@ -55,7 +56,9 @@ class SingleInstanceProcurementViewSet(viewsets.ModelViewSet):
 
 
 class PurchaseRequisitionViewSet(SingleInstanceProcurementViewSet):
-    queryset = PurchaseRequisition.objects.prefetch_related('items')
+    queryset = PurchaseRequisition.objects.prefetch_related('items').annotate(
+        annotated_items_count=Count('items', distinct=True)
+    )
     serializer_class = PurchaseRequisitionSerializer
     filterset_fields = ('source', 'status')
     search_fields = ('requisition_number', 'justification')
@@ -161,14 +164,18 @@ class SupplierQualificationEventViewSet(SingleInstanceProcurementViewSet):
 
 
 class PurchaseOrderViewSet(SingleInstanceProcurementViewSet):
-    queryset = PurchaseOrder.objects.select_related(
-        'supplier',
-        'requisition',
-        'source_quotation',
-        'delivery_site',
-        'delivery_state_ref',
-        'delivery_city_ref',
-    ).prefetch_related('items')
+    queryset = (
+        PurchaseOrder.objects.select_related(
+            'supplier',
+            'requisition',
+            'source_quotation',
+            'delivery_site',
+            'delivery_state_ref',
+            'delivery_city_ref',
+        )
+        .prefetch_related('items')
+        .annotate(annotated_items_count=Count('items', distinct=True))
+    )
     serializer_class = PurchaseOrderSerializer
     filterset_fields = (
         'supplier',
@@ -232,8 +239,10 @@ class PurchaseReceiptViewSet(SingleInstanceProcurementViewSet):
 
     perform_update = perform_create
 
-    queryset = PurchaseReceipt.objects.select_related('order', 'nfe_xml_file').prefetch_related(
-        'items__product', 'items__unit'
+    queryset = (
+        PurchaseReceipt.objects.select_related('order', 'nfe_xml_file')
+        .prefetch_related('items__product', 'items__unit')
+        .annotate(annotated_items_count=Count('items', distinct=True))
     )
     serializer_class = PurchaseReceiptSerializer
     filterset_fields = ('order', 'status', 'quality_status', 'stock_entry_status')
@@ -255,7 +264,9 @@ class PurchaseReceiptViewSet(SingleInstanceProcurementViewSet):
     def release_quality(self, request, pk=None):
         quality_status = request.data.get('quality_status')
         return self._transition_response(
-            lambda receipt: receipt.release_quality(quality_status=quality_status)
+            lambda receipt: receipt.release_quality(
+                quality_status=quality_status, user=request.user
+            )
         )
 
     @extend_schema(

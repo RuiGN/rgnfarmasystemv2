@@ -347,6 +347,16 @@ class MRPRun(SingleInstanceModel):
             raise ValidationError({'id': 'Salve a execução de MRP antes de calcular.'})
 
         with transaction.atomic():
+            type(self).objects.select_for_update().get(pk=self.pk)
+            if self.suggestions.filter(purchase_requisition_items__isnull=False).exists():
+                raise ValidationError(
+                    {
+                        'id': (
+                            'Não é possível recalcular o MRP: já existem requisições de '
+                            'compra geradas a partir das sugestões desta execução.'
+                        )
+                    }
+                )
             self.full_clean()
             self.suggestions.all().delete()
             demand_by_product = self._collect_demand()
