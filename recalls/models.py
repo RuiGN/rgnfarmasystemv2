@@ -413,41 +413,37 @@ class MarketComplaint(SingleInstanceModel):
                 from_status=previous_status,
             )
 
-    def cancel(self, reason):
+    def cancel(self, reason, user=None):
         if not reason:
             raise ValidationError({'cancel_reason': 'Informe o motivo do cancelamento.'})
-        if self.status == self.Status.CLOSED:
-            raise ValidationError({'status': 'Reclamação encerrada não pode ser cancelada.'})
-        self.status = self.Status.CANCELLED
-        self.cancel_reason = reason
-        self.save(update_fields=['status', 'cancel_reason', 'updated_at'])
+        with transaction.atomic():
+            locked = type(self).objects.select_for_update().get(pk=self.pk)
+            if locked.status in {
+                self.Status.CLOSED,
+                self.Status.CANCELLED,
+                self.Status.PENDING_REGULATORY_COMMUNICATION,
+            }:
+                raise ValidationError(
+                    {
+                        'status': 'Reclamação encerrada, cancelada ou com comunicação regulatória pendente não pode ser cancelada.'
+                    }
+                )
+            previous_status = locked.status
+            self.status = self.Status.CANCELLED
+            self.cancel_reason = reason
+            self.save(update_fields=['status', 'cancel_reason', 'updated_at'])
+            _record_recall_audit(
+                'recalls.complaint.cancelled',
+                'Reclamação pós-mercado cancelada.',
+                self,
+                user,
+                from_status=previous_status,
+            )
 
     def clean(self):
         super().clean()
         validate_normalized_location(self)
         errors = {}
-        for field in (
-            'customer',
-            'product',
-            'stock_lot',
-            'sales_order',
-            'fiscal_document',
-            'customer_complaint',
-            'quality_sample',
-            'deviation_event',
-            'capa',
-            'document',
-        ):
-            pass
-        for field in (
-            'responsible',
-            'reported_by',
-            'triaged_by',
-            'investigation_started_by',
-            'regulatory_communicated_by',
-            'closed_by',
-        ):
-            pass
         _validate_customer(errors, 'customer', self.customer)
         if self.stock_lot and self.product and self.stock_lot.product_id != self.product_id:
             errors['stock_lot'] = 'O lote deve pertencer ao produto informado.'
@@ -707,30 +703,30 @@ class ProductReturn(SingleInstanceModel):
                 from_status=previous_status,
             )
 
-    def cancel(self, reason):
+    def cancel(self, reason, user=None):
         if not reason:
             raise ValidationError({'cancel_reason': 'Informe o motivo do cancelamento.'})
-        if self.status == self.Status.CLOSED:
-            raise ValidationError({'status': 'Devolução encerrada não pode ser cancelada.'})
-        self.status = self.Status.CANCELLED
-        self.cancel_reason = reason
-        self.save(update_fields=['status', 'cancel_reason', 'updated_at'])
+        with transaction.atomic():
+            locked = type(self).objects.select_for_update().get(pk=self.pk)
+            if locked.status in {self.Status.CLOSED, self.Status.CANCELLED}:
+                raise ValidationError(
+                    {'status': 'Devolução encerrada ou cancelada não pode ser cancelada.'}
+                )
+            previous_status = locked.status
+            self.status = self.Status.CANCELLED
+            self.cancel_reason = reason
+            self.save(update_fields=['status', 'cancel_reason', 'updated_at'])
+            _record_recall_audit(
+                'recalls.return.cancelled',
+                'Devolução cancelada.',
+                self,
+                user,
+                from_status=previous_status,
+            )
 
     def clean(self):
         super().clean()
         errors = {}
-        for field in (
-            'complaint',
-            'customer',
-            'product',
-            'stock_lot',
-            'sales_order',
-            'fiscal_document',
-            'unit',
-        ):
-            pass
-        for field in ('requested_by', 'authorized_by', 'received_by', 'inspected_by', 'closed_by'):
-            pass
         _validate_customer(errors, 'customer', self.customer)
         if self.stock_lot and self.product and self.stock_lot.product_id != self.product_id:
             errors['stock_lot'] = 'O lote deve pertencer ao produto informado.'
@@ -905,6 +901,12 @@ class RecallCampaign(SingleInstanceModel):
             raise ValidationError({'status': 'Somente campanhas em rascunho podem ser aprovadas.'})
         if user is None:
             raise ValidationError({'approved_by': 'Aprovação exige usuário identificado.'})
+        if self.responsible_id and self.responsible_id == user.pk:
+            raise ValidationError(
+                {
+                    'approved_by': 'O responsável pela campanha não pode aprová-la (segregação de funções).'
+                }
+            )
         self.status = self.Status.APPROVED
         self.approved_by = user
         self.approved_at = timezone.now()
@@ -977,7 +979,7 @@ class RecallCampaign(SingleInstanceModel):
                 from_status=previous_status,
             )
 
-    def cancel(self, reason):
+    def cancel(self, reason, user=None):
         if not reason:
             raise ValidationError({'cancel_reason': 'Informe o motivo do cancelamento.'})
         if self.status in {
@@ -1000,23 +1002,13 @@ class RecallCampaign(SingleInstanceModel):
                 'recalls.campaign.cancelled',
                 'Campanha de recall cancelada.',
                 self,
-                None,
+                user,
                 from_status=previous_status,
             )
 
     def clean(self):
         super().clean()
         errors = {}
-        for field in (
-            'product',
-            'stock_lot',
-            'complaint',
-            'deviation_event',
-            'capa',
-        ):
-            pass
-        for field in ('responsible', 'approved_by', 'started_by', 'closed_by'):
-            pass
         if self.stock_lot and self.product and self.stock_lot.product_id != self.product_id:
             errors['stock_lot'] = 'O lote deve pertencer ao produto informado.'
         if self.complaint and self.complaint.product_id != self.product_id:
@@ -1162,8 +1154,6 @@ class RecallImpactedCustomer(SingleInstanceModel):
     def clean(self):
         super().clean()
         errors = {}
-        for field in ('campaign', 'customer', 'sales_order', 'fiscal_document'):
-            pass
         _validate_customer(errors, 'customer', self.customer)
         if self.sales_order and self.sales_order.customer_id != self.customer_id:
             errors['sales_order'] = 'O pedido deve pertencer ao cliente informado.'
@@ -1277,8 +1267,6 @@ class RecallCommunication(SingleInstanceModel):
     def clean(self):
         super().clean()
         errors = {}
-        for field in ('campaign', 'impacted_customer'):
-            pass
         if self.impacted_customer and self.impacted_customer.campaign_id != self.campaign_id:
             errors['impacted_customer'] = 'O cliente impactado deve pertencer à campanha informada.'
         if not self.content_hash:

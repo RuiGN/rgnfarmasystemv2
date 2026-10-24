@@ -480,7 +480,7 @@ class TestRecallsApi:
                 'reason': 'Recall aberto por queixa técnica crítica.',
                 'decision_date': str(timezone.localdate()),
                 'target_completion_date': str(timezone.localdate() + timedelta(days=30)),
-                'responsible': owner.id,
+                'responsible': other_owner.id,
             },
         )
         campaign_id = campaign_response.json()['id']

@@ -201,6 +201,8 @@ class StandardCost(SingleInstanceModel):
 
     @transaction.atomic
     def approve(self, user=None):
+        if user is None or not getattr(user, 'pk', None):
+            raise ValidationError({'approved_by': 'Aprovação exige usuário identificado.'})
         self._require_transition_origin(self.Status.DRAFT, 'aprovar')
         self.recalculate(save=False)
         self.status = self.Status.APPROVED

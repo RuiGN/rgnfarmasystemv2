@@ -15,6 +15,22 @@ def instance_for_clean(model, original, attrs):
     return instance
 
 
+def incoming_value_changes_field(instance, field_name, incoming):
+    """Indica se o valor recebido difere do persistido (FK compara pela chave)."""
+    field = instance._meta.get_field(field_name)
+    current = getattr(instance, field.attname)
+    if incoming in (None, ''):
+        return current not in (None, '')
+    if current is None:
+        return True
+    if field.is_relation:
+        return str(incoming) != str(current)
+    try:
+        return field.to_python(incoming) != current
+    except Exception:
+        return True
+
+
 class ModelSerializerContractMixin:
     """Declara atributos fornecidos pelo ``ModelSerializer`` na classe final."""
 

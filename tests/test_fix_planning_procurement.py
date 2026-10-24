@@ -115,6 +115,7 @@ class ReceiptQualityReleaseAuditTests(TestCase):
             username='qa@example.com', email='qa@example.com', password='S3curePass!123'
         )
         receipt = self._receipt()
+        receipt.mark_received(user=user)
 
         receipt.release_quality(PurchaseReceipt.QualityStatus.APPROVED, user=user)
 

@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
-from base.serializer_mixins import ModelSerializerContractMixin
+from base.serializer_mixins import ModelSerializerContractMixin, incoming_value_changes_field
 
 from costing.models import (
     CostElement,
@@ -94,7 +94,11 @@ class StandardCostSerializer(SingleInstanceCostingSerializerMixin, serializers.M
 
     def to_internal_value(self, data):
         if self.instance is not None:
-            protected = [name for name in self.protected_update_fields if name in data]
+            protected = [
+                name
+                for name in self.protected_update_fields
+                if name in data and incoming_value_changes_field(self.instance, name, data[name])
+            ]
             if protected:
                 raise serializers.ValidationError(
                     {
@@ -105,8 +109,6 @@ class StandardCostSerializer(SingleInstanceCostingSerializerMixin, serializers.M
         return super().to_internal_value(data)
 
     def validate(self, attrs):
-        for field_name in ('product', 'unit'):
-            pass
         self._run_model_clean(self._instance_for_clean(attrs))
         return attrs
 

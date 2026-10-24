@@ -64,28 +64,6 @@ class MarketComplaintSerializer(SingleInstanceRecallsSerializerMixin, serializer
         )
 
     def validate(self, attrs):
-        for field_name in (
-            'customer',
-            'product',
-            'stock_lot',
-            'sales_order',
-            'fiscal_document',
-            'customer_complaint',
-            'quality_sample',
-            'deviation_event',
-            'capa',
-            'document',
-        ):
-            pass
-        for field_name in (
-            'responsible',
-            'reported_by',
-            'triaged_by',
-            'investigation_started_by',
-            'regulatory_communicated_by',
-            'closed_by',
-        ):
-            pass
         self._run_model_clean(self._instance_for_clean(attrs))
         return attrs
 
@@ -117,24 +95,6 @@ class ProductReturnSerializer(SingleInstanceRecallsSerializerMixin, serializers.
         )
 
     def validate(self, attrs):
-        for field_name in (
-            'complaint',
-            'customer',
-            'product',
-            'stock_lot',
-            'sales_order',
-            'fiscal_document',
-            'unit',
-        ):
-            pass
-        for field_name in (
-            'requested_by',
-            'authorized_by',
-            'received_by',
-            'inspected_by',
-            'closed_by',
-        ):
-            pass
         self._run_model_clean(self._instance_for_clean(attrs))
         return attrs
 
@@ -160,16 +120,6 @@ class RecallCampaignSerializer(SingleInstanceRecallsSerializerMixin, serializers
         )
 
     def validate(self, attrs):
-        for field_name in (
-            'product',
-            'stock_lot',
-            'complaint',
-            'deviation_event',
-            'capa',
-        ):
-            pass
-        for field_name in ('responsible', 'approved_by', 'started_by', 'closed_by'):
-            pass
         self._run_model_clean(self._instance_for_clean(attrs))
         return attrs
 
@@ -192,8 +142,6 @@ class RecallImpactedCustomerSerializer(
         )
 
     def validate(self, attrs):
-        for field_name in ('campaign', 'customer', 'sales_order', 'fiscal_document'):
-            pass
         self._run_model_clean(self._instance_for_clean(attrs))
         return attrs
 
@@ -215,8 +163,6 @@ class RecallCommunicationSerializer(
         )
 
     def validate(self, attrs):
-        for field_name in ('campaign', 'impacted_customer'):
-            pass
         self._run_model_clean(self._instance_for_clean(attrs))
         return attrs
 
