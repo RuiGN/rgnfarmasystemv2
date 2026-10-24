@@ -14,6 +14,8 @@ from deviations.models import (
 
 
 class SingleInstanceDeviationSerializerMixin(ModelSerializerContractMixin):
+    immutable_update_fields: tuple[str, ...] = ()
+
     def _instance_for_clean(self, attrs):
         model = self.Meta.model
         if self.instance is None:
@@ -26,6 +28,24 @@ class SingleInstanceDeviationSerializerMixin(ModelSerializerContractMixin):
         instance = model(**values)
         instance.pk = self.instance.pk
         return instance
+
+    def _reject_immutable_on_update(self, data):
+        immutable = [
+            field_name
+            for field_name in self.immutable_update_fields
+            if self.instance is not None and field_name in data
+        ]
+        if immutable:
+            raise serializers.ValidationError(
+                {
+                    field_name: 'Campo de identidade imutável após a criação.'
+                    for field_name in immutable
+                }
+            )
+
+    def to_internal_value(self, data):
+        self._reject_immutable_on_update(data)
+        return serializers.ModelSerializer.to_internal_value(self, data)
 
     def _run_model_clean(self, instance):
         try:
@@ -55,6 +75,14 @@ class QualityEventSerializer(SingleInstanceDeviationSerializerMixin, serializers
         )
 
     def validate(self, attrs):
+        if (
+            self.instance is not None
+            and attrs
+            and self.instance.status in {QualityEvent.Status.CLOSED, QualityEvent.Status.CANCELLED}
+        ):
+            raise serializers.ValidationError(
+                {'status': 'Evento encerrado ou cancelado não pode ser editado.'}
+            )
         for field_name in ('product', 'stock_lot', 'controlled_document', 'supplier', 'customer'):
             pass
         for field_name in ('responsible', 'opened_by', 'closed_by'):
@@ -139,9 +167,9 @@ class DeviationApprovalSerializer(
             'updated_at',
         )
 
+    immutable_update_fields = ('approver',)
+
     def validate(self, attrs):
-        for field_name in ('approver', 'decided_by'):
-            pass
         self._run_model_clean(self._instance_for_clean(attrs))
         return attrs
 

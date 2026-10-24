@@ -3,9 +3,11 @@ from datetime import timedelta
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import F
 from django.utils import timezone
 
 from base.models import SingleInstanceModel
+from base.modules import OperationalModule
 from base.sequences import IdentifierSpec, sequence_code
 
 
@@ -15,6 +17,34 @@ def _sequence_code(model, *args):
     else:
         field_name, prefix = args
     return sequence_code(model, field_name, prefix)
+
+
+def _record_capa_audit(*, instance, action, message, user=None, **context):
+    """Registra transição de estado de CAPA na trilha de auditoria de governança."""
+    from governance.models import GovernanceAuditLog
+
+    capa = getattr(instance, 'capa', instance)
+    GovernanceAuditLog.record(
+        log_type=GovernanceAuditLog.LogType.FUNCTIONAL,
+        severity=GovernanceAuditLog.Severity.INFO,
+        module=OperationalModule.CAPA,
+        action=action,
+        message=message,
+        target_model=type(instance).__name__,
+        target_record_id=str(instance.pk),
+        user=user,
+        safe_context={'capa_id': capa.pk, 'capa_number': capa.capa_number, **context},
+    )
+
+
+def _require_actor_not_author(capa, user, field='approver'):
+    """Segregação de funções: quem abriu ou é responsável pela CAPA não decide aprovação."""
+    if user is None:
+        raise ValidationError({field: 'Informe o usuário que está decidindo.'})
+    if user.pk in {capa.opened_by_id, capa.owner_id}:
+        raise ValidationError(
+            {field: 'O autor ou responsável pela CAPA não pode aprovar ou rejeitar a própria CAPA.'}
+        )
 
 
 class CapaRecord(SingleInstanceModel):
@@ -129,18 +159,37 @@ class CapaRecord(SingleInstanceModel):
         self.opened_at = timezone.now()
         self.full_clean()
         self.save(update_fields=['status', 'opened_by', 'opened_at', 'updated_at'])
+        _record_capa_audit(
+            instance=self,
+            action='capa.record.submitted',
+            message='CAPA submetida.',
+            user=user,
+            from_status=self.Status.DRAFT,
+            to_status=self.status,
+        )
 
     def start(self, user=None):
         if self.status not in {self.Status.DRAFT, self.Status.OPEN}:
             raise ValidationError(
                 {'status': 'Somente CAPAs em rascunho ou abertas podem iniciar execução.'}
             )
+        previous_status = self.status
         self.status = self.Status.IN_PROGRESS
         self.owner = self.owner or user
         self.full_clean()
         self.save(update_fields=['status', 'owner', 'updated_at'])
+        _record_capa_audit(
+            instance=self,
+            action='capa.record.started',
+            message='Execução da CAPA iniciada.',
+            user=user,
+            from_status=previous_status,
+            to_status=self.status,
+        )
 
     def close(self, summary, user=None):
+        if self.status in {self.Status.CLOSED, self.Status.CANCELLED}:
+            raise ValidationError({'status': 'CAPA encerrada ou cancelada não pode ser encerrada.'})
         if not summary:
             raise ValidationError({'closure_summary': 'Informe o resumo de encerramento.'})
         if (
@@ -155,11 +204,15 @@ class CapaRecord(SingleInstanceModel):
             raise ValidationError(
                 {'evidences': 'Encerramento exige evidências para ações que requerem evidência.'}
             )
-        if (
-            self.requires_effectiveness_check
-            and not self.effectiveness_checks.filter(
-                status=EffectivenessCheck.Status.EFFECTIVE
-            ).exists()
+        latest_check = (
+            self.effectiveness_checks.order_by(
+                F('verified_at').desc(nulls_last=True), '-created_at', '-pk'
+            ).first()
+            if self.requires_effectiveness_check
+            else None
+        )
+        if self.requires_effectiveness_check and (
+            latest_check is None or latest_check.status != EffectivenessCheck.Status.EFFECTIVE
         ):
             raise ValidationError(
                 {'effectiveness': 'Encerramento exige avaliação de eficácia efetiva.'}
@@ -174,6 +227,7 @@ class CapaRecord(SingleInstanceModel):
             raise ValidationError(
                 {'approvals': 'Encerramento exige aprovações obrigatórias aprovadas.'}
             )
+        previous_status = self.status
         self.status = self.Status.CLOSED
         self.closure_summary = summary
         self.closed_by = user
@@ -182,15 +236,31 @@ class CapaRecord(SingleInstanceModel):
         self.save(
             update_fields=['status', 'closure_summary', 'closed_by', 'closed_at', 'updated_at']
         )
+        _record_capa_audit(
+            instance=self,
+            action='capa.record.closed',
+            message='CAPA encerrada.',
+            user=user,
+            from_status=previous_status,
+            to_status=self.status,
+        )
 
     def cancel(self, reason):
         if not reason:
             raise ValidationError({'cancel_reason': 'Informe o motivo do cancelamento.'})
-        if self.status == self.Status.CLOSED:
-            raise ValidationError({'status': 'CAPA encerrada não pode ser cancelada.'})
+        if self.status in {self.Status.CLOSED, self.Status.CANCELLED}:
+            raise ValidationError({'status': 'CAPA encerrada ou cancelada não pode ser cancelada.'})
+        previous_status = self.status
         self.status = self.Status.CANCELLED
         self.cancel_reason = reason
         self.save(update_fields=['status', 'cancel_reason', 'updated_at'])
+        _record_capa_audit(
+            instance=self,
+            action='capa.record.cancelled',
+            message='CAPA cancelada.',
+            from_status=previous_status,
+            to_status=self.status,
+        )
 
     def generate_notifications(self, today=None, due_soon_days=7):
         today = today or timezone.localdate()
@@ -465,6 +535,10 @@ class EffectivenessCheck(SingleInstanceModel):
         verbose_name_plural = 'verificações de eficácia CAPA'
 
     def verify(self, result, effective, user=None, evidence_reference=''):
+        if self.status != self.Status.PENDING:
+            raise ValidationError(
+                {'status': 'Verificação de eficácia já concluída não pode ser sobrescrita.'}
+            )
         if not result:
             raise ValidationError({'result': 'Informe o resultado da verificação de eficácia.'})
         if effective and not evidence_reference:
@@ -484,6 +558,14 @@ class EffectivenessCheck(SingleInstanceModel):
                 'verified_at',
                 'updated_at',
             ]
+        )
+        _record_capa_audit(
+            instance=self,
+            action='capa.effectiveness.verified',
+            message='Eficácia da CAPA verificada.',
+            user=user,
+            from_status=self.Status.PENDING,
+            to_status=self.status,
         )
 
     def clean(self):
@@ -554,23 +636,37 @@ class CapaApproval(SingleInstanceModel):
         verbose_name = 'aprovação CAPA'
         verbose_name_plural = 'aprovações CAPA'
 
-    def approve(self, user=None, comments=''):
-        self.decision = self.Decision.APPROVED
+    def _decide(self, decision, user, comments, action, message):
+        if self.decision != self.Decision.PENDING:
+            raise ValidationError({'decision': 'Somente aprovações pendentes podem ser decididas.'})
+        _require_actor_not_author(self.capa, user)
+        self.decision = decision
         self.comments = comments or self.comments
-        self.decided_by = user or self.approver
+        self.decided_by = user
         self.decided_at = timezone.now()
         self.full_clean()
         self.save(update_fields=['decision', 'comments', 'decided_by', 'decided_at', 'updated_at'])
+        _record_capa_audit(
+            instance=self,
+            action=action,
+            message=message,
+            user=user,
+            from_status=self.Decision.PENDING,
+            to_status=decision,
+            role=self.role,
+        )
+
+    def approve(self, user=None, comments=''):
+        self._decide(
+            self.Decision.APPROVED, user, comments, 'capa.approval.approved', 'CAPA aprovada.'
+        )
 
     def reject(self, user=None, comments=''):
         if not comments:
             raise ValidationError({'comments': 'Informe o motivo da rejeição.'})
-        self.decision = self.Decision.REJECTED
-        self.comments = comments
-        self.decided_by = user or self.approver
-        self.decided_at = timezone.now()
-        self.full_clean()
-        self.save(update_fields=['decision', 'comments', 'decided_by', 'decided_at', 'updated_at'])
+        self._decide(
+            self.Decision.REJECTED, user, comments, 'capa.approval.rejected', 'CAPA rejeitada.'
+        )
 
     def clean(self):
         super().clean()
