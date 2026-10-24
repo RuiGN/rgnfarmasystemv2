@@ -225,6 +225,16 @@ class TestCapaApi:
         assert 'status' in response.json()
         assert capa.root_cause == 'Causa raiz.'
 
+    def test_open_capa_still_editable(self):
+        owner = make_user('a3.owner')
+        capa = make_capa(owner)
+        client = APIClient()
+        client.force_authenticate(owner)
+        response = client.patch(
+            f'/api/capa/records/{capa.pk}/', {'root_cause': 'Revisada.'}, format='json'
+        )
+        assert response.status_code == 200, response.content
+
 
 def make_event(author, suffix='101'):
     event, *_ = create_deviation_source(author, suffix=suffix)
@@ -362,3 +372,13 @@ class TestDeviationApi:
         assert response.status_code == 400
         assert 'status' in response.json()
         assert event.description != 'Reescrito.'
+
+    def test_open_event_still_editable(self):
+        author = make_user('e3.author')
+        event = make_event(author)
+        client = APIClient()
+        client.force_authenticate(author)
+        response = client.patch(
+            f'/api/deviations/events/{event.pk}/', {'description': 'Revisado.'}, format='json'
+        )
+        assert response.status_code == 200, response.content

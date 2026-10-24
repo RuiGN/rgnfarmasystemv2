@@ -26,6 +26,8 @@ class SingleInstanceCostingSerializerMixin(ModelSerializerContractMixin):
             values[field.name] = attrs.get(field.name, getattr(self.instance, field.name))
         instance = model(**values)
         instance.pk = self.instance.pk
+        instance._state.adding = False
+        instance._state.db = self.instance._state.db
         return instance
 
     def _run_model_clean(self, instance):
@@ -87,6 +89,20 @@ class StandardCostSerializer(SingleInstanceCostingSerializerMixin, serializers.M
             'created_at',
             'updated_at',
         )
+
+    protected_update_fields = ('status', 'approved_by', 'approved_at')
+
+    def to_internal_value(self, data):
+        if self.instance is not None:
+            protected = [name for name in self.protected_update_fields if name in data]
+            if protected:
+                raise serializers.ValidationError(
+                    {
+                        name: 'Campo controlado por ação de domínio (aprovar/obsoletar).'
+                        for name in protected
+                    }
+                )
+        return super().to_internal_value(data)
 
     def validate(self, attrs):
         for field_name in ('product', 'unit'):

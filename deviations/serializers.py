@@ -27,6 +27,8 @@ class SingleInstanceDeviationSerializerMixin(ModelSerializerContractMixin):
             values[field.name] = attrs.get(field.name, getattr(self.instance, field.name))
         instance = model(**values)
         instance.pk = self.instance.pk
+        instance._state.adding = False
+        instance._state.db = self.instance._state.db
         return instance
 
     def _reject_immutable_on_update(self, data):
