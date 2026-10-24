@@ -171,4 +171,4 @@ class ApiCallLoggingMiddlewareTests(TestCase):
         )
         assert middleware._remote_addr(request) == '203.0.113.1'
         with override_settings(USE_X_FORWARDED_FOR=True):
-            assert middleware._remote_addr(request) == '198.51.100.9'
+            assert middleware._remote_addr(request) == '10.0.0.1'

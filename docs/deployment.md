@@ -33,6 +33,15 @@ Depois execute `migrate`, `check` e `runserver 127.0.0.1:8000` com o ambiente
 virtual. Os testes usam o PostgreSQL isolado de `docker-compose.test.yml` pelo
 perfil `core.settings.test`.
 
+## Endereço do cliente no log de API
+
+`USE_X_FORWARDED_FOR` (padrão `False`) controla se `ApiCallLog.remote_addr` usa
+o cabeçalho `X-Forwarded-For`. Com `False`, vale `REMOTE_ADDR`. Ative (`True`)
+somente atrás do Nginx do deploy, que usa `$proxy_add_x_forwarded_for`: ele
+anexa o endereço visto ao valor enviado pelo cliente, por isso o middleware usa
+apenas o último salto, o único não forjável. Com Cloudflare Tunnel à frente, o
+último salto é o endereço do túnel, não o do visitante final.
+
 ## Catálogos no bootstrap de produção
 
 Após `migrate` e antes de liberar o tráfego da nova instalação, carregue os
