@@ -1010,9 +1010,23 @@ class PurchaseReceipt(SingleInstanceModel):
 
         if quality_status not in {self.QualityStatus.APPROVED, self.QualityStatus.REJECTED}:
             raise ValidationError({'quality_status': 'Informe aprovado ou rejeitado.'})
-        previous_status = self.status
-        previous_quality_status = self.quality_status
         with transaction.atomic():
+            persisted = type(self).objects.select_for_update().get(pk=self.pk)
+            if persisted.status == self.Status.CANCELLED:
+                raise ValidationError({'status': 'Recebimento cancelado não pode ser liberado.'})
+            if persisted.stock_entry_status == self.StockEntryStatus.POSTED:
+                raise ValidationError(
+                    {'stock_entry_status': 'Recebimento com estoque lançado não pode ser liberado.'}
+                )
+            if persisted.status != self.Status.RECEIVED:
+                raise ValidationError(
+                    {'status': 'Somente recebimentos recebidos aguardam liberação pela qualidade.'}
+                )
+            self.status = persisted.status
+            self.quality_status = persisted.quality_status
+            self.stock_entry_status = persisted.stock_entry_status
+            previous_status = persisted.status
+            previous_quality_status = persisted.quality_status
             self.status = self.Status.QUALITY_RELEASED
             self.quality_status = quality_status
             self.save(update_fields=['status', 'quality_status', 'updated_at'])

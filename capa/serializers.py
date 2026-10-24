@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
-from base.serializer_mixins import ModelSerializerContractMixin
+from base.serializer_mixins import ModelSerializerContractMixin, incoming_value_changes_field
 
 from capa.models import (
     CapaAction,
@@ -35,7 +35,9 @@ class SingleInstanceCapaSerializerMixin(ModelSerializerContractMixin):
         immutable = [
             field_name
             for field_name in self.immutable_update_fields
-            if self.instance is not None and field_name in data
+            if self.instance is not None
+            and field_name in data
+            and incoming_value_changes_field(self.instance, field_name, data[field_name])
         ]
         if immutable:
             raise serializers.ValidationError(

@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.exceptions import ValidationError
-from django.db import models, transaction
+from django.db import IntegrityError, models, transaction
 from django.utils import timezone
 
 from base.models import SingleInstanceModel
@@ -19,6 +19,7 @@ from core.crypto import AES256GCMCipher
 PROTECTED_STORAGE_REFERENCE_PATTERN = re.compile(
     r'\Aprotected/[A-Za-z0-9_-]+/[A-Za-z0-9_-]+\.enc\Z'
 )
+REPLACEMENT_HASH_PATTERN = re.compile(r'\A[0-9a-f]{64}\Z')
 
 
 def _sequence_code(model, *args):
@@ -530,7 +531,8 @@ class ProtectedFile(SingleInstanceModel):
             raise ValidationError(
                 {'content_hash': 'O hash informado não confere com o conteúdo enviado.'}
             )
-        if file_size not in (None, '') and int(file_size) != len(content):
+        declared_size = self._validated_file_size(file_size)
+        if declared_size is not None and declared_size != len(content):
             raise ValidationError(
                 {'file_size': 'O tamanho informado não confere com o conteúdo enviado.'}
             )
@@ -550,6 +552,7 @@ class ProtectedFile(SingleInstanceModel):
     def _replace_with_reference(
         self, file_reference, file_name, content_hash, file_size, mime_type, user
     ):
+        declared_size = self._validated_file_size(file_size)
         if not content_hash:
             raise ValidationError(
                 {'content_hash': 'Substituição exige hash para integridade ALCOA+.'}
@@ -565,6 +568,8 @@ class ProtectedFile(SingleInstanceModel):
             raise ValidationError(
                 {'new_file_reference': 'A referência protegida informada não existe no storage.'}
             )
+        if REPLACEMENT_HASH_PATTERN.fullmatch(self._normalize_hash(content_hash)) is None:
+            raise ValidationError({'content_hash': 'Informe um hash SHA-256 hexadecimal válido.'})
         cipher = AES256GCMCipher()
         replacement = self._replacement_instance(
             file_name=file_name,
@@ -592,7 +597,7 @@ class ProtectedFile(SingleInstanceModel):
             raise ValidationError(
                 {'content_hash': 'O hash informado não confere com o conteúdo armazenado.'}
             )
-        if file_size not in (None, '') and int(file_size) != len(plain):
+        if declared_size is not None and declared_size != len(plain):
             raise ValidationError(
                 {'file_size': 'O tamanho informado não confere com o conteúdo armazenado.'}
             )
@@ -603,6 +608,20 @@ class ProtectedFile(SingleInstanceModel):
             update_fields=['content_hash', 'file_size', 'encrypted_size', 'updated_at']
         )
         return replacement
+
+    @staticmethod
+    def _validated_file_size(file_size):
+        if file_size in (None, ''):
+            return None
+        if isinstance(file_size, bool):
+            raise ValidationError({'file_size': 'Informe um tamanho de arquivo válido.'})
+        try:
+            size = int(file_size)
+        except (TypeError, ValueError, OverflowError) as error:
+            raise ValidationError({'file_size': 'Informe um tamanho de arquivo válido.'}) from error
+        if size < 0:
+            raise ValidationError({'file_size': 'O tamanho do arquivo não pode ser negativo.'})
+        return size
 
     @staticmethod
     def _normalize_hash(value):
@@ -623,16 +642,30 @@ class ProtectedFile(SingleInstanceModel):
     ):
         if not new_file_name:
             raise ValidationError({'new_file_name': 'Informe o nome do novo arquivo.'})
-        if self.status == self.Status.DELETED:
-            raise ValidationError({'status': 'Arquivo excluído não pode ser substituído.'})
-        if content is not None:
-            replacement = self._replace_with_content(
-                content, new_file_name, content_hash, file_size, mime_type, user
+        persisted = type(self).objects.select_for_update().get(pk=self.pk)
+        if persisted.status != self.Status.ACTIVE or persisted.replaced_by_id:
+            raise ValidationError(
+                {'status': 'Somente arquivo ativo e vigente pode ser substituído.'}
             )
-        else:
-            replacement = self._replace_with_reference(
-                new_file_reference, new_file_name, content_hash, file_size, mime_type, user
-            )
+        try:
+            with transaction.atomic():
+                if content is not None:
+                    replacement = self._replace_with_content(
+                        content, new_file_name, content_hash, file_size, mime_type, user
+                    )
+                else:
+                    replacement = self._replace_with_reference(
+                        new_file_reference,
+                        new_file_name,
+                        content_hash,
+                        file_size,
+                        mime_type,
+                        user,
+                    )
+        except IntegrityError as error:
+            raise ValidationError(
+                {'new_file_reference': 'A substituição conflita com um registro existente.'}
+            ) from error
         self.status = self.Status.SUPERSEDED
         self.replaced_by = replacement
         self.save(update_fields=['status', 'replaced_by', 'updated_at'])

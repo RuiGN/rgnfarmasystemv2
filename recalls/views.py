@@ -131,7 +131,9 @@ class MarketComplaintViewSet(SingleInstanceRecallsViewSet):
     @action(detail=True, methods=['post'])
     def cancel(self, request, pk=None):
         reason = request.data.get('reason', '')
-        return self._domain_action_response(lambda complaint: complaint.cancel(reason=reason))
+        return self._domain_action_response(
+            lambda complaint: complaint.cancel(reason=reason, user=request.user)
+        )
 
 
 class ProductReturnViewSet(SingleInstanceRecallsViewSet):
@@ -207,7 +209,7 @@ class ProductReturnViewSet(SingleInstanceRecallsViewSet):
     def cancel(self, request, pk=None):
         reason = request.data.get('reason', '')
         return self._domain_action_response(
-            lambda product_return: product_return.cancel(reason=reason)
+            lambda product_return: product_return.cancel(reason=reason, user=request.user)
         )
 
 
@@ -262,7 +264,9 @@ class RecallCampaignViewSet(SingleInstanceRecallsViewSet):
     @action(detail=True, methods=['post'])
     def cancel(self, request, pk=None):
         reason = request.data.get('reason', '')
-        return self._domain_action_response(lambda campaign: campaign.cancel(reason=reason))
+        return self._domain_action_response(
+            lambda campaign: campaign.cancel(reason=reason, user=request.user)
+        )
 
 
 class RecallImpactedCustomerViewSet(SingleInstanceRecallsViewSet):

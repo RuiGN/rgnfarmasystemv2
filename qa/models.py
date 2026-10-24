@@ -919,10 +919,12 @@ class QualityBlock(SingleInstanceModel):
 
         if not reason:
             raise ValidationError({'unblock_reason': 'Informe o motivo do desbloqueio.'})
+        if user is None or not getattr(user, 'pk', None):
+            raise ValidationError({'unblocked_by': 'Desbloqueio exige usuário identificado.'})
         locked = type(self).objects.select_for_update().get(pk=self.pk)
         if locked.status != self.Status.ACTIVE:
             raise ValidationError({'status': 'Somente bloqueios ativos podem ser desbloqueados.'})
-        if user is not None and locked.blocked_by_id and locked.blocked_by_id == user.pk:
+        if locked.blocked_by_id and locked.blocked_by_id == user.pk:
             raise ValidationError(
                 {'unblocked_by': 'Segregação de funções: quem bloqueou não pode desbloquear.'}
             )
