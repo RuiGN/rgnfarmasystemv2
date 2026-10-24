@@ -28,6 +28,14 @@ def test_runtime_artifacts_do_not_publish_control_domain(path):
     assert 'CONTROL_PLANE_' not in source
 
 
+def test_vps_nginx_reresolves_app_upstream_between_releases():
+    source = (ROOT / 'deploy/nginx/rgnfarmasystem.conf').read_text(encoding='utf-8')
+
+    assert 'upstream ' not in source, 'upstream fixo congela o IP do app na inicializacao'
+    assert 'resolver 127.0.0.11' in source
+    assert 'proxy_pass http://$upstream_app$request_uri;' in source
+
+
 def test_vps_tunnel_targets_internal_nginx():
     compose = yaml.safe_load((ROOT / 'docker-compose.vps.yml').read_text(encoding='utf-8'))
 

@@ -211,7 +211,8 @@ rollback_release() {
   git switch --detach "$PREVIOUS_SHA"
   validate_compose
   compose up -d --build --remove-orphans --wait --wait-timeout "$WAIT_TIMEOUT_SECONDS"
-  curl -fsS --max-time 20 -H "Host: $PUBLIC_HOST" "$ORIGIN_URL" >/dev/null
+  curl -fsS --max-time 20 -H "Host: $PUBLIC_HOST" "$ORIGIN_URL" >/dev/null || \
+    log "AVISO: origem segue indisponivel apos o rollback; verificar manualmente."
   log "Codigo anterior reimplantado. Banco e midia nao foram restaurados automaticamente."
   log "Backup preservado em $RELEASE_BACKUP_DIR."
 }
