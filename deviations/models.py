@@ -4,6 +4,7 @@ from django.db import models
 from django.utils import timezone
 
 from base.models import SingleInstanceModel
+from base.modules import OperationalModule
 from base.sequences import IdentifierSpec, sequence_code
 from masters.models import BusinessPartner, Product
 
@@ -14,6 +15,34 @@ def _sequence_code(model, *args):
     else:
         field_name, prefix = args
     return sequence_code(model, field_name, prefix)
+
+
+def _record_deviation_audit(*, instance, action, message, user=None, **context):
+    """Registra transição de estado de desvio na trilha de auditoria de governança."""
+    from governance.models import GovernanceAuditLog
+
+    event = getattr(instance, 'event', instance)
+    GovernanceAuditLog.record(
+        log_type=GovernanceAuditLog.LogType.FUNCTIONAL,
+        severity=GovernanceAuditLog.Severity.INFO,
+        module=OperationalModule.DEVIATIONS,
+        action=action,
+        message=message,
+        target_model=type(instance).__name__,
+        target_record_id=str(instance.pk),
+        user=user,
+        safe_context={'event_id': event.pk, 'event_number': event.event_number, **context},
+    )
+
+
+def _require_actor_not_author(event, user, field='approver'):
+    """Segregação de funções: quem abriu o desvio não decide aprovação."""
+    if user is None:
+        raise ValidationError({field: 'Informe o usuário que está decidindo.'})
+    if user.pk == event.opened_by_id:
+        raise ValidationError(
+            {field: 'O autor do desvio não pode aprovar ou rejeitar o próprio desvio.'}
+        )
 
 
 class QualityEvent(SingleInstanceModel):
@@ -180,12 +209,25 @@ class QualityEvent(SingleInstanceModel):
             raise ValidationError(
                 {'status': 'Somente eventos abertos ou pendentes podem entrar em investigação.'}
             )
+        previous_status = self.status
         self.status = self.Status.UNDER_INVESTIGATION
         self.responsible = self.responsible or user
         self.full_clean()
         self.save(update_fields=['status', 'responsible', 'updated_at'])
+        _record_deviation_audit(
+            instance=self,
+            action='deviations.event.investigation_started',
+            message='Investigação do desvio iniciada.',
+            user=user,
+            from_status=previous_status,
+            to_status=self.status,
+        )
 
     def close(self, summary, user=None):
+        if self.status in {self.Status.CLOSED, self.Status.CANCELLED}:
+            raise ValidationError(
+                {'status': 'Evento encerrado ou cancelado não pode ser encerrado.'}
+            )
         if not summary:
             raise ValidationError({'closure_summary': 'Informe o resumo de encerramento.'})
         if not self.investigations.filter(status=DeviationInvestigation.Status.CONCLUDED).exists():
@@ -205,6 +247,7 @@ class QualityEvent(SingleInstanceModel):
             raise ValidationError(
                 {'approvals': 'Encerramento exige aprovações obrigatórias aprovadas.'}
             )
+        previous_status = self.status
         self.status = self.Status.CLOSED
         self.closure_summary = summary
         self.closed_by = user
@@ -213,15 +256,33 @@ class QualityEvent(SingleInstanceModel):
         self.save(
             update_fields=['status', 'closure_summary', 'closed_by', 'closed_at', 'updated_at']
         )
+        _record_deviation_audit(
+            instance=self,
+            action='deviations.event.closed',
+            message='Desvio encerrado.',
+            user=user,
+            from_status=previous_status,
+            to_status=self.status,
+        )
 
     def cancel(self, reason):
         if not reason:
             raise ValidationError({'cancel_reason': 'Informe o motivo do cancelamento.'})
-        if self.status == self.Status.CLOSED:
-            raise ValidationError({'status': 'Evento encerrado não pode ser cancelado.'})
+        if self.status in {self.Status.CLOSED, self.Status.CANCELLED}:
+            raise ValidationError(
+                {'status': 'Evento encerrado ou cancelado não pode ser cancelado.'}
+            )
+        previous_status = self.status
         self.status = self.Status.CANCELLED
         self.cancel_reason = reason
         self.save(update_fields=['status', 'cancel_reason', 'updated_at'])
+        _record_deviation_audit(
+            instance=self,
+            action='deviations.event.cancelled',
+            message='Desvio cancelado.',
+            from_status=previous_status,
+            to_status=self.status,
+        )
 
     def clean(self):
         super().clean()
@@ -333,12 +394,17 @@ class DeviationInvestigation(SingleInstanceModel):
         verbose_name_plural = 'investigações de desvios'
 
     def conclude(self, root_cause, impact_conclusion, conclusion, user=None):
+        if self.status not in {self.Status.OPEN, self.Status.IN_PROGRESS}:
+            raise ValidationError(
+                {'status': 'Somente investigações abertas ou em andamento podem ser concluídas.'}
+            )
         if not root_cause:
             raise ValidationError({'root_cause': 'Informe a causa raiz.'})
         if not impact_conclusion:
             raise ValidationError({'impact_conclusion': 'Informe a conclusão de impacto.'})
         if not conclusion:
             raise ValidationError({'conclusion': 'Informe a conclusão da investigação.'})
+        previous_status = self.status
         self.status = self.Status.CONCLUDED
         self.root_cause = root_cause
         self.impact_conclusion = impact_conclusion
@@ -360,6 +426,14 @@ class DeviationInvestigation(SingleInstanceModel):
         if self.event.status == QualityEvent.Status.UNDER_INVESTIGATION:
             self.event.status = QualityEvent.Status.PENDING_APPROVAL
             self.event.save(update_fields=['status', 'updated_at'])
+        _record_deviation_audit(
+            instance=self,
+            action='deviations.investigation.concluded',
+            message='Investigação do desvio concluída.',
+            user=user,
+            from_status=previous_status,
+            to_status=self.status,
+        )
 
     def clean(self):
         super().clean()
@@ -504,23 +578,45 @@ class DeviationApproval(SingleInstanceModel):
         verbose_name = 'aprovação de desvio'
         verbose_name_plural = 'aprovações de desvios'
 
-    def approve(self, user=None, comments=''):
-        self.decision = self.Decision.APPROVED
+    def _decide(self, decision, user, comments, action, message):
+        if self.decision != self.Decision.PENDING:
+            raise ValidationError({'decision': 'Somente aprovações pendentes podem ser decididas.'})
+        _require_actor_not_author(self.event, user)
+        self.decision = decision
         self.comments = comments or self.comments
-        self.decided_by = user or self.approver
+        self.decided_by = user
         self.decided_at = timezone.now()
         self.full_clean()
         self.save(update_fields=['decision', 'comments', 'decided_by', 'decided_at', 'updated_at'])
+        _record_deviation_audit(
+            instance=self,
+            action=action,
+            message=message,
+            user=user,
+            from_status=self.Decision.PENDING,
+            to_status=decision,
+            role=self.role,
+        )
+
+    def approve(self, user=None, comments=''):
+        self._decide(
+            self.Decision.APPROVED,
+            user,
+            comments,
+            'deviations.approval.approved',
+            'Desvio aprovado.',
+        )
 
     def reject(self, user=None, comments=''):
         if not comments:
             raise ValidationError({'comments': 'Informe o motivo da rejeição.'})
-        self.decision = self.Decision.REJECTED
-        self.comments = comments
-        self.decided_by = user or self.approver
-        self.decided_at = timezone.now()
-        self.full_clean()
-        self.save(update_fields=['decision', 'comments', 'decided_by', 'decided_at', 'updated_at'])
+        self._decide(
+            self.Decision.REJECTED,
+            user,
+            comments,
+            'deviations.approval.rejected',
+            'Desvio rejeitado.',
+        )
 
     def clean(self):
         super().clean()

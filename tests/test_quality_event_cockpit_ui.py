@@ -315,14 +315,19 @@ class QualityEventCockpitUiTests(TestCase):
         impact.complete(user=self.user)
 
         # 3. Criar aprovação aprovada
+        qa_approver = get_user_model().objects.create_user(
+            username='qa.approver.cockpit@example.com',
+            email='qa.approver.cockpit@example.com',
+            password='S3curePass!123',
+        )
         approval = DeviationApproval.objects.create(
             event=self.event,
-            approver=self.user,
+            approver=qa_approver,
             role=DeviationApproval.Role.QA,
             required=True,
             decision=DeviationApproval.Decision.PENDING,
         )
-        approval.approve(user=self.user, comments='Aprovado pela Garantia da Qualidade.')
+        approval.approve(user=qa_approver, comments='Aprovado pela Garantia da Qualidade.')
 
         # 4. CAPA com ação concluída
         capa = CapaRecord.objects.create(
