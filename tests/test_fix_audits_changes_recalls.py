@@ -250,7 +250,7 @@ class RecallGuardTests(TestCase):
         )
         return complaint, product, lot, customer, sales_order, fiscal_document
 
-    def test_market_complaint_close_failure_does_not_persist_pending_state(self):
+    def test_market_complaint_close_without_communication_persists_pending_state(self):
         from recalls.models import MarketComplaint
 
         owner = make_user('fix.recall.owner')
@@ -263,8 +263,14 @@ class RecallGuardTests(TestCase):
 
         complaint.refresh_from_db()
         assert 'regulatory_communication_reference' in missing_reference.value.message_dict
-        assert complaint.status == MarketComplaint.Status.INVESTIGATION
+        assert complaint.status == MarketComplaint.Status.PENDING_REGULATORY_COMMUNICATION
         assert audit_rows('recalls.complaint.closed').count() == 0
+        assert audit_rows('recalls.complaint.pending_regulatory_communication').count() == 1
+        assert complaint.closed_at is None
+
+        with pytest.raises(ValidationError):
+            complaint.close(summary='Ainda sem comunicação regulatória.', user=owner)
+        assert audit_rows('recalls.complaint.pending_regulatory_communication').count() == 1
 
         complaint.record_regulatory_communication(reference='ANVISA-FIX-1', user=owner)
         complaint.close(summary='Encerrada.', user=owner)

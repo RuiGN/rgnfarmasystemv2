@@ -376,6 +376,20 @@ class MarketComplaint(SingleInstanceModel):
                 {'investigation_summary': 'Encerramento exige investigação documentada.'}
             )
         if self.regulatory_communication_required and not self.regulatory_communication_reference:
+            # A tentativa de encerramento sem comunicação regulatória é um evento de
+            # negócio: o status pendente deve persistir mesmo com a recusa.
+            if self.status != self.Status.PENDING_REGULATORY_COMMUNICATION:
+                previous_status = self.status
+                with transaction.atomic():
+                    self.status = self.Status.PENDING_REGULATORY_COMMUNICATION
+                    self.save(update_fields=['status', 'updated_at'])
+                    _record_recall_audit(
+                        'recalls.complaint.pending_regulatory_communication',
+                        'Encerramento bloqueado: comunicação regulatória pendente.',
+                        self,
+                        user,
+                        from_status=previous_status,
+                    )
             raise ValidationError(
                 {
                     'regulatory_communication_reference': 'Encerramento exige comunicação regulatória registrada.'
