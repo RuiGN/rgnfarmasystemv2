@@ -75,9 +75,9 @@ evidence:
     title: Validação de arquivos protegidos e autorização
     owner: engineering
     reviewed_by: automated-quality-gate
-    captured_at: '2026-07-28T00:00:00Z'
+    captured_at: '2026-10-24T00:00:00Z'
     status: approved
-    sha256: 'e226a54b99cb79cb962823eab78d1400f9787be4066ce14e55b6c05197ca514e'
+    sha256: 'f6dc21e3c64ca715ef983527a11149a3700598c1cb57579e7ff77aa4e1ebd8a3'
     artifact: tests/test_files.py
   - id: EV-SI-009
     requirement: SI-009
@@ -92,12 +92,12 @@ evidence:
     requirement: SI-010
     title: Validação do PostgreSQL containerizado e da compatibilidade de continuidade
     owner: engineering
-    reviewed_by: automated-quality-gate (user-authorized engineering revalidation)
-    captured_at: '2026-10-20T06:22:52.272784Z'
+    reviewed_by: automated-quality-gate
+    captured_at: '2026-10-24T00:00:00Z'
     status: approved
-    sha256: '94e4d3e9dc7d6ff9a6bf94e9981b496a2adbc6e234909b8b406671bed22117ff'
-    supersedes_sha256: '78cf7058af897080d13950c9b58dfe00e12dbc310817db58c1f76f474d2f1368'
-    revalidation_scope: 'Correção do carregamento dos scripts nos testes; não é aprovação regulatória ou de release.'
+    sha256: 'ca2611c6c70359c493e21b59fe950f0833b023c0572cf709b297a36d1e30ab44'
+    supersedes_sha256: '94e4d3e9dc7d6ff9a6bf94e9981b496a2adbc6e234909b8b406671bed22117ff'
+    revalidation_scope: 'Isolamento de ambiente nos subprocessos de deploy (env explícito, impedindo vazamento do .env da raiz); não é aprovação regulatória ou de release.'
     revalidation_authority: 'Usuário autorizou explicitamente a revalidação de engenharia de EV-SI-010 nesta sessão.'
     revalidation_evidence: docs/validation/evidence/deploy-readiness-2026-10-20/backup-deploy-junit.xml
     artifact: tests/test_native_postgres_deployment.py

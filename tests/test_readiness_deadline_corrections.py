@@ -109,6 +109,13 @@ with override_settings(**{key: value for key, value in configuration.items() if 
 """
 
 
+# django.setup() nestes supervisores nao e tempo de request: o orcamento real da
+# sonda e verificado no 'elapsed' reportado pelo filho, medido apos o setup. A guarda
+# externa precisa somar a partida do interpretador, senao uma maquina carregada
+# reprova um deadline que foi efetivamente cumprido.
+SUPERVISOR_STARTUP_ALLOWANCE = 20
+
+
 def test_silent_cache_read_returns_503_before_healthcheck_deadline():
     with silent_dependency() as (port, reached):
         configuration = {
@@ -122,10 +129,10 @@ def test_silent_cache_read_returns_503_before_healthcheck_deadline():
         env = dict(os.environ, PROBE_TEST_CONFIGURATION=json.dumps(configuration))
         try:
             result = subprocess.run(
-                [sys.executable, '-c', REQUEST], env=env, capture_output=True, text=True, timeout=9
+                [sys.executable, '-c', REQUEST], env=env, capture_output=True, text=True, timeout=SUPERVISOR_STARTUP_ALLOWANCE + 9
             )
         except subprocess.TimeoutExpired:
-            assert False, 'Readiness blocked on a silent cache beyond the 9s supervisor deadline'
+            assert False, 'Supervisor guard expired before the silent-cache child reported'
         assert reached.is_set(), 'The probe must actually reach the silent dependency'
         assert result.returncode == 0, result.stderr
         report = json.loads(result.stdout)
@@ -167,10 +174,10 @@ def test_silent_database_returns_503_before_healthcheck_deadline(protocol):
         )
         try:
             result = subprocess.run(
-                [sys.executable, '-c', REQUEST], env=env, capture_output=True, text=True, timeout=9
+                [sys.executable, '-c', REQUEST], env=env, capture_output=True, text=True, timeout=SUPERVISOR_STARTUP_ALLOWANCE + 9
             )
         except subprocess.TimeoutExpired:
-            assert False, 'Readiness blocked on a silent database beyond the 9s supervisor deadline'
+            assert False, 'Supervisor guard expired before the silent-database child reported'
         assert reached.is_set(), 'The database startup/query must reach the silent peer'
         assert result.returncode == 0, result.stderr
         report = json.loads(result.stdout)
@@ -191,7 +198,7 @@ def test_silent_broker_handshake_is_bounded_including_network_reads():
             ),
         )
         result = subprocess.run(
-            [sys.executable, '-c', REQUEST], env=env, capture_output=True, text=True, timeout=9
+            [sys.executable, '-c', REQUEST], env=env, capture_output=True, text=True, timeout=SUPERVISOR_STARTUP_ALLOWANCE + 9
         )
         assert reached.is_set(), 'The AMQP handshake must reach the silent peer'
         assert result.returncode == 0, result.stderr
@@ -235,7 +242,7 @@ def test_all_silent_dependencies_fit_total_budget_and_children_are_reaped():
         )
         # django.setup() in this separate test supervisor is not request time.
         result = subprocess.run(
-            [sys.executable, '-c', REQUEST], env=env, capture_output=True, text=True, timeout=12
+            [sys.executable, '-c', REQUEST], env=env, capture_output=True, text=True, timeout=SUPERVISOR_STARTUP_ALLOWANCE + 12
         )
         assert all(event.is_set() for event in (db_reached, cache_reached, broker_reached))
         assert result.returncode == 0, result.stderr

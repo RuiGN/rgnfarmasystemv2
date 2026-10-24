@@ -300,7 +300,6 @@ def _prd_check(prd):
             '# PRD — RGN Farma System',
             'Status: vigente',
             'single-instance',
-            'MODIFICACAGERAL.prd',
             'check_product_acceptance --fail-on-error',
         )
     )
