@@ -1004,12 +1004,34 @@ class PurchaseReceipt(SingleInstanceModel):
             self.physical_received_at = timezone.now()
         self.save(update_fields=['status', 'received_by', 'physical_received_at', 'updated_at'])
 
-    def release_quality(self, quality_status):
+    def release_quality(self, quality_status, *, user):
+        from base.modules import OperationalModule
+        from governance.models import GovernanceAuditLog
+
         if quality_status not in {self.QualityStatus.APPROVED, self.QualityStatus.REJECTED}:
             raise ValidationError({'quality_status': 'Informe aprovado ou rejeitado.'})
-        self.status = self.Status.QUALITY_RELEASED
-        self.quality_status = quality_status
-        self.save(update_fields=['status', 'quality_status', 'updated_at'])
+        previous_status = self.status
+        previous_quality_status = self.quality_status
+        with transaction.atomic():
+            self.status = self.Status.QUALITY_RELEASED
+            self.quality_status = quality_status
+            self.save(update_fields=['status', 'quality_status', 'updated_at'])
+            GovernanceAuditLog.record(
+                log_type=GovernanceAuditLog.LogType.FUNCTIONAL,
+                severity=GovernanceAuditLog.Severity.INFO,
+                module=OperationalModule.PROCUREMENT,
+                action='receipt_quality_released',
+                target_model='PurchaseReceipt',
+                target_record_id=str(self.pk),
+                user=user,
+                message='Recebimento liberado pela qualidade.',
+                safe_context={
+                    'from_status': previous_status,
+                    'to_status': self.status,
+                    'from_quality_status': previous_quality_status,
+                    'to_quality_status': quality_status,
+                },
+            )
 
     def _validate_stock_entry_status(self, quality_status):
         from inventory.models import StockQualityStatus

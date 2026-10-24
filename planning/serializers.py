@@ -83,7 +83,8 @@ class MasterProductionScheduleSerializer(
         read_only_fields = ('id', 'lines_count', 'created_at', 'updated_at')
 
     def get_lines_count(self, obj) -> int:
-        return obj.lines.count()
+        annotated = getattr(obj, 'annotated_lines_count', None)
+        return annotated if annotated is not None else obj.lines.count()
 
     def validate(self, attrs):
         self._run_model_clean(self._instance_for_clean(attrs))
@@ -187,7 +188,8 @@ class MRPRunSerializer(SingleInstancePlanningSerializerMixin, serializers.ModelS
         )
 
     def get_suggestions_count(self, obj) -> int:
-        return obj.suggestions.count()
+        annotated = getattr(obj, 'annotated_suggestions_count', None)
+        return annotated if annotated is not None else obj.suggestions.count()
 
     def validate(self, attrs):
         self._run_model_clean(self._instance_for_clean(attrs))

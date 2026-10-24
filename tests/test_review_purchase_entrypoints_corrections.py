@@ -422,7 +422,7 @@ def test_imported_nfe_remains_valid_for_legitimate_purchase_entry(
     item.save()
     if entrypoint == 'batch':
         receipt.mark_received(user=user)
-        receipt.release_quality('approved')
+        receipt.release_quality('approved', user=user)
         receipt.post_stock(warehouse, location, user=user)
         receipt.post_stock(warehouse, location, user=user)
         expected_quality = 'approved'

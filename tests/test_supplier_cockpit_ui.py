@@ -198,7 +198,9 @@ class SupplierCockpitUiTests(TestCase):
             warehouse=warehouse, code='MP-A01', name='Matérias-Primas Box 1'
         )
         self.purchase_receipt.mark_received(user=self.user)
-        self.purchase_receipt.release_quality(PurchaseReceipt.QualityStatus.APPROVED)
+        self.purchase_receipt.release_quality(
+            PurchaseReceipt.QualityStatus.APPROVED, user=self.user
+        )
         self.purchase_receipt.post_stock(warehouse=warehouse, location=location, user=self.user)
 
         self.cockpit_url = reverse('app:supplier_cockpit', kwargs={'pk': self.supplier.pk})
