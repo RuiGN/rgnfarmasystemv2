@@ -495,6 +495,120 @@ class ProtectedFile(SingleInstanceModel):
             details=details or {},
         )
 
+    def _replacement_instance(self, **overrides):
+        values = {
+            'source_module': self.source_module,
+            'source_model': self.source_model,
+            'source_record_id': self.source_record_id,
+            'controlled_document': self.controlled_document,
+            'fiscal_document': self.fiscal_document,
+            'quality_document': self.quality_document,
+            'financial_title': self.financial_title,
+            'file_type': self.file_type,
+            'origin': self.Origin.UPLOAD,
+            'criticality': self.criticality,
+            'confidentiality': self.confidentiality,
+            'title': self.title,
+            'description': self.description,
+            'valid_until': self.valid_until,
+            'responsible': self.responsible,
+            'supersedes': self,
+        }
+        values.update(overrides)
+        return ProtectedFile.objects.create(**values)
+
+    def _replace_with_content(self, content, file_name, content_hash, file_size, mime_type, user):
+        if hasattr(content, 'read'):
+            content = content.read()
+        if isinstance(content, str):
+            content = content.encode('utf-8')
+        content = bytes(content)
+        computed_hash = f'sha256:{hashlib.sha256(content).hexdigest()}'
+        if content_hash and self._normalize_hash(content_hash) != self._normalize_hash(
+            computed_hash
+        ):
+            raise ValidationError(
+                {'content_hash': 'O hash informado não confere com o conteúdo enviado.'}
+            )
+        if file_size not in (None, '') and int(file_size) != len(content):
+            raise ValidationError(
+                {'file_size': 'O tamanho informado não confere com o conteúdo enviado.'}
+            )
+        replacement = self._replacement_instance(
+            file_name=file_name,
+            file_reference=f'pending/{secrets.token_urlsafe(12)}',
+            mime_type=mime_type or self.mime_type,
+            file_size=len(content),
+            content_hash=computed_hash,
+            uploaded_by=user,
+        )
+        replacement.store_encrypted_content(
+            content, file_name=file_name, mime_type=mime_type, user=user
+        )
+        return replacement
+
+    def _replace_with_reference(
+        self, file_reference, file_name, content_hash, file_size, mime_type, user
+    ):
+        if not content_hash:
+            raise ValidationError(
+                {'content_hash': 'Substituição exige hash para integridade ALCOA+.'}
+            )
+        if (
+            type(file_reference) is not str
+            or PROTECTED_STORAGE_REFERENCE_PATTERN.fullmatch(file_reference) is None
+        ):
+            raise ValidationError(
+                {'new_file_reference': 'Informe uma referência protegida canônica.'}
+            )
+        if not default_storage.exists(file_reference):
+            raise ValidationError(
+                {'new_file_reference': 'A referência protegida informada não existe no storage.'}
+            )
+        cipher = AES256GCMCipher()
+        replacement = self._replacement_instance(
+            file_name=file_name,
+            file_reference=file_reference,
+            mime_type=mime_type or self.mime_type,
+            file_size=0,
+            content_hash=content_hash,
+            encryption_algorithm=self.EncryptionAlgorithm.AES_256_GCM,
+            encryption_key_id=cipher.active_key_id,
+            encrypted_at=timezone.now(),
+            uploaded_by=user,
+        )
+        with default_storage.open(file_reference, 'rb') as stored:
+            payload = stored.read()
+        try:
+            plain = cipher.decrypt_bytes(
+                payload, associated_data=replacement._encryption_associated_data()
+            )
+        except Exception as error:
+            raise ValidationError(
+                {'new_file_reference': 'O conteúdo armazenado não pôde ser verificado.'}
+            ) from error
+        computed_hash = hashlib.sha256(plain).hexdigest()
+        if self._normalize_hash(content_hash) != computed_hash:
+            raise ValidationError(
+                {'content_hash': 'O hash informado não confere com o conteúdo armazenado.'}
+            )
+        if file_size not in (None, '') and int(file_size) != len(plain):
+            raise ValidationError(
+                {'file_size': 'O tamanho informado não confere com o conteúdo armazenado.'}
+            )
+        replacement.content_hash = f'sha256:{computed_hash}'
+        replacement.file_size = len(plain)
+        replacement.encrypted_size = len(payload)
+        replacement.save(
+            update_fields=['content_hash', 'file_size', 'encrypted_size', 'updated_at']
+        )
+        return replacement
+
+    @staticmethod
+    def _normalize_hash(value):
+        value = str(value or '').strip().lower()
+        return value.removeprefix('sha256:')
+
     @transaction.atomic
     def replace(
         self,
@@ -505,44 +619,20 @@ class ProtectedFile(SingleInstanceModel):
         reason='',
         file_size=None,
         mime_type='',
+        content=None,
     ):
-        if not new_file_reference:
-            raise ValidationError({'new_file_reference': 'Informe a nova referência protegida.'})
         if not new_file_name:
             raise ValidationError({'new_file_name': 'Informe o nome do novo arquivo.'})
-        if not content_hash:
-            raise ValidationError(
-                {'content_hash': 'Substituição exige hash para integridade ALCOA+.'}
-            )
         if self.status == self.Status.DELETED:
             raise ValidationError({'status': 'Arquivo excluído não pode ser substituído.'})
-        replacement = ProtectedFile.objects.create(
-            source_module=self.source_module,
-            source_model=self.source_model,
-            source_record_id=self.source_record_id,
-            controlled_document=self.controlled_document,
-            fiscal_document=self.fiscal_document,
-            quality_document=self.quality_document,
-            financial_title=self.financial_title,
-            file_type=self.file_type,
-            origin=self.Origin.UPLOAD,
-            criticality=self.criticality,
-            confidentiality=self.confidentiality,
-            title=self.title,
-            description=self.description,
-            file_name=new_file_name,
-            file_reference=new_file_reference,
-            mime_type=mime_type or self.mime_type,
-            file_size=self.file_size if file_size is None else file_size,
-            content_hash=content_hash,
-            encryption_algorithm=self.EncryptionAlgorithm.NONE,
-            encryption_key_id='',
-            encrypted_size=0,
-            valid_until=self.valid_until,
-            responsible=self.responsible,
-            uploaded_by=user,
-            supersedes=self,
-        )
+        if content is not None:
+            replacement = self._replace_with_content(
+                content, new_file_name, content_hash, file_size, mime_type, user
+            )
+        else:
+            replacement = self._replace_with_reference(
+                new_file_reference, new_file_name, content_hash, file_size, mime_type, user
+            )
         self.status = self.Status.SUPERSEDED
         self.replaced_by = replacement
         self.save(update_fields=['status', 'replaced_by', 'updated_at'])
@@ -811,49 +901,51 @@ class SecureFileLink(SingleInstanceModel):
             token = secrets.token_urlsafe(32)
         return token
 
-    @transaction.atomic
     def use(self, user, ip_address='', user_agent=''):
-        link = (
-            SecureFileLink.objects.select_for_update()
-            .select_related('protected_file')
-            .get(pk=self.pk)
+        denial = None
+        try:
+            with transaction.atomic():
+                link = (
+                    SecureFileLink.objects.select_for_update()
+                    .select_related('protected_file')
+                    .get(pk=self.pk)
+                )
+                denial = self._denial_for_use(link, user)
+                if denial is None:
+                    return self._consume(link, user, ip_address, user_agent)
+        except SecureFileLink.DoesNotExist:
+            raise ValidationError({'token': 'Link inexistente.'}) from None
+        # A negativa é registrada fora do bloco atômico para não sofrer rollback.
+        field, message, details = denial
+        link.protected_file.record_audit(
+            ProtectedFileAuditTrail.Action.ACCESS_DENIED,
+            user=user,
+            secure_link=link,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            details=details,
         )
+        raise ValidationError({field: message})
+
+    def _denial_for_use(self, link, user):
         permission = (
             ProtectedFileAccessRule.Permission.DOWNLOAD
             if link.purpose == link.Purpose.DOWNLOAD
             else ProtectedFileAccessRule.Permission.VIEW
         )
         if not link.is_valid:
-            link.protected_file.record_audit(
-                ProtectedFileAuditTrail.Action.ACCESS_DENIED,
-                user=user,
-                secure_link=link,
-                ip_address=ip_address,
-                user_agent=user_agent,
-                details={'reason': 'Link expirado, revogado ou sem usos disponíveis.'},
-            )
-            invalid_link_message = 'Link expirado, revogado ou sem usos disponíveis.'
-            raise ValidationError({'token': invalid_link_message})
+            message = 'Link expirado, revogado ou sem usos disponíveis.'
+            return 'token', message, {'reason': message}
         try:
             link.protected_file._assert_file_available()
         except ValidationError as error:
-            link.protected_file.record_audit(
-                ProtectedFileAuditTrail.Action.ACCESS_DENIED,
-                user=user,
-                secure_link=link,
-                ip_address=ip_address,
-                user_agent=user_agent,
-            )
-            raise error
+            field, messages = next(iter(error.message_dict.items()))
+            return field, messages[0], {}
         if not link.protected_file.user_can_access(user, permission=permission):
-            link.protected_file.record_audit(
-                ProtectedFileAuditTrail.Action.ACCESS_DENIED,
-                user=user,
-                secure_link=link,
-                ip_address=ip_address,
-                user_agent=user_agent,
-            )
-            raise ValidationError({'permission': 'Usuário sem permissão para usar este link.'})
+            return 'permission', 'Usuário sem permissão para usar este link.', {}
+        return None
+
+    def _consume(self, link, user, ip_address, user_agent):
         link.use_count += 1
         link.used_at = timezone.now()
         link.save(update_fields=['use_count', 'used_at', 'updated_at'])

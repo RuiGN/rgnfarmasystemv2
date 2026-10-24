@@ -1,10 +1,13 @@
+import hashlib
+import tempfile
 from datetime import timedelta
 
 import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, override_settings
 from django.utils import timezone
 from rest_framework.test import APIClient
 
@@ -129,15 +132,18 @@ class ProtectedFileModelTests(TestCase):
         with pytest.raises(ValidationError):
             stale_link.use(user=viewer)
         protected_file.record_access(user=viewer, action=ProtectedFileAuditTrail.Action.VIEW)
-        replacement = protected_file.replace(
-            new_file_reference='fiscal/notas/nf-arq-001-retificada.xml',
-            new_file_name='nf-arq-001-retificada.xml',
-            content_hash='sha256:xml-001-retificada',
-            user=owner,
-            reason='XML retificado aprovado pelo fiscal.',
-            file_size=4096,
-            mime_type='application/xml',
-        )
+        replacement_content = b'<xml>retificada</xml>'
+        with tempfile.TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
+            replacement = protected_file.replace(
+                new_file_reference='',
+                new_file_name='nf-arq-001-retificada.xml',
+                content_hash=f'sha256:{hashlib.sha256(replacement_content).hexdigest()}',
+                user=owner,
+                reason='XML retificado aprovado pelo fiscal.',
+                file_size=len(replacement_content),
+                mime_type='application/xml',
+                content=replacement_content,
+            )
         protected_file.refresh_from_db()
         protected_file.delete_secure(
             reason='Expurgo controlado do arquivo substituído.', user=owner
@@ -149,7 +155,10 @@ class ProtectedFileModelTests(TestCase):
         assert link.used_at is not None
         assert link.use_count == 1
         assert replacement.supersedes == protected_file
-        assert replacement.content_hash == 'sha256:xml-001-retificada'
+        assert replacement.content_hash == (
+            f'sha256:{hashlib.sha256(replacement_content).hexdigest()}'
+        )
+        assert replacement.is_encrypted
         assert protected_file.status == ProtectedFile.Status.DELETED
         assert protected_file.deleted_by == owner
         assert ProtectedFileAuditTrail.objects.filter(
@@ -331,17 +340,20 @@ class ProtectedFileApiTests(TestCase):
         )
         link_id = link_response.json()['id']
         use_response = client.post(f'/api/files/secure-links/{link_id}/use/')
-        replace_response = client.post(
-            f'/api/files/protected-files/{file_id}/replace/',
-            {
-                'new_file_reference': 'fiscal/notas/nf-arq-api-retificada.xml',
-                'new_file_name': 'nf-arq-api-retificada.xml',
-                'content_hash': 'sha256:api-retificada',
-                'reason': 'Substituição controlada pelo fiscal.',
-                'file_size': 2048,
-                'mime_type': 'application/xml',
-            },
-        )
+        api_content = b'<xml>api-retificada</xml>'
+        with tempfile.TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
+            replace_response = client.post(
+                f'/api/files/protected-files/{file_id}/replace/',
+                {
+                    'new_file_name': 'nf-arq-api-retificada.xml',
+                    'content_hash': f'sha256:{hashlib.sha256(api_content).hexdigest()}',
+                    'reason': 'Substituição controlada pelo fiscal.',
+                    'file_size': len(api_content),
+                    'mime_type': 'application/xml',
+                    'file': SimpleUploadedFile('retificada.xml', api_content),
+                },
+                format='multipart',
+            )
         delete_response = client.post(
             f'/api/files/protected-files/{replace_response.json()["id"]}/delete_secure/',
             {'reason': 'Expurgo aprovado.'},

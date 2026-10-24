@@ -1,5 +1,7 @@
+import logging
 import time
 
+from django.conf import settings
 from django.utils import timezone
 
 from integrations.models import (
@@ -8,6 +10,8 @@ from integrations.models import (
     SENSITIVE_CONTEXT_KEYS,
     sanitize_safe_context,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class ApiCallLoggingMiddleware:
@@ -51,6 +55,7 @@ class ApiCallLoggingMiddleware:
                 error_message=error_message,
             )
         except Exception:
+            logger.exception('Falha ao registrar ApiCallLog para %s', request.path)
             return
 
     def _resolve_client_application(self, request):
@@ -76,7 +81,8 @@ class ApiCallLoggingMiddleware:
 
     def _remote_addr(self, request):
         forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR', '')
-        if forwarded_for:
+        # X-Forwarded-For é forjável: só é considerado atrás de proxy confiável.
+        if forwarded_for and getattr(settings, 'USE_X_FORWARDED_FOR', False):
             return forwarded_for.split(',', 1)[0].strip()
         return request.META.get('REMOTE_ADDR') or None
 

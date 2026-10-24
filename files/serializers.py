@@ -127,6 +127,19 @@ class SecureFileLinkSerializer(SingleInstanceFileSerializerMixin, serializers.Mo
             'updated_at',
         )
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get('request')
+        user = getattr(request, 'user', None)
+        # O token em texto claro só é exibido ao solicitante do link.
+        if not (
+            user is not None
+            and getattr(user, 'is_authenticated', False)
+            and instance.requested_by_id == user.pk
+        ):
+            data.pop('token', None)
+        return data
+
     def validate(self, attrs):
         for field_name in ('requested_by', 'revoked_by'):
             pass

@@ -170,6 +170,7 @@ class ProtectedFileViewSet(SingleInstanceFileViewSet):
                 reason=request.data.get('reason', ''),
                 file_size=request.data.get('file_size'),
                 mime_type=request.data.get('mime_type', ''),
+                content=request.FILES.get('file'),
             ),
             serializer_class=ProtectedFileSerializer,
             response_status=status.HTTP_201_CREATED,
@@ -245,7 +246,7 @@ class SecureFileLinkViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SecureFileLink.objects.select_related('protected_file', 'requested_by', 'revoked_by')
     serializer_class = SecureFileLinkSerializer
     filterset_fields = ('protected_file', 'purpose', 'requested_by', 'expires_at', 'is_revoked')
-    search_fields = ('protected_file__file_number', 'protected_file__title', 'token')
+    search_fields = ('protected_file__file_number', 'protected_file__title')
     ordering = ('-created_at',)
 
     def get_queryset(self):
