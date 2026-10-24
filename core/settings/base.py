@@ -365,6 +365,8 @@ DATA_ENCRYPTION_KEYS = env('DATA_ENCRYPTION_KEYS', default='')
 DATA_ENCRYPTION_KEY = env('DATA_ENCRYPTION_KEY', default='')
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# Confiar em X-Forwarded-For (último salto) apenas atrás do nginx do deploy.
+USE_X_FORWARDED_FOR = env.bool('USE_X_FORWARDED_FOR', default=False)
 SECURE_REDIRECT_EXEMPT = [r'^health/$', r'^ready/$']
 SECURE_SSL_REDIRECT = env.bool('SECURE_SSL_REDIRECT', default=not DEBUG)
 # Security Settings

@@ -1,10 +1,14 @@
 """HTTP regressions with real DB/domain mutations and synthetic local records."""
 
+import hashlib
 import json
+import tempfile
 
 import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
 from django.urls import reverse
 from rest_framework.test import APIClient
 
@@ -51,10 +55,20 @@ def grant_file_access(protected_file, actor, permission):
 
 
 def post_action(client, actor, channel, module, resource, obj, action, payload):
+    with tempfile.TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
+        return _post_action(client, actor, channel, module, resource, obj, action, payload)
+
+
+def _post_action(client, actor, channel, module, resource, obj, action, payload):
     if channel == 'api':
         api = APIClient()
         api.force_authenticate(actor)
-        return api.post(f'/api/{module}/{resource}/{obj.pk}/{action}/', payload, format='json')
+        multipart = any(hasattr(value, 'read') for value in payload.values())
+        return api.post(
+            f'/api/{module}/{resource}/{obj.pk}/{action}/',
+            payload,
+            format='multipart' if multipart else 'json',
+        )
     client.force_login(actor)
     url = reverse('app:resource_action', args=(module, resource, obj.pk, action))
     html_payload = {
@@ -125,12 +139,13 @@ def test_other_file_management_actions_require_manage(client, channel, action, g
     if action == 'replace':
         target = protected_file
         resource = 'protected-files'
+        replacement_content = b'synthetic body'
         payload = {
-            'new_file_reference': 'review-synthetic/replacement.txt',
+            'file': SimpleUploadedFile('replacement.txt', replacement_content),
             'new_file_name': 'replacement.txt',
-            'content_hash': 'synthetic-replacement-hash',
+            'content_hash': f'sha256:{hashlib.sha256(replacement_content).hexdigest()}',
             'reason': 'Synthetic replacement',
-            'file_size': 12,
+            'file_size': len(replacement_content),
             'mime_type': 'text/plain',
         }
     else:
