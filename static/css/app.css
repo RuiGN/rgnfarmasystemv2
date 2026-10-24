@@ -1530,3 +1530,13 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
         grid-column: 1 / -1;
     }
 }
+
+/* O navegador injeta um botão próprio de revelar a senha (Edge/IE expõem
+   ::-ms-reveal) e um de limpar o campo. Senha não deve poder ser exibida em tela,
+   nem na autenticação nem em formulários internos. */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
